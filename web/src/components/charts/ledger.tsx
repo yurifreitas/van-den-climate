@@ -74,7 +74,13 @@ export function ContingencyHeatmap({
             show: true,
             color: GIZ,
             fontSize: 13,
-            formatter: (p: { data: number[] }) => (p.data[2] === 0 ? '—' : String(p.data[2])),
+            // `CallbackDataParams.data` e `OptionDataItem` (aceita undefined);
+            // declarar `unknown` e estreitar mantem o tipo do ECharts honesto
+            // sem espalhar casts pela option inteira.
+            formatter: (p: unknown) => {
+              const d = (p as { data: number[] }).data;
+              return d[2] === 0 ? '—' : String(d[2]);
+            },
           },
           itemStyle: {
             // gap de 2px na cor da superficie separa as celulas
@@ -82,9 +88,9 @@ export function ContingencyHeatmap({
             borderWidth: 2,
             borderRadius: 2,
           },
-          // rampa sequencial na diagonal (acerto) vs fora dela (erro):
-          // magnitude por luminancia, identidade por matiz
-          data_: undefined,
+          // A rampa sequencial (magnitude por luminancia) e aplicada pelo
+          // `visualMap` abaixo, nao aqui — nao ha propriedade de serie para
+          // isso no heatmap.
           emphasis: { itemStyle: { borderColor: GIZ } },
         },
       ],

@@ -15,7 +15,11 @@ const queryClient = new QueryClient();
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
+      {/* `basename` e obrigatorio quando o site nao mora na raiz do dominio.
+          No GitHub Pages a URL e /van-den-climate/, e sem isto NENHUMA rota
+          casa: a pagina carrega, nao da erro no console, e renderiza vazio —
+          o modo de falha mais dificil de diagnosticar que existe. */}
+      <BrowserRouter basename={import.meta.env.BASE_URL}>
         <Routes>
           <Route element={<Layout />}>
             <Route path="/" element={<RiscoView />} />

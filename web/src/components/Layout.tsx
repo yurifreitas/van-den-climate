@@ -1,5 +1,6 @@
 import { NavLink, Outlet } from 'react-router-dom';
-import { useAppState } from '../api/hooks';
+import { MODO_ESTATICO } from '../api/client';
+import { useAppState, useMeta } from '../api/hooks';
 import './Layout.css';
 
 const ROUTES = [
@@ -38,9 +39,37 @@ function SystemStateIndicator() {
   );
 }
 
+/**
+ * Faixa da demo estatica.
+ *
+ * Existe pela mesma razao que todo selo de proveniencia neste projeto: um
+ * numero congelado que se apresenta como atual e a falha mais cara possivel
+ * numa central de risco — pior que a tela vazia que ele substitui. A demo
+ * publica do GitHub Pages mostra dados de uma data especifica e precisa dizer
+ * qual, no topo, antes de qualquer numero.
+ *
+ * A data vem do carimbo `_snapshot` que o gerador poe em toda resposta, e nao
+ * de uma constante de build: assim ela nao pode ficar velha sem que o dado ao
+ * lado tenha ficado velho junto.
+ */
+function FaixaEstatica() {
+  const { data } = useMeta();
+  if (!MODO_ESTATICO) return null;
+  const capturado = (data as { _snapshot?: { capturado_em?: string } } | undefined)?._snapshot
+    ?.capturado_em;
+  return (
+    <div className="app-demo" role="note">
+      <strong>Demo estatica.</strong> Os dados sao uma fotografia
+      {capturado ? ` de ${capturado.slice(0, 10)}` : ''} e nao se atualizam sozinhos. Para dados
+      vivos, rode a API local — veja o README.
+    </div>
+  );
+}
+
 export function Layout() {
   return (
     <>
+      <FaixaEstatica />
       <header className="app-header">
         <span className="app-header__brand">
           <span className="app-header__mark" aria-hidden="true" />

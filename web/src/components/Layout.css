@@ -1,3 +1,22 @@
+/* Faixa da demo estatica: acima do cabecalho, largura total, sem sticky.
+   Nao e alerta (nada esta errado) nem decoracao — e uma etiqueta de data, e
+   por isso usa o acento de interface e tipografia de aparato tecnico. */
+.app-demo {
+  background: var(--acento-fraco);
+  border-bottom: 1px solid rgba(79, 227, 193, 0.3);
+  color: var(--giz);
+  font-family: var(--font-mono);
+  font-size: var(--t-note-size);
+  letter-spacing: 0.02em;
+  line-height: 1.5;
+  padding: var(--space-2) var(--space-6);
+  text-align: center;
+}
+
+.app-demo strong {
+  color: var(--acento-forte);
+}
+
 .app-header {
   position: sticky;
   top: 0;

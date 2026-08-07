@@ -1,0 +1,164 @@
+{
+  "capturado_em": "2026-08-07T18:02:53Z",
+  "aviso": "Demo estatica: os dados sao uma fotografia tirada na data acima e NAO se atualizam sozinhos. Para dados vivos, rode a API local (.\\run.ps1).",
+  "rotas": [
+    {
+      "path": "/meta",
+      "params": null,
+      "arquivo": "meta.json"
+    },
+    {
+      "path": "/state",
+      "params": null,
+      "arquivo": "state.json"
+    },
+    {
+      "path": "/state/ruler",
+      "params": null,
+      "arquivo": "state_ruler.json"
+    },
+    {
+      "path": "/series/oni",
+      "params": null,
+      "arquivo": "series_oni.json"
+    },
+    {
+      "path": "/series/sam",
+      "params": null,
+      "arquivo": "series_sam.json"
+    },
+    {
+      "path": "/series/soi",
+      "params": null,
+      "arquivo": "series_soi.json"
+    },
+    {
+      "path": "/series/nino34",
+      "params": null,
+      "arquivo": "series_nino34.json"
+    },
+    {
+      "path": "/series/satl",
+      "params": null,
+      "arquivo": "series_satl.json"
+    },
+    {
+      "path": "/forecast/OND2026",
+      "params": null,
+      "arquivo": "forecast_OND2026.json"
+    },
+    {
+      "path": "/forecast/OND2026/attribution",
+      "params": null,
+      "arquivo": "forecast_OND2026_attribution.json"
+    },
+    {
+      "path": "/forecast/OND2026/analogs",
+      "params": null,
+      "arquivo": "forecast_OND2026_analogs.json"
+    },
+    {
+      "path": "/forecast/JFM2027",
+      "params": null,
+      "arquivo": "forecast_JFM2027.json"
+    },
+    {
+      "path": "/forecast/JFM2027/attribution",
+      "params": null,
+      "arquivo": "forecast_JFM2027_attribution.json"
+    },
+    {
+      "path": "/forecast/JFM2027/analogs",
+      "params": null,
+      "arquivo": "forecast_JFM2027_analogs.json"
+    },
+    {
+      "path": "/risk/hazards",
+      "params": null,
+      "arquivo": "risk_hazards.json"
+    },
+    {
+      "path": "/risk/current",
+      "params": null,
+      "arquivo": "risk_current.json"
+    },
+    {
+      "path": "/ledger",
+      "params": null,
+      "arquivo": "ledger.json"
+    },
+    {
+      "path": "/ledger/skill",
+      "params": null,
+      "arquivo": "ledger_skill.json"
+    },
+    {
+      "path": "/health/sources",
+      "params": null,
+      "arquivo": "health_sources.json"
+    },
+    {
+      "path": "/health/coverage",
+      "params": null,
+      "arquivo": "health_coverage.json"
+    },
+    {
+      "path": "/health/breaks",
+      "params": null,
+      "arquivo": "health_breaks.json"
+    },
+    {
+      "path": "/references",
+      "params": null,
+      "arquivo": "references.json"
+    },
+    {
+      "path": "/outlook/enso",
+      "params": null,
+      "arquivo": "outlook_enso.json"
+    },
+    {
+      "path": "/geo/municipios",
+      "params": null,
+      "arquivo": "geo_municipios.json"
+    },
+    {
+      "path": "/geo/aguas/meta",
+      "params": null,
+      "arquivo": "geo_aguas_meta.json"
+    },
+    {
+      "path": "/risk/municipal",
+      "params": {
+        "cenario": "atual"
+      },
+      "arquivo": "risk_municipal~cenario-atual.json"
+    },
+    {
+      "path": "/risk/municipal",
+      "params": {
+        "cenario": "ond2026"
+      },
+      "arquivo": "risk_municipal~cenario-ond2026.json"
+    },
+    {
+      "path": "/risk/municipal",
+      "params": {
+        "cenario": "estrutural"
+      },
+      "arquivo": "risk_municipal~cenario-estrutural.json"
+    },
+    {
+      "path": "/risk/municipal/cruzamento/aguas",
+      "params": {
+        "limit": 30
+      },
+      "arquivo": "risk_municipal_cruzamento_aguas~limit-30.json"
+    },
+    {
+      "path": "/geo/aguas.png",
+      "params": null,
+      "arquivo": "geo_aguas.png"
+    }
+  ]
+}

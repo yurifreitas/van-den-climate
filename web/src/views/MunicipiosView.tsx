@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import type { CSSProperties } from 'react';
+import { assetUrl } from '../api/client';
 import { useAguasMeta, useCruzamentoAguas, useMalhaMunicipal, useMunicipalRisk } from '../api/hooks';
 import type { Cenario, CenarioSpec, ComponenteRisco, ModelCard, MunicipioRisco } from '../api/types';
 import { CAMADAS, MapaMunicipal } from '../components/MapaMunicipal';
@@ -233,15 +234,11 @@ const CENARIOS: { id: Cenario; label: string; sub: string }[] = [
 ];
 
 /**
- * O overlay e servido pela API, nao empacotado no bundle: ele muda quando a
- * ingestao do JRC roda de novo, e um asset de 330 KB no bundle obrigaria
- * rebuild do front para atualizar dado.
- *
- * Caminho RELATIVO, como todo o resto do cliente: passa pelo proxy do Vite em
- * dev e pelo mesmo host em prod. URL absoluta com porta fixa quebraria em
- * qualquer ambiente que nao fosse esta maquina.
+ * O overlay vem da API em modo vivo e do snapshot em modo estatico —
+ * `assetUrl` resolve os dois e cobre tambem o subcaminho do GitHub Pages.
+ * Nunca URL absoluta com porta fixa: quebraria fora desta maquina.
  */
-const PNG_AGUAS = '/api/v1/geo/aguas.png';
+const PNG_AGUAS = assetUrl('/geo/aguas.png');
 
 export function MunicipiosView() {
   const [cenario, setCenario] = useState<Cenario>('atual');

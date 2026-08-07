@@ -1,0 +1,89 @@
+# Publica a demo estatica no GitHub Pages.
+#
+# O que este workflow NAO faz, de proposito: ingerir dado. As fontes externas
+# (IBGE 25 MB, JRC 130 MB de GeoTIFF, CPC) sao pesadas, lentas e fora do nosso
+# controle — uma delas fora do ar derrubaria todo deploy de codigo. Em vez
+# disso o snapshot ja versionado em `web/public/static-api/` e usado como
+# esta, e atualizar dado e um ato deliberado: rodar a ingestao local, gerar o
+# snapshot e commitar.
+#
+# Consequencia aceita e declarada: a demo mostra a data da ultima captura, que
+# a interface exibe numa faixa fixa no topo.
+
+name: Deploy demo (GitHub Pages)
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Um deploy por vez; sem cancelar o que ja esta em voo, para nao publicar
+# pela metade.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - run: npm ci
+
+      # Testes antes do build: o teste da paleta (FRIO/QUENTE fora da UI) e um
+      # contrato visual do projeto, e publicar uma demo que o viola seria
+      # publicar o bug com alcance maximo.
+      - run: npm test
+
+      - name: Verificar snapshot presente
+        run: |
+          test -f public/static-api/_manifest.json || {
+            echo "::error::snapshot ausente — rode 'python -m scripts.build_static_snapshot' e commite web/public/static-api/"
+            exit 1
+          }
+          echo "snapshot de $(python3 -c "import json;print(json.load(open('public/static-api/_manifest.json'))['capturado_em'])")"
+
+      - name: Build
+        env:
+          # Subcaminho do Pages: https://<user>.github.io/<repo>/
+          VITE_BASE: /${{ github.event.repository.name }}/
+          VITE_STATIC_API: '1'
+        run: npm run build
+
+      # SPA no Pages: uma rota como /municipios nao existe como arquivo, e o
+      # Pages devolveria 404. Copiar index.html para 404.html faz o Pages
+      # servir o app, que entao resolve a rota no cliente.
+      - run: cp dist/index.html dist/404.html
+
+      # Sem isto o Pages roda Jekyll e ignora arquivos iniciados por `_`
+      # (temos `_manifest.json`).
+      - run: touch dist/.nojekyll
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: web/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

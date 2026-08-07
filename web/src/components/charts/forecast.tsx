@@ -106,7 +106,9 @@ export function TercileShiftChart({
               // barra de erro: incerteza nunca fica implicita
               type: 'custom',
               name: 'erro padrao',
-              renderItem: (params: unknown, api: { value: (i: number) => number; coord: (v: number[]) => number[]; size?: (v: number[]) => number[] }) => {
+              // `_params` nao e usado: o desenho sai todo de `api`. Mantido na
+              // assinatura porque o ECharts passa os dois posicionalmente.
+              renderItem: (_params: unknown, api: { value: (i: number) => number; coord: (v: number[]) => number[]; size?: (v: number[]) => number[] }) => {
                 const idx = api.value(0);
                 const v = api.value(1);
                 const hi = api.coord([idx, v + err]);
@@ -263,7 +265,10 @@ export function AnalogScatter({ analogs, height = 240 }: { analogs: AnalogYear[]
           data: analogs.map((a) => [a.year, a.similarity, a.observed_tercile]),
           symbolSize: (d: number[]) => 8 + d[1] * 22,
           itemStyle: {
-            color: (p: { data: number[] }) => TERCIL_COR[p.data[2]],
+            // O ECharts tipa o callback com `CallbackDataParams`, cujo `data`
+            // e `OptionDataItem` (pode ser undefined). Declarar `unknown` e
+            // estreitar aqui e o mesmo padrao do `tooltip.formatter` acima.
+            color: (p: unknown) => TERCIL_COR[(p as { data: number[] }).data[2]],
             // anel de 2px na cor da superficie separa marcas sobrepostas
             borderColor: CARTA,
             borderWidth: 2,

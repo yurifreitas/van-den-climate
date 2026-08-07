@@ -31,8 +31,15 @@ export function SeriesBandChart({
     const pos = v.map((y) => (y > 0 ? y : 0));
     const neg = v.map((y) => (y < 0 ? y : 0));
 
-    // faixas de evento: sequencias com |valor| acima do limiar operacional
-    const phases: { xAxis: string; itemStyle: { color: string } }[][] = [];
+    // faixas de evento: sequencias com |valor| acima do limiar operacional.
+    // Tupla de DOIS elementos, nao array: `markArea.data` espera o par
+    // [inicio, fim] (MarkArea2DDataItemOption), e um array solto passaria pelo
+    // TypeScript so para o ECharts ignorar a faixa em silencio.
+    type Faixa = [
+      { xAxis: string; itemStyle: { color: string } },
+      { xAxis: string; itemStyle: { color: string } },
+    ];
+    const phases: Faixa[] = [];
     let start: number | null = null;
     let sign = 0;
     v.forEach((y, i) => {
@@ -103,7 +110,10 @@ export function SeriesBandChart({
             symbolSize: 8,
             itemStyle: { color: diverging(0.5 + last.value / 6), borderColor: GIZ, borderWidth: 2 },
             label: { color: GIZ, position: 'right', formatter: () => last.value.toFixed(2) },
-            data: [{ coord: [x[x.length - 1], last.value] }],
+            // `name` e obrigatorio em MarkPointDataItemOption. Nao aparece na
+            // tela (o formatter do label ignora), mas o tipo exige e o ECharts
+            // usa internamente para identificar a marca.
+            data: [{ name: 'ultimo', coord: [x[x.length - 1], last.value] }],
           },
         },
       ],
