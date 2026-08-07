@@ -121,6 +121,28 @@ em nota de rodapé: contagem de leitos, dias letivos perdidos, recuperação
 financeira, alcance do apoio psicológico e prazo/custo de reconstrução. Cada
 uma nomeia a fonte que a resolveria.
 
+## Plano de ação preventiva
+
+| # | Data | Decisão | Razão | Estado |
+|---|------|---------|-------|--------|
+| 047 | 2026-08-07 | **Toda ação sai de dado declarado; nenhuma é inferida.** Se o campo falta, a ação não aparece | Uma lista de recomendações sem a linha do dado ao lado é opinião com aparência de sistema. Com a evidência no mesmo cartão, qualquer prefeitura aponta e diz "isso mudou desde 2024", e a correção é uma reingestão, não uma discussão. Travado por teste | ativa |
+| 048 | 2026-08-07 | Ausência (`None`) nunca gera ação; só `False` gera | "Não respondeu" não é diagnóstico. Gerar ação a partir de silêncio inverteria a mesma regra que a ADR-019 estabeleceu para o índice | ativa |
+| 049 | 2026-08-07 | Dois horizontes: **imediato** (ato administrativo, contrato, treinamento) e **estrutural** (ciclo orçamentário, projeto, obra) | É a única distinção que muda o que o gestor faz na semana que vem. E conecta com a ADR-026: o estrutural é planejável para 2027 justamente por não depender de previsão ENSO | ativa |
+| 050 | 2026-08-07 | `esforco` é **escolha editorial declarada**, em três degraus, nunca escala contínua | Não há base de custo de ação preventiva por município. Três degraus separam o que cabe numa primavera do que exige orçamento; uma escala contínua sugeriria precisão inexistente | ativa |
+| 051 | 2026-08-07 | Empate no ranking é desfeito por **número de ações imediatas pendentes** | Onde a mesma quantidade de esforço compra mais redução de risco | ativa |
+| 052 | 2026-08-07 | A leitura primária é o **agregado estadual**, não o ranking municipal | "206 municípios precisam estruturar apoio psicológico" é uma política; "Restinga Sêca precisa de quatro coisas" é um ofício. Quem decide precisa da primeira antes da segunda | ativa |
+
+**O plano que saiu**: 925 ações em 433 dos 497 municípios, **712 delas
+executáveis antes da primavera**. As maiores lacunas do estado, por número de
+municípios: apoio psicológico (206), protocolo de evacuação assistida (184),
+continuidade dos serviços de saúde (162), alcance do alerta (98), plano de
+contingência inexistente (71).
+
+**O que o plano não é**: não é engenharia (sem projeto, custo, prazo ou
+dimensionamento), não é priorização por custo-benefício, e não substitui o
+Plano Municipal de Redução de Riscos nem o plano de contingência da Defesa
+Civil — aponta a ausência deles.
+
 ## História longa — e o CONTATO COM O ALVO
 
 | # | Data | Decisão | Razão | Estado |

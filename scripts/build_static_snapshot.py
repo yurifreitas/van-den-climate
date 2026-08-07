@@ -94,6 +94,7 @@ ROTAS: list[tuple[str, dict[str, Any] | None]] = [
     ("/risk/municipal/cruzamento/aguas", {"limit": 30}),
     ("/resposta/municipios", None),
     ("/historico/chuva", None),
+    *[("/plano", {"cenario": c}) for c in ("atual", "ond2026", "estrutural")],
 ]
 
 # Binarios servidos pela API que viram asset estatico.

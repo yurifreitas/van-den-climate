@@ -1,0 +1,152 @@
+/* Plano. Cor de dado so na marca de nivel (via `style`); todo o resto usa o
+   acento de interface — uma acao nao e uma anomalia. */
+
+/* --- agregado estadual --- */
+.acao-agregada {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  background: var(--carta-grad);
+  border: 1px solid var(--linha);
+  border-left: 3px solid var(--acento);
+  border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
+}
+
+.acao-agregada__titulo { color: var(--giz); margin: 0; }
+.acao-agregada__n { color: var(--giz); }
+
+/* Barra proporcional ao numero de municipios. Comprimento e a codificacao —
+   o numero ao lado da o valor exato, a barra da a proporcao contra os 497. */
+.acao-agregada__barra {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--grade);
+  position: relative;
+  overflow: hidden;
+}
+
+.acao-agregada__barra::after {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--frac, 0%);
+  background: var(--acento-grad);
+  border-radius: 2px;
+}
+
+/* Esforco: tres degraus, nao um numero. E escolha editorial declarada, e uma
+   escala continua sugeriria precisao que ela nao tem. */
+.esforco {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  white-space: nowrap;
+}
+
+.esforco__trilho {
+  width: 34px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--grade);
+  overflow: hidden;
+}
+
+.esforco__nivel {
+  display: block;
+  height: 100%;
+  background: var(--bruma);
+  border-radius: 2px;
+}
+
+/* --- lista por municipio --- */
+.mun-plano {
+  border: 1px solid var(--linha);
+  border-radius: var(--radius-lg);
+  background: var(--carta-grad);
+  overflow: hidden;
+}
+
+.mun-plano[data-aberto='sim'] {
+  border-color: rgba(79, 227, 193, 0.32);
+}
+
+.mun-plano__cabeca {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 4px 1fr 6rem 3.5rem auto 1.5rem;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  color: inherit;
+}
+
+.mun-plano__cabeca:hover { background: rgba(255, 255, 255, 0.03); }
+
+.mun-plano__marca {
+  width: 4px;
+  height: 1.4em;
+  border-radius: 2px;
+}
+
+.mun-plano__nome {
+  font-size: var(--t-body-size);
+  color: var(--giz);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mun-plano__nivel,
+.mun-plano__contagem { color: var(--bruma); }
+.mun-plano__cabeca .t-data { color: var(--giz); text-align: right; }
+
+.mun-plano__seta {
+  font-family: var(--font-mono);
+  color: var(--acento);
+  text-align: center;
+}
+
+.mun-plano__corpo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: 0 var(--space-4) var(--space-4) var(--space-4);
+  border-top: 1px solid var(--linha);
+  padding-top: var(--space-3);
+}
+
+/* --- cartao de acao --- */
+.acao {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border-radius: var(--radius);
+  background: var(--abissal);
+  border-left: 2px solid var(--bruma-fraca);
+}
+
+/* O que cabe antes da primavera se distingue do que exige orcamento — e a
+   unica diferenca que muda o que o gestor faz na semana que vem. */
+.acao[data-horizonte='imediato'] {
+  border-left-color: var(--acento);
+}
+
+.acao__titulo { color: var(--giz); }
+.acao__tags { text-transform: lowercase; }
+
+/* A evidencia e a razao de o cartao existir: fica em mono, destacada do
+   texto de apoio, e nunca escondida atras de clique. */
+.acao__evidencia {
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  background: var(--carta-alta);
+  border-radius: var(--radius);
+  color: var(--giz);
+  max-width: 96ch;
+}

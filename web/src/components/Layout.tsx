@@ -5,6 +5,7 @@ import './Layout.css';
 
 const ROUTES = [
   { to: '/', label: 'Risco' },
+  { to: '/plano', label: 'Plano' },
   { to: '/municipios', label: 'Municipios' },
   { to: '/resposta', label: 'Resposta' },
   { to: '/historico', label: 'Historico' },

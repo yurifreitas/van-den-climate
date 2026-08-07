@@ -12,6 +12,7 @@ import type {
   CruzamentoAguas,
   HistoricoResponse,
   OutlookResponse,
+  PlanoResponse,
   RespostaResponse,
   AttributionResponse,
   BreaksResponse,
@@ -155,6 +156,16 @@ export function useMunicipalRisk(cenario: Cenario = 'atual') {
     // Troca de cenario mantem a tabela anterior na tela enquanto a nova chega:
     // sem isso o mapa inteiro pisca para o esqueleto a cada clique, e a
     // comparacao entre horizontes — que e o ponto do seletor — se perde.
+    placeholderData: (anterior) => anterior,
+  });
+}
+
+/** Plano de acao preventiva: de lacuna declarada para acao nomeada. */
+export function usePlano(cenario: Cenario = 'atual') {
+  return useQuery({
+    queryKey: ['plano', cenario],
+    queryFn: () => apiGet<PlanoResponse>('/plano', { cenario }),
+    staleTime: STALE,
     placeholderData: (anterior) => anterior,
   });
 }

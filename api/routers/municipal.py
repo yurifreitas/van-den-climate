@@ -43,7 +43,7 @@ from src.ingest import cpc_enso_advisory as advisory
 from src.risk import aguas
 from src.risk import historico
 from src.risk import municipal as model
-from src.risk import resposta
+from src.risk import plano, resposta
 
 router = APIRouter(tags=["risco municipal"])
 
@@ -325,6 +325,60 @@ def get_resposta(
         # capacidade precisa topar com "isto nao e leito" no mesmo payload.
         "lacunas": tabela.lacunas,
         "municipios": linhas,
+    }
+
+
+@router.get("/plano")
+def get_plano(
+    cenario: str = Query("atual", description="atual | ond2026 | estrutural"),
+    limit: int | None = Query(None, ge=1, le=497),
+    horizonte: str | None = Query(None, description="imediato | estrutural"),
+) -> dict:
+    """Plano de acao preventiva: de lacuna declarada para acao nomeada.
+
+    E a ultima traducao da central: todas as camadas anteriores diagnosticam,
+    esta diz o que fazer e onde. Cada acao carrega `evidencia` — o campo exato
+    que a disparou — e `fonte`. Nao existe acao inferida: se o campo falta, a
+    acao nao aparece.
+
+    Ver `src/risk/plano.py` para o que este plano NAO e (nao e engenharia, nao
+    e custo-beneficio, e `esforco` e escolha editorial).
+    """
+    if cenario not in model.CENARIOS:
+        raise HTTPException(
+            status_code=422,
+            detail=f"cenario invalido: {cenario!r}; disponiveis: {list(model.CENARIOS)}",
+        )
+    headline, is_synth, _ = deps.state_headline()
+    oni = None if is_synth else headline.get("oni")
+    try:
+        dados = plano.build(cenario, oni)
+    except FileNotFoundError as exc:
+        raise HTTPException(
+            status_code=503,
+            detail=f"Bases ausentes. Rode `python -m src.ingest.ibge_rs`. ({exc})",
+        ) from exc
+
+    municipios = dados["municipios"]
+    if horizonte:
+        municipios = [
+            {**m, "acoes": [a for a in m["acoes"] if a["horizonte"] == horizonte]}
+            for m in municipios
+        ]
+        municipios = [m for m in municipios if m["acoes"]]
+    if limit is not None:
+        municipios = municipios[:limit]
+
+    return {
+        "as_of": deps.now_iso()[:10],
+        "provenance": {
+            "basis": "modeled",  # a ORDEM e modelada; cada acao e measured
+            "horizon": "seasonal",
+            "source_ids": ["ibge_munic_rs", "cnes_rs", "jrc_gsw", "cpc_oni"],
+            "as_of": deps.now_iso()[:10],
+        },
+        **{k: v for k, v in dados.items() if k != "municipios"},
+        "municipios": municipios,
     }
 
 

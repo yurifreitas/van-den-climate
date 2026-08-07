@@ -342,6 +342,56 @@ export interface AguasMeta {
   };
 }
 
+// ---- /plano ----------------------------------------------------------
+
+/** Uma acao e sua evidencia. `evidencia` e o campo exato que a disparou. */
+export interface AcaoPlano {
+  id: string;
+  titulo: string;
+  horizonte: 'imediato' | 'estrutural';
+  esforco: 'baixo' | 'medio' | 'alto';
+  fonte: string;
+  detalhe: string;
+  evidencia: string;
+  basis: Basis;
+}
+
+export interface AcaoAgregada {
+  id: string;
+  titulo: string;
+  horizonte: 'imediato' | 'estrutural';
+  esforco: 'baixo' | 'medio' | 'alto';
+  fonte: string;
+  detalhe: string;
+  n_municipios: number;
+  populacao_coberta: number;
+  exemplos: string[];
+}
+
+export interface PlanoResponse {
+  as_of: string;
+  provenance: Provenance;
+  version: string;
+  cenario: Cenario;
+  n_municipios: number;
+  n_com_acao: number;
+  n_acoes_total: number;
+  n_imediatas_total: number;
+  por_acao: AcaoAgregada[];
+  municipios: {
+    cod_mun: number;
+    municipio: string;
+    score: number | null;
+    level: NivelRisco | null;
+    populacao: number | null;
+    n_acoes: number;
+    n_imediatas: number;
+    acoes: AcaoPlano[];
+  }[];
+  regras: Record<string, string | number>;
+  limites: string[];
+}
+
 // ---- /historico/chuva ------------------------------------------------
 
 export interface DeslocamentoMetrica {

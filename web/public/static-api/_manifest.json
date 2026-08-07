@@ -1,5 +1,5 @@
 {
-  "capturado_em": "2026-08-07T22:11:13Z",
+  "capturado_em": "2026-08-07T22:29:53Z",
   "aviso": "Demo estatica: os dados sao uma fotografia tirada na data acima e NAO se atualizam sozinhos. Para dados vivos, rode a API local (.\\run.ps1).",
   "rotas": [
     {
@@ -164,6 +164,27 @@
       "path": "/historico/chuva",
       "params": null,
       "arquivo": "historico_chuva.json"
+    },
+    {
+      "path": "/plano",
+      "params": {
+        "cenario": "atual"
+      },
+      "arquivo": "plano~cenario-atual.json"
+    },
+    {
+      "path": "/plano",
+      "params": {
+        "cenario": "ond2026"
+      },
+      "arquivo": "plano~cenario-ond2026.json"
+    },
+    {
+      "path": "/plano",
+      "params": {
+        "cenario": "estrutural"
+      },
+      "arquivo": "plano~cenario-estrutural.json"
     },
     {
       "path": "/geo/aguas.png",

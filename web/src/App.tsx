@@ -5,6 +5,7 @@ import { RiscoView } from './views/RiscoView';
 import { MunicipiosView } from './views/MunicipiosView';
 import { RespostaView } from './views/RespostaView';
 import { HistoricoView } from './views/HistoricoView';
+import { PlanoView } from './views/PlanoView';
 import { EstadoView } from './views/EstadoView';
 import { PrevisaoView } from './views/PrevisaoView';
 import { EvidenciaView } from './views/EvidenciaView';
@@ -28,6 +29,7 @@ function App() {
             <Route path="/municipios" element={<MunicipiosView />} />
             <Route path="/resposta" element={<RespostaView />} />
             <Route path="/historico" element={<HistoricoView />} />
+            <Route path="/plano" element={<PlanoView />} />
             <Route path="/estado" element={<EstadoView />} />
             <Route path="/previsao" element={<PrevisaoView />} />
             <Route path="/evidencia" element={<EvidenciaView />} />
