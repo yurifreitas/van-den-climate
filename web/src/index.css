@@ -1,0 +1,8 @@
+/*
+ * A "Central de Risco Climatico RS" tem paleta fixa (abissal/carta/giz/
+ * bruma) — nao segue light/dark do sistema porque a identidade visual
+ * (§9.2, app/theme.py) e parte do instrumento, nao um tema de app comum.
+ * Isso é intencional e diferente da recomendação padrão de dar suporte a
+ * dois temas: aqui só existe um, definido em theme/tokens.css.
+ */
+@import './theme/tokens.css';

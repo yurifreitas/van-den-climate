@@ -1,0 +1,26 @@
+.provenance-badge {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  color: var(--bruma);
+}
+
+/* medido = borda solida (contrato §0: basis="measured") */
+.provenance-badge--solid {
+  border: 1px solid var(--bruma);
+}
+
+/* modelado/sintetico = borda tracejada — sinaliza prior, nao observacao */
+.provenance-badge--dashed {
+  border: 1px dashed var(--bruma);
+}
+
+.provenance-badge--absent {
+  border: 1px dotted var(--bruma);
+  opacity: 0.7;
+}

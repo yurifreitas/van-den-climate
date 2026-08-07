@@ -1,0 +1,88 @@
+/*
+ * Tokens de tema — porte 1:1 de app/theme.py (ADR-013/014).
+ * ABISSAL/CARTA/GIZ/BRUMA sao as unicas cores permitidas em UI.
+ * FRIO/QUENTE ficam FORA deste arquivo, isolados em theme/chartColors.ts —
+ * ver regra critica no README e o teste de grep em src/theme/__tests__/palette.test.ts.
+ */
+@import '@fontsource-variable/archivo';
+@import '@fontsource-variable/inter-tight';
+@import '@fontsource/ibm-plex-mono';
+@import '@fontsource/ibm-plex-mono/500.css';
+
+:root {
+  --abissal: #0F1518; /* fundo, grafite frio */
+  --carta: #1B2429;   /* superficie elevada */
+  --giz: #D8DEE0;     /* texto primario */
+  --bruma: #7C8A90;   /* texto secundario, eixos */
+  --grid: #253036;    /* borda/grade discreta — mesma linha do app Streamlit */
+
+  --font-display: 'Archivo Variable', system-ui, sans-serif;
+  --font-body: 'Inter Tight Variable', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--abissal);
+  color: var(--giz);
+  font-family: var(--font-body);
+  min-height: 100vh;
+}
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  /* eixo de largura "expanded" do Archivo variavel — porta Archivo Expanded 600-700 */
+  font-stretch: 125%;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin: 0 0 0.5em 0;
+}
+
+/* dado numerico: tabular-nums e obrigatorio (contrato visual, nao opcional) */
+table, .mono, .tabular-nums, .provenance-badge, time, .num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+a, button {
+  color: inherit;
+  font: inherit;
+}
+
+/* foco de teclado visivel: sempre giz/bruma, NUNCA frio/quente (regra dura) */
+:focus-visible {
+  outline: 2px solid var(--giz);
+  outline-offset: 2px;
+}
+
+/* movimento so em transicoes de estado temporal, nunca ambiental */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+.muted {
+  color: var(--bruma);
+  font-size: 0.85rem;
+}
+
+.panel {
+  background: var(--carta);
+  border: 1px solid var(--grid);
+  border-radius: 2px;
+  padding: 1rem;
+}

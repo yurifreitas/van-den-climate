@@ -31,3 +31,25 @@ uma linha nova é adicionada. Alterar retroativamente destrói a auditoria.
    alvo secundário reportado, nunca como métrica de aceitação.
 3. **`feature_blocks.yaml`**: escrito e congelado em 2026-08-07, com
    `target_contact: false`. Nenhum código de modelagem antes disso — cumprido.
+
+## Pivô de front — Central de Risco
+
+| # | Data | Decisão | Razão |
+|---|------|---------|-------|
+| 013 | 2026-08-07 | **Revoga ADR-011.** Front em Vite + React + TypeScript desde já, servido por API FastAPI sobre DuckDB/Parquet | Decisão do dono do projeto: o alvo não é um instrumento de leitura sazonal, é uma **central de risco**. Isso implica multi-perigo, múltiplos usuários, séries operacionais e alerta — requisitos que o Streamlit não sustenta e que mudam o desenho de dados, não só o de tela |
+| 014 | 2026-08-07 | A fronteira estável passa a ser o **contrato de API**, não o layout de Parquet | Mitiga o risco que a ADR-011 protegia: o front pode ser construído em paralelo à Camada 2 porque a API absorve mudanças de esquema. Se o contrato vazar detalhe de armazenamento, o risco volta |
+| 015 | 2026-08-07 | Streamlit rebaixado a ferramenta interna de depuração, não descartado | Continua sendo o caminho mais rápido para inspecionar uma série nova durante o desenvolvimento da Camada 2 |
+
+**Consequência não óbvia da central de risco**: a engine sazonal desloca
+probabilidade de fundo e **não prevê eventos individuais** (§5, Risco 3). Uma
+central de risco que só tenha a camada sazonal comunicará mais confiança do que
+possui. O desenho precisa separar, na própria interface e na API, os horizontes:
+
+| Horizonte | O que a engine pode dizer | Camada |
+|---|---|---|
+| Sazonal (OND) | desloca probabilidade de tercil | atual, Fases 4–6 |
+| Sub-sazonal (2–6 sem) | janelas favoráveis via MJO/regime | Fase 9, não construída |
+| Sinótico (1–7 d) | **nada** — exige modelo dinâmico | fora de escopo, sempre |
+
+Maio/2024 no RS foi bloqueio sinótico. Nenhuma versão desta engine o teria
+previsto, e a central de risco precisa dizer isso na cara do usuário.

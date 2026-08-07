@@ -1,0 +1,67 @@
+.app-header {
+  border-bottom: 1px solid var(--grid);
+  padding: 1rem 1.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 1rem 2rem;
+}
+
+.app-header__title {
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+.app-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+.app-nav__link {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--bruma);
+  padding: 0.35rem 0.6rem;
+  border-radius: 2px;
+  border: 1px solid transparent;
+}
+
+.app-nav__link:hover {
+  color: var(--giz);
+}
+
+/* estado ativo: SOMENTE giz/bruma — nunca frio/quente (regra dura da paleta) */
+.app-nav__link--active {
+  color: var(--giz);
+  border: 1px solid var(--bruma);
+}
+
+.app-main {
+  flex: 1;
+  padding: 1.5rem;
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.app-footer {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--grid);
+  font-size: 0.75rem;
+}
+
+@media (max-width: 640px) {
+  .app-header {
+    padding: 0.75rem 1rem;
+  }
+  .app-main {
+    padding: 1rem;
+  }
+}

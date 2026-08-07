@@ -1,0 +1,52 @@
+.hazard-card {
+  background: var(--carta);
+  border: 1px solid var(--grid);
+  border-radius: 2px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.hazard-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.hazard-card__header h3 {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.hazard-card__level {
+  font-size: 1rem;
+}
+
+/* Fora de escopo: destaque estrutural (borda tracejada, grafite mais claro),
+   nunca cor de dado — a ausencia de cobertura nao e uma "anomalia". */
+.hazard-card--out-of-scope {
+  border: 1px dashed var(--bruma);
+}
+
+.hazard-card__scope-warning {
+  background: var(--abissal);
+  border: 1px dashed var(--bruma);
+  border-radius: 2px;
+  padding: 0.6rem 0.75rem;
+}
+
+.hazard-card__scope-title {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  color: var(--giz);
+  margin: 0 0 0.3rem 0;
+}
+
+.hazard-card__scope-warning p:last-child {
+  margin: 0;
+  color: var(--bruma);
+  font-size: 0.85rem;
+}
