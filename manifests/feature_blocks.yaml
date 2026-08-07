@@ -28,7 +28,8 @@ reduction:
   fit_window: expanding_from_anchor
   anchor: [1951-01-01, 1990-12-31]
   sign_convention: physical      # ver `sign_anchor` de cada bloco
-  missing: drop_signal_if_coverage_below: 0.80
+  missing:
+    drop_signal_if_coverage_below: 0.80
   # PROIBIDO: escolher n_components pela variancia explicada observada,
   # rodar PCA no conjunto completo, ou reordenar componentes pelo alvo.
 
