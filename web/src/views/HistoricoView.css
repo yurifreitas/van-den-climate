@@ -1,0 +1,53 @@
+/* Visao historica. Cor de dado (divergente por ONI) chega por atributo no
+   SVG a partir de theme/palette; aqui so forma. */
+
+.serie {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.serie__tick {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  fill: var(--bruma-fraca);
+}
+
+/* Chip de fase ENSO: filete na cor da fase, texto em giz. Texto nunca veste a
+   cor do dado (DESIGN.md §1) — a cor mora na marca ao lado. */
+.fase-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--t-small-size);
+  color: var(--giz);
+}
+
+.fase-chip::before {
+  content: '';
+  width: 3px;
+  height: 1em;
+  border-radius: 2px;
+  background: var(--fase-cor, var(--bruma));
+}
+
+.ic {
+  margin: 0;
+  color: var(--bruma);
+}
+
+/* Veredito: quem separa de zero fica em giz cheio; quem cruza fica rebaixado.
+   O painel inteiro tambem vira `tone="verdict"` (borda tracejada) nesse caso —
+   dois canais para a mesma informacao, porque ela e a que muda a decisao. */
+.veredito {
+  margin: 0;
+  color: var(--giz);
+}
+
+.veredito--cruza {
+  color: var(--bruma-fraca);
+}
+
+.t-hero[data-sep='sim'] {
+  color: var(--giz);
+}

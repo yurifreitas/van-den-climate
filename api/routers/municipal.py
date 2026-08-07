@@ -41,6 +41,7 @@ from api.models import (
 )
 from src.ingest import cpc_enso_advisory as advisory
 from src.risk import aguas
+from src.risk import historico
 from src.risk import municipal as model
 from src.risk import resposta
 
@@ -325,6 +326,31 @@ def get_resposta(
         "lacunas": tabela.lacunas,
         "municipios": linhas,
     }
+
+
+@router.get("/historico/chuva")
+def get_historico_chuva() -> dict:
+    """Historia longa da chuva de primavera no RS e o deslocamento por ENSO.
+
+    ATENCAO ao que este endpoint significa para o projeto: o calculo por tras
+    dele E CONTATO COM O ALVO (ADR-004). A partir dele, mudar
+    `feature_blocks.yaml` invalida o experimento. O payload repete isso em
+    `meta.contato_com_alvo` para que nenhum consumidor descubra tarde.
+
+    E analise DESCRITIVA: contagem e intervalo por reamostragem. Nenhum modelo
+    foi ajustado, nenhum preditor foi selecionado — isso exigiria passar pelo
+    criterio da ADR-007, que segue sem nenhum modelo aprovado.
+    """
+    dados = historico.load_json()
+    if dados is None:
+        return {
+            "disponivel": False,
+            "motivo": (
+                "camada nao calculada — rode `python -m src.ingest.ghcn_rs` e depois "
+                "`python -m src.risk.historico`"
+            ),
+        }
+    return {"disponivel": True, "basis": "measured", **dados}
 
 
 @router.get("/geo/municipios")

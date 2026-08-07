@@ -121,6 +121,39 @@ em nota de rodapé: contagem de leitos, dias letivos perdidos, recuperação
 financeira, alcance do apoio psicológico e prazo/custo de reconstrução. Cada
 uma nomeia a fonte que a resolveria.
 
+## História longa — e o CONTATO COM O ALVO
+
+| # | Data | Decisão | Razão | Estado |
+|---|------|---------|-------|--------|
+| 041 | 2026-08-07 | **GHCN-Daily** como base histórica de chuva: 66 estações dentro do polígono do RS, 1934–1999, 942.831 dias-estação | É a série mais longa que existe publicamente para o RS. Preenche o vazio entre a teleconexão (ONI desde 1950) e o impacto de um evento (MUNIC 2024): a resposta observada do território à chuva, ano a ano | ativa |
+| 042 | 2026-08-07 | **ESTE É O CONTATO COM O ALVO (ADR-004).** A partir daqui, `feature_blocks.yaml` está congelado *de fato* | O cálculo do trio da ADR-002 sobre chuva observada olha a variável que a engine tenta prever. Mudar a regra de redução depois disso invalida o experimento (Invariante 6). Declarado no payload em `meta.contato_com_alvo`, não só aqui | ativa |
+| 043 | 2026-08-07 | A camada é **descritiva**: contagem e intervalo por reamostragem. Nenhum modelo ajustado, nenhum preditor selecionado | Selecionar preditor aqui seria escolher em função do alvo — exatamente o que a ADR-004 existe para impedir. Qualquer modelo continua tendo de passar a ADR-007 | ativa |
+| 044 | 2026-08-07 | Recorte das estações **por polígono municipal**, nunca por caixa | A caixa do RS pega Santa Catarina: Taió, Ituporanga, Joaçaba e São Joaquim entrariam como se fossem RS | ativa |
+| 045 | 2026-08-07 | Temporada OND só conta com ≥80 dos 92 dias | Com menos, a frequência de dias úmidos vira função de quantos dias faltam, não de chuva | ativa |
+| 046 | 2026-08-07 | IC por **bootstrap**, não teste-t, com semente fixa | n por fase é de uma a duas dezenas e a distribuição de p95 não é normal. Semente fixa para que o número na tela não mude entre recargas | ativa |
+
+### O resultado
+
+Primeira vez que a engine mede a própria afirmação central com dado próprio.
+**50 primaveras (1950–1999), 66 estações**, deslocamento El Niño − Neutro:
+
+| Alvo (ADR-002) | Δ | IC 90% | |
+|---|---|---|---|
+| Frequência de dias úmidos | +0,032 | [+0,005, +0,059] | separa de zero |
+| Intensidade em dia úmido | +2,18 mm/dia | [+0,51, +3,88] | separa de zero |
+| p95 diário | +5,33 mm | [+1,33, +9,64] | separa de zero |
+| Total da estação | +97,8 mm | [+25,1, +175,5] | separa de zero |
+
+Ordenação El Niño > Neutro > La Niña coerente nas quatro métricas — o que é
+teste de sanidade do *join*, não descoberta climatológica.
+
+**O que isto NÃO significa**: que a engine tem previsão validada. Um composto
+diz que anos de El Niño foram mais úmidos *em média*; a ADR-007 exige RPSS com
+limite inferior de IC 90% acima de zero *em previsão fora da amostra*. São
+afirmações diferentes, e nenhum modelo passou a segunda. A heurística de
+`api/routers/risk.py` continua `modeled`, não `measured` — o que mudou é que
+agora ela tem lastro no dado do próprio projeto, não só em literatura.
+
 **Limite mais caro da camada municipal, e que a interface repete em três lugares**: o
 MUNIC é auto-declaração municipal sobre **um** evento. Há incentivo assimétrico
 — relatar dano dá acesso a repasse, relatar falha de prevenção não dá nada. Um

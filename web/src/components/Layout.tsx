@@ -7,6 +7,7 @@ const ROUTES = [
   { to: '/', label: 'Risco' },
   { to: '/municipios', label: 'Municipios' },
   { to: '/resposta', label: 'Resposta' },
+  { to: '/historico', label: 'Historico' },
   { to: '/estado', label: 'Estado' },
   { to: '/previsao', label: 'Previsao' },
   { to: '/evidencia', label: 'Evidencia' },

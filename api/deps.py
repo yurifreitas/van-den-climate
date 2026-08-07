@@ -204,6 +204,7 @@ KNOWN_SOURCES = [
     "cpc_enso_advisory",
     "jrc_gsw",
     "cnes_rs",
+    "ghcn_rs",
 ]
 
 

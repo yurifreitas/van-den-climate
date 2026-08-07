@@ -342,6 +342,54 @@ export interface AguasMeta {
   };
 }
 
+// ---- /historico/chuva ------------------------------------------------
+
+export interface DeslocamentoMetrica {
+  delta: number;
+  ic90: [number, number];
+  /** IC 90% nao cruza zero — mesmo espirito do criterio da ADR-007. */
+  separa_de_zero: boolean;
+}
+
+export interface FaseMetrica {
+  media: number;
+  ic90: [number, number];
+}
+
+export interface HistoricoResponse {
+  disponivel: boolean;
+  motivo?: string;
+  basis?: Basis;
+  meta?: {
+    version: string;
+    fonte: string;
+    n_estacoes: number;
+    n_temporadas_estacao: number;
+    periodo: [number, number];
+    periodo_com_oni: [number, number] | null;
+    estacao_alvo: string;
+    limiar_dia_umido_mm: number;
+    cobertura_minima_dias: number;
+    contato_com_alvo: string;
+    limites: string[];
+  };
+  composto?: {
+    limiar_oni: number;
+    fases: Record<string, { n_anos: number; anos: number[] } & Record<string, FaseMetrica>>;
+    deslocamento_elnino_vs_neutro?: Record<string, DeslocamentoMetrica>;
+  };
+  por_ano?: {
+    ano: number;
+    n_estacoes: number;
+    freq_dias_umidos: number;
+    intensidade_mm: number;
+    p95_mm: number;
+    total_mm: number;
+    oni_ond: number | null;
+    fase: string;
+  }[];
+}
+
 // ---- /resposta/municipios --------------------------------------------
 
 /** Escala ordinal do MUNIC traduzida. `aplicavel: false` = nao foi testado. */

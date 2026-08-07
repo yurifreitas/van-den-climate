@@ -10,6 +10,7 @@ import type {
   AnalogsResponse,
   Cenario,
   CruzamentoAguas,
+  HistoricoResponse,
   OutlookResponse,
   RespostaResponse,
   AttributionResponse,
@@ -155,6 +156,19 @@ export function useMunicipalRisk(cenario: Cenario = 'atual') {
     // sem isso o mapa inteiro pisca para o esqueleto a cada clique, e a
     // comparacao entre horizontes — que e o ponto do seletor — se perde.
     placeholderData: (anterior) => anterior,
+  });
+}
+
+/**
+ * Historia longa da chuva de primavera e o deslocamento por ENSO.
+ * `staleTime: Infinity` — a serie do GHCN termina em 1999 e nao muda.
+ */
+export function useHistorico() {
+  return useQuery({
+    queryKey: ['historico', 'chuva'],
+    queryFn: () => apiGet<HistoricoResponse>('/historico/chuva'),
+    staleTime: Infinity,
+    gcTime: Infinity,
   });
 }
 
