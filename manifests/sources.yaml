@@ -1,0 +1,73 @@
+# Catalogo de fontes — Engine Climatica RS (§6 do documento mestre)
+# URLs em nivel de dominio/produto. O endpoint exato e resolvido pelo
+# ingestor e gravado no manifesto de proveniencia em cada download.
+version: 1
+updated: 2026-08-07
+
+# Toda fonte ingerida grava em data/raw/<id>/<yyyymmddTHHMMSS>/:
+#   payload.<ext>, provenance.json {url, fetched_at, sha256, product_version,
+#   ingestor_version, rows, notes}
+provenance_required: [url, fetched_at, sha256, product_version, ingestor_version]
+
+sources:
+
+  # --- 6.1 ENSO e oceano -------------------------------------------------
+  cpc_oni:      {provider: NOAA CPC,    domain: cpc.ncep.noaa.gov, freq: monthly, period: "1950-",  anchor_mode: relative_30y, status: core}
+  cpc_roni:     {provider: NOAA CPC,    domain: cpc.ncep.noaa.gov, freq: monthly, period: "1950-",  anchor_mode: relative_30y, status: core}
+  psl_nino:     {provider: NOAA PSL,    domain: psl.noaa.gov,      freq: monthly, period: "1870-",  vars: [nino12, nino3, nino34, nino4], status: core}
+  ersst_v5:     {provider: NOAA NCEI,   domain: ncei.noaa.gov,     freq: monthly, period: "1854-",  grid: "2deg", status: core}
+  hadisst:      {provider: Met Office,  domain: metoffice.gov.uk,  freq: monthly, period: "1870-",  grid: "1deg", status: backup}
+  cpc_soi:      {provider: NOAA CPC,    domain: cpc.ncep.noaa.gov, freq: monthly, period: "1866-",  status: core}
+  jamstec_emi:  {provider: JAMSTEC,     domain: jamstec.go.jp,     freq: monthly, period: "1950-",  status: core, note: "Modoki; Yamagata/Behera"}
+  tao_wwv:      {provider: NOAA PMEL,   domain: pmel.noaa.gov,     freq: monthly, period: "1980-",  status: optional, note: "recharge oscillator; dropar se lacunar"}
+  iri_plume:    {provider: IRI Columbia,domain: iri.columbia.edu,  freq: monthly, period: "operacional", status: context_only, note: "NAO usar como feature — vazamento de modelo dinamico"}
+  nmme:         {provider: IRI DL,      domain: iridl.ldeo.columbia.edu, freq: monthly, period: "1982-", status: phase3}
+  ecmwf_seas5:  {provider: Copernicus,  domain: cds.climate.copernicus.eu, freq: monthly, period: "1981-", status: phase3}
+
+  # --- 6.2 Modos extratropicais ------------------------------------------
+  cpc_aao:      {provider: NOAA CPC,    domain: cpc.ncep.noaa.gov, freq: daily,   period: "1979-",  status: core}
+  bas_marshall: {provider: BAS,         domain: nerc-bas.ac.uk,    freq: monthly, period: "1957-",  status: core}
+  ncei_pdo:     {provider: NOAA NCEI,   domain: ncei.noaa.gov,     freq: monthly, period: "1854-",  status: core}
+  psl_amo:      {provider: NOAA PSL,    domain: psl.noaa.gov,      freq: monthly, period: "1856-",  status: core}
+  psl_tsa:      {provider: NOAA PSL,    domain: psl.noaa.gov,      freq: monthly, period: "1948-",  status: core}
+  psl_tna:      {provider: NOAA PSL,    domain: psl.noaa.gov,      freq: monthly, period: "1948-",  status: core}
+  jamstec_dmi:  {provider: JAMSTEC,     domain: jamstec.go.jp,     freq: monthly, period: "1870-",  status: optional}
+  bom_rmm:      {provider: BoM,         domain: bom.gov.au,        freq: daily,   period: "1974-",  status: phase5, note: "MJO; sub-sazonal"}
+
+  # --- 6.3 Reanalise ------------------------------------------------------
+  era5:
+    provider: Copernicus
+    domain: cds.climate.copernicus.eu
+    access: cdsapi
+    freq: [hourly, daily, monthly]
+    period: "1940-"
+    grid: "0.25deg"
+    status: core
+    fields: [z500, mslp, u850, v850, tcwv, sst]
+    note: "insumo do HMM de regime (Camada 4) e dos EOFs de PSA"
+  era5_land:    {provider: Copernicus, domain: cds.climate.copernicus.eu, grid: "0.1deg", period: "1950-", status: phase5}
+  ncep_r1:      {provider: NOAA PSL,   domain: psl.noaa.gov, grid: "2.5deg", period: "1948-", status: backup, note: "unico com cobertura pre-1979"}
+
+  # --- 6.4 Precipitacao ---------------------------------------------------
+  inmet_bdmep:
+    provider: INMET
+    domain: bdmep.inmet.gov.br
+    freq: daily
+    period: "conv 1961-, autom 2000/2007-"
+    status: core
+    hazards:
+      - "API instavel; exige retry com backoff e cache agressivo"
+      - "lacunas nao documentadas — nunca inferir zero de ausente"
+      - "QUEBRA convencional->automatica: descontinuidade obrigatoria na Camada 2"
+  ana_hidroweb: {provider: ANA, domain: hidroweb.ana.gov.br, freq: daily, period: "1940s-", status: core, hazards: ["codigos inconsistentes", "API cai"]}
+  chirps_v2:    {provider: UCSB CHC, domain: chc.ucsb.edu, grid: "0.05deg", freq: daily, period: "1981-", status: core, note: "melhor grade longa para o RS"}
+  merge_cptec:  {provider: INPE CPTEC, domain: cptec.inpe.br, grid: "0.1deg", freq: daily, period: "2000-", status: core, note: "melhor qualidade, serie curta"}
+  gpcc:         {provider: DWD, domain: dwd.de, grid: "0.25deg", freq: monthly, period: "1891-", status: core, note: "serie mais longa"}
+  cpc_unified:  {provider: NOAA CPC, domain: psl.noaa.gov, grid: "0.5deg", freq: daily, period: "1979-", status: backup}
+  mswep:        {provider: GloH2O, domain: gloh2o.org, grid: "0.1deg", freq: 3h, period: "1979-", status: backup}
+
+  # --- 6.5 / 6.6 fora do escopo v1, mapeados ------------------------------
+  ana_fluvio:   {provider: ANA, domain: hidroweb.ana.gov.br, status: out_of_scope_v1, note: "Jacui, Taquari, Cai, Sinos, Uruguai, Guaiba"}
+  sema_rs:      {provider: SEMA-RS, domain: saladesituacao.rs.gov.br, status: out_of_scope_v1}
+  ibge_pam:     {provider: IBGE, domain: sidra.ibge.gov.br, freq: annual, period: "1974-", status: out_of_scope_v1}
+  conab:        {provider: CONAB, domain: conab.gov.br, status: out_of_scope_v1}

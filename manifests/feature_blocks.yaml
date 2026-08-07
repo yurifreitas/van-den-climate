@@ -1,0 +1,152 @@
+# =====================================================================
+# REGRA DE REDUCAO DE FEATURES — PRE-REGISTRADA (ADR-004)
+# =====================================================================
+# Datado e congelado em: 2026-08-07
+# Estado: PRE-REGISTRADO. Nenhum contato com o alvo ocorreu ate esta data.
+#
+# Este arquivo define, ANTES de qualquer olhar para o alvo, como ~40
+# sinais do Tier A colapsam em exatamente 5 preditores do Tier B.
+# A regra e fixa. Qualquer alteracao exige:
+#   1. nova entrada em decisions.md com justificativa FISICA (nao empirica)
+#   2. bump de versao abaixo
+#   3. re-execucao completa do walk-forward do zero
+# Alteracao motivada por resultado observado no alvo INVALIDA o experimento.
+# =====================================================================
+
+version: 1
+frozen_at: 2026-08-07
+frozen_by: pre-registration
+target_contact: false   # vira true na primeira execucao da Camada 6
+
+# ---------------------------------------------------------------------
+# Regra de colapso — identica para os 5 blocos, sem excecao
+# ---------------------------------------------------------------------
+reduction:
+  method: pca_first_component
+  n_components: 1
+  standardize: true              # z-score DENTRO do fold (preproc-in-fold)
+  fit_window: expanding_from_anchor
+  anchor: [1951-01-01, 1990-12-31]
+  sign_convention: physical      # ver `sign_anchor` de cada bloco
+  missing: drop_signal_if_coverage_below: 0.80
+  # PROIBIDO: escolher n_components pela variancia explicada observada,
+  # rodar PCA no conjunto completo, ou reordenar componentes pelo alvo.
+
+# ---------------------------------------------------------------------
+# Tier B — os 5 preditores. Este numero e travado pela ADR-003.
+# ---------------------------------------------------------------------
+blocks:
+
+  - id: enso_state
+    label: Estado ENSO
+    rationale: >
+      Amplitude e configuracao zonal do aquecimento equatorial no instante
+      de emissao. E o termo de maior variancia explicada conhecida para
+      OND no RS (20-35%). Modoki vs canonico entra aqui como geometria,
+      nao como categoria manual.
+    anchor_mode: relative_30y      # ADR-005: teleconexao responde a gradiente
+    sign_anchor: oni_lag1          # PC positiva := El Nino
+    signals:
+      - {id: oni_lag1,        source: cpc_oni,      lag_months: 1}
+      - {id: roni_lag1,       source: cpc_roni,     lag_months: 1}
+      - {id: nino12_lag1,     source: psl_nino,     lag_months: 1}
+      - {id: nino3_lag1,      source: psl_nino,     lag_months: 1}
+      - {id: nino34_lag1,     source: psl_nino,     lag_months: 1}
+      - {id: nino4_lag1,      source: psl_nino,     lag_months: 1}
+      - {id: emi_lag1,        source: jamstec_emi,  lag_months: 1}
+      - {id: soi_lag1,        source: cpc_soi,      lag_months: 1}
+      - {id: nino34_grad_34_12, source: derived,    lag_months: 1}  # Nino3.4 - Nino1+2
+
+  - id: enso_dynamics
+    label: Dinamica / surpresa ENSO
+    rationale: >
+      Este El Nino esta evoluindo mais rapido que o tipico? Baseline fisica
+      = recharge oscillator (Jin), nao AR ingenuo. Captura timing de onda de
+      Kelvin e posicao relativa a barreira de previsibilidade da primavera.
+    anchor_mode: relative_30y
+    sign_anchor: oni_innovation_jas  # PC positiva := aquecendo mais rapido que o esperado
+    signals:
+      - {id: oni_innovation_jas,   source: derived, note: "residuo de ONI_OND ~ ONI_JAS"}
+      - {id: oni_tendency_3m,      source: derived}
+      - {id: oni_tendency_6m,      source: derived}
+      - {id: oni_surprise_pct,     source: derived, note: "percentil causal do residuo"}
+      - {id: oni_persistence_lam09, source: derived}
+      - {id: wwv_lag1,             source: tao_wwv, note: "warm water volume; se indisponivel, dropar"}
+      - {id: oni_mssa_pc1_phase,   source: derived, note: "M-SSA (ADR-006), nao MPI"}
+      - {id: oni_mssa_pc2_phase,   source: derived}
+
+  - id: sam
+    label: SAM / modo anular sul
+    rationale: >
+      Segundo maior controle de precipitacao no sudeste da America do Sul,
+      e amplamente independente do ENSO. Tendencia forcada por ozonio/GEE e
+      fisicamente real — por isso ancorado, com a tendencia isolada no bloco
+      `trend`.
+    anchor_mode: fixed_1951_1990
+    sign_anchor: sam_cpc_son
+    signals:
+      - {id: sam_cpc_son,        source: cpc_aao,      agg: seasonal_mean}
+      - {id: sam_cpc_son_std,    source: cpc_aao,      agg: seasonal_std}
+      - {id: sam_marshall_son,   source: bas_marshall, agg: seasonal_mean}
+      - {id: sam_days_pos_frac,  source: cpc_aao,      agg: frac_days_positive}
+      - {id: sam_persistence,    source: derived}
+      - {id: psa1_son,           source: era5_z500,    note: "padrao PSA via EOF"}
+      - {id: psa2_son,           source: era5_z500}
+
+  - id: satl
+    label: TSM Atlantico Sul
+    rationale: >
+      Fonte local de umidade e modulador do jato de baixos niveis. O SASD
+      condiciona se o sinal ENSO chega ao RS amplificado ou amortecido.
+    anchor_mode: relative_30y
+    sign_anchor: sasd_lag1
+    signals:
+      - {id: sasd_lag1,       source: derived,  note: "calculado de ERSSTv5"}
+      - {id: tsa_lag1,        source: psl_tsa}
+      - {id: tna_lag1,        source: psl_tna}
+      - {id: satl_coastal_sst_lag1, source: ersst_v5, note: "caixa 25-40S, 40-55W"}
+      - {id: satl_shift_wasserstein, source: derived, note: "deslocamento distribucional 10a vs ancora"}
+      - {id: amo_lag1,        source: psl_amo}
+
+  - id: trend
+    label: Tendencia / estado de fundo
+    rationale: >
+      Isolar a tendencia impede que ela seja atribuida ao ENSO. Se este bloco
+      carrega peso, a engine deve dizer "tendencia", nao "El Nino". E o bloco
+      que torna a atribuicao do §9.3 honesta.
+    anchor_mode: fixed_1951_1990
+    sign_anchor: year_index
+    signals:
+      - {id: year_index,            source: derived}
+      - {id: tropical_mean_sst,     source: ersst_v5, note: "20S-20N; o subtraendo do RONI"}
+      - {id: pdo_lag1,              source: ncei_pdo}
+      - {id: global_mean_sst_anom,  source: ersst_v5}
+      - {id: station_wetday_freq_trend_30y, source: derived, note: "tendencia no proprio alvo — ancorada"}
+
+# ---------------------------------------------------------------------
+# Alvos (ADR-002) — trio, nao acumulado
+# ---------------------------------------------------------------------
+targets:
+  season: OND
+  anchor_mode: fixed_1951_1990   # ADR-005: bacia nao normaliza
+  variables:
+    - {id: wetday_freq,      def: "n dias com prcp >= 1.0 mm / n dias validos"}
+    - {id: wetday_intensity, def: "media de prcp nos dias com prcp >= 1.0 mm"}
+    - {id: p95_daily,        def: "percentil 95 da prcp diaria, dias validos"}
+  discretization: terciles_from_anchor
+  model: ordinal_logistic_regularized
+  max_parameters: 6              # ADR-003, hard cap
+
+# ---------------------------------------------------------------------
+# Validacao (ADR-007)
+# ---------------------------------------------------------------------
+validation:
+  scheme: walk_forward
+  eval_window: [1991, 2026]
+  n_eval: 36
+  preproc_in_fold: true
+  leakage_cutoff: "AAAA-09-30"   # nada posterior entra na previsao de OND/AAAA
+  primary_metric: RPSS
+  acceptance: "lower bound of 90% block-bootstrap CI of RPSS > 0"
+  null_test: permutation
+  block_bootstrap_block_years: 3

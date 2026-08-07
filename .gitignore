@@ -1,0 +1,7 @@
+data/raw/
+data/interim/
+data/features/
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
