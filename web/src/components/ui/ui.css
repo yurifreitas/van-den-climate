@@ -1,0 +1,249 @@
+/*
+ * Camada de primitivas — o "core" de UI.
+ *
+ * Regra: uma visao NAO escreve CSS proprio. Ela compoe <View>/<Section>/
+ * <Panel>/<Grid>/<Stack>/<Metric>. Se um layout novo aparece duas vezes,
+ * ele vira primitiva aqui — nunca uma classe solta em views.css.
+ *
+ * Todos os valores saem de tokens.css (DESIGN.md e a fonte da verdade).
+ * Nenhuma cor de dado (--frio/--quente) entra neste arquivo.
+ */
+
+/* --- Stack: eixo unico, gap da escala --- */
+.ui-stack {
+  display: flex;
+  min-width: 0;
+}
+.ui-stack[data-dir='col'] { flex-direction: column; }
+.ui-stack[data-dir='row'] { flex-direction: row; flex-wrap: wrap; align-items: center; }
+.ui-stack[data-gap='1'] { gap: var(--space-1); }
+.ui-stack[data-gap='2'] { gap: var(--space-2); }
+.ui-stack[data-gap='3'] { gap: var(--space-3); }
+.ui-stack[data-gap='4'] { gap: var(--space-4); }
+.ui-stack[data-gap='6'] { gap: var(--space-6); }
+.ui-stack[data-gap='8'] { gap: var(--space-8); }
+.ui-stack[data-gap='12'] { gap: var(--space-12); }
+
+/* --- Grid: auto-fill com largura minima declarada pelo chamador --- */
+.ui-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(var(--ui-grid-min, 280px), 1fr));
+  gap: var(--space-4);
+}
+
+/* --- Row: titulo a esquerda, acoes a direita (barra de painel/visao) --- */
+.ui-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  min-width: 0;
+}
+.ui-row > * { margin: 0; }
+
+/* --- View: casca de rota --- */
+.ui-view {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+.ui-view__header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid var(--linha);
+}
+.ui-view__intro {
+  margin: 0;
+  max-width: 68ch;
+}
+
+/* --- Section: grupo dentro da visao --- */
+.ui-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+}
+.ui-section__title {
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--linha);
+}
+/* marcador de secao: um tique de acento antes do titulo — orienta a
+   varredura vertical sem adicionar peso tipografico */
+.ui-section__title .t-section {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--giz);
+}
+.ui-section__title .t-section::before {
+  content: '';
+  width: 3px;
+  height: 0.85em;
+  border-radius: 2px;
+  background: var(--acento-grad);
+  flex: none;
+}
+.ui-section[data-rule='none'] .ui-section__title {
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+/* --- Panel: elevacao 1. Gradiente curto + filete de acento no topo:
+   a superficie precisa se ler como painel de instrumento, nao como um
+   retangulo cinza. O filete e cromo de UI (--acento), nunca cor de dado. --- */
+.ui-panel {
+  position: relative;
+  background: var(--carta-grad);
+  border: var(--border-width) solid var(--linha);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--sombra-2);
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+  overflow: hidden;
+  transition: border-color 120ms ease, transform 120ms ease;
+}
+.ui-panel::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 1px;
+  background: var(--acento-grad);
+  opacity: 0.55;
+}
+.ui-panel:hover {
+  border-color: rgba(79, 227, 193, 0.32);
+}
+.ui-panel[data-tone='quiet'] {
+  background: transparent;
+  box-shadow: none;
+}
+.ui-panel[data-tone='quiet']::before { display: none; }
+.ui-panel[data-tone='verdict'] {
+  border-style: dashed;
+  border-color: var(--bruma);
+}
+.ui-panel[data-pad='tight'] { padding: var(--space-3) var(--space-4); }
+.ui-panel[data-pad='none'] { padding: 0; }
+
+/* --- Metric: numero-manchete + rotulo (DESIGN.md §2, --t-hero) --- */
+.ui-metric {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  margin: 0;
+}
+.ui-metric__value { color: var(--giz); }
+.ui-metric__label { color: var(--bruma); }
+
+/* --- Field: rotulo + controle, alvo de toque preservado --- */
+.ui-field {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--bruma);
+}
+.ui-field select,
+.ui-field input {
+  background: var(--carta-alta);
+  color: var(--giz);
+  border: 1px solid var(--linha);
+  border-radius: var(--radius);
+  padding: 0 var(--space-2);
+  font-family: var(--font-mono);
+  font-size: var(--t-data-size);
+}
+
+/* --- Empty: o que falta e o que destrava. Nunca ilustracao (DESIGN.md §6) --- */
+.ui-empty {
+  color: var(--bruma);
+  border-left: 2px solid var(--acento);
+  padding-left: var(--space-3);
+  margin: 0;
+  max-width: 60ch;
+}
+
+/* --- Tabela de dados: linha de 40px, numerais tabulares, zebra por
+   --carta-alta, cabecalho fixo ao rolar (DESIGN.md §3).
+   Renderizada por <DataTable>; as classes ficam globais porque
+   ReferenciasView ainda monta uma tabela propria com celulas especiais. --- */
+table.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--t-data-size);
+}
+
+table.data-table th,
+table.data-table td {
+  text-align: left;
+  padding: 0 var(--space-4);
+  height: 40px;
+  border-bottom: 1px solid var(--linha);
+  font-variant-numeric: tabular-nums;
+}
+
+table.data-table th {
+  position: sticky;
+  top: 0;
+  background: var(--carta-alta);
+  color: var(--bruma);
+  font-family: var(--font-mono);
+  font-weight: 500;
+  text-transform: uppercase;
+  font-size: var(--t-note-size);
+  letter-spacing: 0.06em;
+  z-index: 1;
+}
+
+table.data-table th[aria-sort]:hover {
+  color: var(--giz);
+}
+
+table.data-table tbody tr:nth-child(even) {
+  background: var(--carta-alta);
+}
+
+.th-sort-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  color: inherit;
+  font: inherit;
+  text-transform: inherit;
+  letter-spacing: inherit;
+  cursor: pointer;
+  min-height: 0;
+}
+
+.th-sort-btn:hover {
+  color: var(--giz);
+}
+
+table.data-table tbody tr:hover {
+  background: rgba(79, 227, 193, 0.06);
+}
+
+.scroll-x {
+  overflow-x: auto;
+  max-height: 60vh;
+  overflow-y: auto;
+  border: 1px solid var(--linha);
+  border-radius: var(--radius-lg);
+}
+
+.scroll-x .data-table {
+  border: none;
+}
+
+@media (max-width: 640px) {
+  .ui-field select,
+  .ui-field input { min-height: 44px; }
+}

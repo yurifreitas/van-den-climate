@@ -125,6 +125,120 @@ mais importante do pivô.
 
 ---
 
+## 3b. Risco municipal (497 municípios do RS)
+
+```
+GET /risk/municipal?level=&limit=    → índice de prioridade preventiva, os 497
+GET /risk/municipal/{cod_mun}        → decomposição de um município + posição
+GET /geo/municipios                  → malha municipal (GeoJSON, IBGE)
+```
+
+**Não é previsão de cheia** (ADR-016). É um índice de *prioridade preventiva*:
+ordena onde a próxima tempestade encontra a pior combinação de impacto já
+observado, déficit declarado de prevenção e exposição humana. A ADR-013
+permanece intacta — nenhuma camada desta engine antecipa evento individual.
+
+```json
+{
+  "as_of": "2026-08-07",
+  "provenance": {"basis": "modeled", "horizon": "seasonal",
+                 "source_ids": ["ibge_munic_rs", "ibge_pop_rs", "cpc_oni"]},
+  "model_card": {"formula": "R = 100 * (0.38*I + 0.34*D + 0.28*E) * (0.62 + 0.38*H)",
+                 "pesos": {...}, "cortes": {...}, "limites": [...]},
+  "n_total": 497, "n_completo": 459, "n_parcial": 37, "n_insuficiente": 1,
+  "municipios": [
+    {"cod_mun": 4315503, "municipio": "Restinga Seca",
+     "score": 60.8, "level": "high", "basis": "modeled", "completude": "completo",
+     "componentes": {
+       "impacto":           {"valor": 0.75, "basis": "measured", "detalhe": {...}},
+       "deficit_prevencao": {"valor": 0.46, "basis": "measured", "detalhe": {...}},
+       "exposicao":         {"valor": 0.76, "basis": "measured", "detalhe": {...}},
+       "perigo_sazonal":    {"valor": 0.82, "basis": "modeled",
+                             "detalhe": {"escopo": "estadual — uniforme para os 497"}},
+       "manutencao_ativos": {"valor": null, "basis": null,
+                             "detalhe": {"motivo": "sem fonte publica municipal..."}}
+     }}
+  ]
+}
+```
+
+Quatro regras específicas desta seção:
+
+1. **`basis` por componente, não só no envelope** (ADR-018). O índice mistura
+   medido, modelado e ausência declarada; um selo único apagaria a distinção
+   que o §0 existe para preservar.
+2. **`score: null` + `completude: "insuficiente"`** quando a cobertura de dado
+   não alcança o mínimo do modelo (ADR-019). Nunca `0` — zero afirma "avaliado
+   e sem risco", que é outra afirmação. O município continua no payload: não
+   responder ao IBGE não pode escondê-lo nem promovê-lo.
+3. **`manutencao_ativos` sempre presente e sempre nulo** (ADR-021), com motivo.
+   É dívida declarada, não campo esquecido.
+4. **`model_card` no payload**, não só na documentação: índice composto sem os
+   pesos publicados não é auditável — quem lê não consegue refazer a conta nem
+   discordar com precisão.
+
+### Horizonte — `?cenario=`
+
+```
+?cenario=atual        → H do ONI medido (temporada publicada)
+?cenario=ond2026      → H do outlook oficial do CPC para a temporada-alvo
+?cenario=estrutural   → SEM H: o único instrumento defensável para 2027+
+```
+
+```
+GET /outlook/enso                    → boletim ENSO do CPC (contexto, ADR-012)
+```
+
+**Não há previsão ENSO para 2027 nesta API** (ADR-026). Horizonte útil ~6–9
+meses e a barreira de previsibilidade da primavera boreal. No cenário
+`estrutural` o componente `perigo_sazonal` vem `valor: null, basis: null` com
+motivo — nunca `0.0`, que afirmaria "prevemos ENSO neutro em 2027".
+
+`/outlook/enso` carrega `autoria` (CPC/NOAA) e `engine_local.tem_previsao_aceita:
+false` **no mesmo payload**: confundir "o CPC prevê" com "esta engine prevê"
+é a falha mais cara possível numa central que existe para separar o que sabe
+do que supõe. Ausente → 200 com `disponivel: false`, não 503: a lacuna não
+quebra nada a jusante e o risco estrutural não depende de previsão.
+
+### Memória hídrica — onde já foi água
+
+```
+GET /geo/aguas/meta                  → bbox, cores, totais por categoria, limites
+GET /geo/aguas.png                   → overlay RGBA alinhado ao bbox
+GET /risk/municipal/cruzamento/aguas → memória hídrica × inundação declarada 2024
+```
+
+Fonte: **JRC Global Surface Water v1.4**, série Landsat **1984–2021**. Quatro
+categorias por município, em `MunicipalRow.aguas`:
+
+| categoria | leitura |
+|---|---|
+| `permanente` | rio e lago de hoje |
+| `sazonal` | várzea, banhado — **e lavoura de arroz irrigada** |
+| `perdida` | **era água e deixou de ser**: leito abandonado, banhado drenado |
+| `efemera` | encheu uma vez dentro da série e sumiu |
+
+`memoria_hidrica = perdida + efemera` — terreno com precedente de água que hoje
+não é água no mapa oficial.
+
+**Fora do índice composto** (ADR-031): água sazonal de satélite não separa
+banhado de arroz irrigado, e o RS tem ~1,1 milhão de ha de arroz por inundação.
+`model_card.memoria_hidrica.no_indice` é `false` e o motivo vem junto.
+
+**A série termina em 2021 e não contém a cheia de maio de 2024** — e é isso que
+torna `/cruzamento/aguas` honesto: as duas bases não se conhecem, então
+concordância entre elas é evidência, não circularidade.
+
+**Não cobre 150 anos** (ADR-034). Não existe base pública vetorial da
+hidrografia do RS do século XIX.
+
+Base municipal ausente → **503 com instrução de ingestão**, nunca síntese. Inventar
+impacto de enchente por município seria a pior fabricação possível nesta
+central; é o único ponto do contrato onde a regra §5.3 (fonte ausente vira
+resposta declarada) cede para um erro explícito.
+
+---
+
 ## 4. Ledger e saúde
 
 ```

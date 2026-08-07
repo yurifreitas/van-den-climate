@@ -53,3 +53,54 @@ possui. O desenho precisa separar, na própria interface e na API, os horizontes
 
 Maio/2024 no RS foi bloqueio sinótico. Nenhuma versão desta engine o teria
 previsto, e a central de risco precisa dizer isso na cara do usuário.
+
+## Camada municipal — prioridade preventiva
+
+| # | Data | Decisão | Razão | Estado |
+|---|------|---------|-------|--------|
+| 016 | 2026-08-07 | Camada municipal entra como **índice de prioridade preventiva**, nunca como previsão de cheia | É a única formulação falsificável com o dado que existe. Previsão municipal de enchente exigiria modelo hidrodinâmico por bacia, cota de rio em tempo real e chuva prevista em malha fina — nada disso está nesta engine, e a ADR-013 permanece intacta | ativa |
+| 017 | 2026-08-07 | Fonte primária = IBGE MUNIC 2024, suplemento "Evento Climático Rio Grande do Sul" (497 municípios × 100 variáveis) | É a única base pública que responde, por município: quais perigos hídricos ocorreram em 26/04/2024, qual foi o dano, e — decisivo — se havia plano de contingência, se foi executado e **por que não** (recurso financeiro, humano, material, sistema de alerta, treinamento). Responde a pergunta de manutenção preventiva que nenhuma base climática responde | ativa |
+| 018 | 2026-08-07 | Cada componente do índice carrega `basis` **próprio**; o composto é `modeled` | O índice mistura medido (impacto e déficit, declarados ao IBGE), modelado (perigo sazonal) e ausência declarada (manutenção de ativos). Um `basis` único no topo apagaria justamente a distinção que o §0 existe para preservar | ativa |
+| 019 | 2026-08-07 | **Cobertura mínima de peso (0.60) + exigência de impacto ou déficit presente** para publicar índice | Escrito depois de o modelo pôr Bagé em 1º com 90/100 por *não ter respondido* ao MUNIC: sobrou exposição (peso 0.28), a renormalização esticou o componente único para a escala toda e a lacuna virou manchete. Numa lista de prioridade, promover a ausência é pior que subestimar. Travado por `tests/test_risk_municipal.py` | ativa |
+| 020 | 2026-08-07 | Cortes de nível **fixos** no índice, nunca quantis | Quantil garantiria "N% críticos" independentemente da realidade — o índice viraria ranking disfarçado de diagnóstico, e um ano em que tudo melhora apareceria idêntico a um ano em que tudo piora | ativa |
+| 021 | 2026-08-07 | Componente `manutencao_ativos` existe no contrato **sempre nulo**, com motivo | Casas de bomba, diques e comportas — o modo de falha central em Porto Alegre em 2024 — não têm base pública municipal no RS. Campo ausente parece campo que ninguém precisou; campo nulo com motivo é dívida declarada | ativa |
+| 022 | 2026-08-07 | Perigo sazonal (H) entra como multiplicador **estadual e uniforme**, com piso 0.62 | O ONI não tem resolução municipal e não pode fingir que tem: H desloca o nível de todos e nunca reordena. O piso impede que o índice zere fora da estação, o que ensinaria o gestor a desligar a atenção — o oposto do objetivo preventivo |ativa |
+| 023 | 2026-08-07 | Acento de **interface** (menta/violeta) fora da paleta de dado | A regra 5 do projeto reserva FRIO/QUENTE ao dado, o que na prática deixara a UI inteira em cinza. Um acento que não pertence a nenhuma escala de dado resolve o contraste sem violar a regra: nenhuma leitura confunde cromo com anomalia | ativa |
+
+## Camada prospectiva — o que dá para dizer sobre 2026 e sobre 2027
+
+| # | Data | Decisão | Razão | Estado |
+|---|------|---------|-------|--------|
+| 024 | 2026-08-07 | Boletim ENSO do CPC/NOAA ingerido como **contexto**, exibido com autoria externa explícita | Cumpre a ADR-012 sem mutilá-la: o boletim não entra em `feature_blocks.yaml`, não alimenta a Camada 3 e não toca o alvo. Omiti-lo fazia a central parecer cega quando a informação existe, é pública e é oficial. O painel diz "CPC/NOAA" no cabeçalho e "esta engine: sem previsão aceita" ao lado — a comparação é o conteúdo | ativa |
+| 025 | 2026-08-07 | Índice municipal ganha **três cenários de horizonte**: `atual`, `ond2026`, `estrutural` | São três perguntas diferentes, não três graus de pessimismo. O que muda entre elas é a natureza da evidência | ativa |
+| 026 | 2026-08-07 | **Não existe previsão ENSO para 2027 nesta central.** Para 2027+ o instrumento é o cenário `estrutural` | Horizonte útil de previsão ENSO é de ~6–9 meses e a barreira de previsibilidade da primavera boreal degrada o que atravessa o primeiro semestre. OND/2027 a partir de ago/2026 está a 14 meses — fora de qualquer skill publicada. A resposta correta não é um ONI inventado: impacto observado, déficit de prevenção e exposição **não expiram**, e por isso são planejáveis com anos de antecedência. Um município sem plano de contingência em 2024 continua sem plano em 2027 até alguém escrever um | ativa |
+| 027 | 2026-08-07 | No cenário `estrutural`, `perigo_sazonal` é `null`, nunca `0.0` | `0.0` diria "prevemos ENSO neutro em 2027", que é uma afirmação — e uma que ninguém sustenta a 14 meses. Travado por teste | ativa |
+| 028 | 2026-08-07 | Saturação do multiplicador é **declarada no payload** (`leitura_saturacao`) | Sob o outlook de OND/2026 o multiplicador bate no teto (1.00) e os cenários `ond2026` e `estrutural` produzem números idênticos. Não é bug: significa que a previsão não aplica desconto nenhum. Dois painéis com números iguais e nenhuma explicação parecem erro de software | ativa |
+
+**Consequência prática, e a razão de a camada existir**: o CPC dá 81% de chance
+de El Niño **muito forte** em OND/2026 — a temporada-alvo desta engine. Isso
+torna a lista de prioridade preventiva acionável *nesta* primavera, e o cenário
+estrutural a torna acionável para 2027 sem depender de previsão nenhuma.
+
+## Memória hídrica — onde já foi água
+
+| # | Data | Decisão | Razão | Estado |
+|---|------|---------|-------|--------|
+| 029 | 2026-08-07 | **JRC Global Surface Water v1.4** (1984–2021) como fonte de hidrografia e de mudança de água | Único produto público que classifica cada pixel de 30 m como água permanente, sazonal, **perdida** ou nova ao longo de quatro décadas. `perdida` + `efêmera` é a melhor resposta que dado público permite para "áreas que voltaram a encher": terreno com precedente de água, hoje seco no mapa oficial | ativa |
+| 030 | 2026-08-07 | Recorte **pela malha municipal**, nunca por retângulo | A primeira versão contou o Atlântico: 106.000 km² de "água permanente" num estado de 281.000. Erro de máscara é silencioso — não levanta exceção e produz um mapa que continua bonito. Travado por `tests/test_aguas.py` | ativa |
+| 031 | 2026-08-07 | Memória hídrica **fica FORA do índice composto** | O RS tem ~1,1 milhão de ha de arroz irrigado por inundação. Lavoura alagada é água sazonal para sensor óptico de 30 m — indistinguível de banhado. Incluir a variável reordenaria a prioridade preventiva em favor de municípios arrozeiros sem que a causa ficasse visível. Entra como dimensão paralela até existir máscara de agricultura irrigada. Travado por teste, para que a inclusão exija ADR nova em vez de mudar 497 números publicados em silêncio | ativa |
+| 032 | 2026-08-07 | Ordem de pintura: água de hoje **por cima** de água de antes | A margem de todo rio tem histórico de água. Pintar `perdida` por cima acusaria de passivo hídrico a margem de cada rio do estado | ativa |
+| 033 | 2026-08-07 | O cruzamento JRC × MUNIC 2024 é apresentado como **evidência não circular** | A série do JRC termina em 2021 e não conhece a cheia de maio de 2024. Uma base é óptica e anterior ao evento; a outra é declaratória e posterior. Se o JRC incluísse 2024 a concordância não valeria nada | ativa |
+| 034 | 2026-08-07 | **Não existe camada de 150 anos.** A janela é 1984–2021 e o payload diz isso | Não há base pública vetorial da hidrografia do RS do século XIX — o que existe são cartas históricas em acervo, imagem e não geometria. Fingir cobertura de 150 anos seria a fabricação mais fácil e mais cara desta camada | ativa |
+
+**Confirmação geográfica que a camada produziu**: os primeiros colocados em
+fração de água perdida são Nova Santa Rita e Charqueadas — planície do baixo
+Jacuí, imediatamente a montante de Porto Alegre — e a lista do cruzamento traz
+Esteio e Campo Bom, no vale do Sinos. Todos entre os mais atingidos em maio de
+2024, identificados por uma série que termina em 2021.
+
+**Limite mais caro da camada municipal, e que a interface repete em três lugares**: o
+MUNIC é auto-declaração municipal sobre **um** evento. Há incentivo assimétrico
+— relatar dano dá acesso a repasse, relatar falha de prevenção não dá nada. Um
+município poupado em 2024 por sorte de trajetória aparece com impacto baixo.
+O índice ordena prioridade; ele não mede risco absoluto.

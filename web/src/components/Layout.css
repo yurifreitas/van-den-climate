@@ -2,25 +2,89 @@
   position: sticky;
   top: 0;
   z-index: 10;
-  background: var(--abissal);
-  border-bottom: 1px solid var(--grid);
-  padding: var(--space-3) var(--space-6);
+  height: 56px;
+  background: linear-gradient(180deg, rgba(27, 36, 41, 0.92), rgba(21, 30, 35, 0.92));
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--linha);
+  padding: 0 var(--space-6);
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
-  gap: var(--space-3) var(--space-6);
+  gap: var(--space-6);
 }
 
-.app-header__title {
-  font-size: var(--text-md);
-  margin: 0;
+/* fio de acento sob a barra: separa o cromo do conteudo melhor que a
+   hairline sozinha, e ancora a identidade do produto */
+.app-header::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 -1px 0;
+  height: 1px;
+  background: var(--acento-grad);
+  opacity: 0.5;
+}
+
+.app-header__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-stretch: 125%;
+  font-size: 0.85rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--giz);
   white-space: nowrap;
+}
+
+.app-header__mark {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  background: var(--acento-grad);
+  box-shadow: 0 0 12px rgba(79, 227, 193, 0.55);
+  flex: none;
 }
 
 .app-nav {
   display: flex;
-  flex-wrap: wrap;
+  align-items: center;
   gap: var(--space-1);
+  margin: 0 auto;
+}
+
+.app-nav__link {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--bruma);
+  padding: 0.4rem 0.7rem;
+  border-radius: var(--radius);
+  border: 1px solid transparent;
+  min-height: 32px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.app-nav__link {
+  transition: color 120ms ease, background 120ms ease, border-color 120ms ease;
+}
+
+.app-nav__link:hover {
+  color: var(--giz);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+/* Estado ativo: acento de INTERFACE. A regra dura da paleta proibe
+   FRIO/QUENTE (cor de dado) em cromo; --acento existe justamente para
+   este trabalho e nao pertence a nenhuma escala de dado. */
+.app-nav__link--active {
+  color: var(--acento-forte);
+  background: var(--acento-fraco);
+  border-color: rgba(79, 227, 193, 0.35);
+  font-weight: 500;
 }
 
 .system-state {
@@ -29,13 +93,15 @@
   align-items: baseline;
   gap: var(--space-2);
   font-family: var(--font-mono);
-  font-size: var(--text-xs);
+  font-size: var(--t-note-size);
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--bruma);
-  border: 1px solid var(--grid);
-  border-radius: 2px;
-  padding: 0.3rem 0.6rem;
+  border: 1px solid rgba(79, 227, 193, 0.28);
+  background: var(--acento-fraco);
+  border-radius: var(--radius-pill);
+  padding: 0.3rem 0.7rem;
+  white-space: nowrap;
 }
 
 .system-state__label {
@@ -44,7 +110,7 @@
 
 .system-state__value {
   color: var(--giz);
-  font-size: var(--text-sm);
+  font-size: var(--t-data-size);
   font-weight: 500;
 }
 
@@ -55,9 +121,9 @@
 }
 
 .system-state--absent {
-  color: var(--bruma);
-  border: 1px dashed var(--grid);
-  border-radius: 2px;
+  color: var(--bruma-fraca);
+  border: 1px dashed var(--linha);
+  border-radius: var(--radius);
   padding: 0.3rem 0.6rem;
 }
 
@@ -67,56 +133,42 @@
   height: 1.4rem;
 }
 
-.app-nav__link {
-  font-family: var(--font-mono);
-  font-size: 0.78rem;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  text-decoration: none;
-  color: var(--bruma);
-  padding: 0.35rem 0.6rem;
-  border-radius: 2px;
-  border: 1px solid transparent;
-}
-
-.app-nav__link:hover {
-  color: var(--giz);
-}
-
-/* estado ativo: SOMENTE giz/bruma — nunca frio/quente (regra dura da paleta) */
-.app-nav__link--active {
-  color: var(--giz);
-  border: 1px solid var(--bruma);
-}
-
 .app-main {
   flex: 1;
-  padding: var(--space-6);
+  padding: var(--space-8) var(--space-6);
   max-width: var(--content-width);
   width: 100%;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: var(--space-6);
+  gap: var(--space-12);
 }
 
 .app-footer {
   padding: var(--space-4) var(--space-6);
-  border-top: 1px solid var(--grid);
+  border-top: 1px solid var(--linha);
   max-width: var(--content-width);
   margin: 0 auto;
   width: 100%;
   box-sizing: border-box;
 }
 
-@media (max-width: 640px) {
+@media (max-width: 720px) {
   .app-header {
+    height: auto;
+    flex-wrap: wrap;
     padding: var(--space-2) var(--space-4);
   }
+  .app-nav {
+    margin: 0;
+    order: 3;
+    width: 100%;
+    overflow-x: auto;
+  }
   .system-state {
-    margin-left: 0;
+    margin-left: auto;
   }
   .app-main {
-    padding: var(--space-4);
+    padding: var(--space-6) var(--space-4);
   }
 }

@@ -1,5 +1,7 @@
+import type { CSSProperties } from 'react';
 import type { Hazard } from '../api/types';
 import { ProvenanceBadge } from './ProvenanceBadge';
+import { NIVEL, NIVEL_FRACAO } from '../theme/palette';
 import './HazardCard.css';
 
 const LEVEL_LABEL: Record<string, string> = {
@@ -15,9 +17,10 @@ const LEVEL_LABEL: Record<string, string> = {
  * como fora de escopo, com encaminhamento a Defesa Civil/SEMA-RS — nunca
  * omitido, nunca escondido atras de um estado vazio generico.
  *
- * Nivel de perigo NAO usa FRIO/QUENTE (essas cores sao so para anomalia de
- * dado nos graficos) — usa intensidade de giz/bruma e um marcador textual,
- * preservando a regra de isolamento de paleta.
+ * Nivel de perigo usa a escala ordinal NIVEL de theme/palette (dado, nao
+ * cromo de UI) com a codificacao PRIMARIA no COMPRIMENTO da barra: a cor e
+ * reforco. Continua valendo que o texto nao veste a cor — o rotulo fica em
+ * giz e a cor mora na barra ao lado.
  */
 export function HazardCard({ hazard }: { hazard: Hazard }) {
   const outOfScope = hazard.level === null;
@@ -39,6 +42,18 @@ export function HazardCard({ hazard }: { hazard: Hazard }) {
           <p className="hazard-card__level">
             nivel: <strong>{LEVEL_LABEL[hazard.level ?? ''] ?? hazard.level}</strong>
           </p>
+          {hazard.level && hazard.level in NIVEL && (
+            <div
+              className="hazard-card__gauge"
+              style={
+                {
+                  '--nivel-cor': NIVEL[hazard.level as keyof typeof NIVEL],
+                  '--nivel-fracao': `${NIVEL_FRACAO[hazard.level as keyof typeof NIVEL] * 100}%`,
+                } as CSSProperties
+              }
+              role="presentation"
+            />
+          )}
           {hazard.drivers.length > 0 && (
             <p className="muted">motores: {hazard.drivers.join(', ')}</p>
           )}

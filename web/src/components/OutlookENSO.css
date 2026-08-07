@@ -1,0 +1,75 @@
+/* Painel de outlook ENSO. Sem cor de dado: o boletim e texto e probabilidade,
+   nao uma serie — colorir o numero sugeriria uma escala que nao existe. */
+
+.outlook__skeleton {
+  height: 8rem;
+  width: 100%;
+}
+
+.outlook__status {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-stretch: 125%;
+  font-size: 0.9rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--giz);
+  border-left: 3px solid var(--acento);
+  padding-left: var(--space-2);
+}
+
+.outlook__synopsis {
+  margin: 0;
+  max-width: 72ch;
+  color: var(--giz);
+}
+
+.outlook__probs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-6);
+}
+
+.outlook__prob {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  min-width: 0;
+  max-width: 34ch;
+}
+
+.outlook__pct {
+  color: var(--giz);
+  flex: none;
+}
+
+/* A parede de skill e a resposta a "e 2027?" — tratada como bloco proprio,
+   nao como nota de rodape. */
+.outlook__horizonte {
+  border-top: 1px solid var(--linha);
+  border-bottom: 1px solid var(--linha);
+  padding: var(--space-3) 0;
+}
+
+.outlook__horizonte p {
+  margin: 0;
+  max-width: 76ch;
+}
+
+.outlook__consequencia {
+  color: var(--giz);
+}
+
+/* Contraste deliberado com o bloco do CPC: fundo de acento fraco marca
+   "isto aqui e a nossa engine falando", nao a autoridade externa. */
+.outlook__local {
+  background: var(--acento-fraco);
+  border-left: 3px solid var(--acento);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  padding: var(--space-3) var(--space-4);
+}
+
+.outlook__local p {
+  margin: var(--space-1) 0 0 0;
+  max-width: 76ch;
+}

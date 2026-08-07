@@ -1,0 +1,63 @@
+.cov__grid {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow-x: auto;
+}
+
+.cov__row {
+  display: grid;
+  grid-template-columns: 132px 1fr;
+  align-items: center;
+  gap: 12px;
+  min-width: 560px;
+}
+
+.cov__label {
+  font-size: 0.75rem;
+  color: var(--bruma);
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cov__track {
+  display: flex;
+  gap: 1px; /* o gap e quem separa as celulas — nunca contorno */
+}
+
+.cov__cell {
+  flex: 1 1 0;
+  min-width: 3px;
+  height: 16px;
+  background: var(--giz);
+  border-radius: 1px;
+}
+
+/* Lacuna e vazada, nao apenas fraca: ausencia de dado precisa ler como
+   ausencia, e nao como cobertura baixa. */
+.cov__cell--gap {
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--linha);
+}
+
+.cov__row--axis .cov__track {
+  height: 14px;
+}
+
+.cov__tick {
+  flex: 1 1 0;
+  min-width: 3px;
+  position: relative;
+}
+
+.cov__tick-label {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform: translateX(-50%);
+  font-size: 0.6875rem;
+  color: var(--bruma-fraca);
+  white-space: nowrap;
+}

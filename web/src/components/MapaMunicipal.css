@@ -1,0 +1,81 @@
+/*
+ * Coropletico municipal. Nenhuma cor de dado escrita aqui: preenchimento e
+ * traco chegam por atributo, calculados a partir de theme/palette.
+ */
+
+.mapa-mun {
+  position: relative;
+  min-width: 0;
+}
+
+.mapa-mun__svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  background: var(--abissal);
+  border: 1px solid var(--linha);
+  border-radius: var(--radius-lg);
+}
+
+.mapa-mun__mun {
+  cursor: pointer;
+  transition: opacity 90ms ease;
+}
+
+.mapa-mun__mun:hover {
+  opacity: 0.72;
+}
+
+/* Selecao marcada por TRACO branco (definido no componente), nao por matiz:
+   mudar a cor do preenchimento faria a selecao mentir sobre o valor. */
+.mapa-mun__mun--ativo {
+  opacity: 1;
+}
+
+/* Tooltip segue o cursor; `translate(-50%, -120%)` o mantem acima do ponteiro
+   e centralizado, e `pointer-events: none` impede que ele roube o mousemove
+   do proprio poligono (o efeito seria um piscar infinito na borda). */
+.mapa-mun__tooltip {
+  position: absolute;
+  transform: translate(-50%, -120%);
+  pointer-events: none;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 11rem;
+  padding: var(--space-2) var(--space-3);
+  background: var(--carta-alta);
+  border: 1px solid var(--linha);
+  border-radius: var(--radius);
+  box-shadow: var(--sombra-2);
+  font-size: var(--t-small-size);
+  white-space: nowrap;
+}
+
+.mapa-mun__tooltip strong {
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--giz);
+}
+
+.mapa-mun__tooltip-linha {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-4);
+  color: var(--bruma);
+}
+
+.mapa-mun__tooltip-linha .num {
+  color: var(--giz);
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.mapa-mun__tooltip-nota {
+  font-family: var(--font-mono);
+  font-size: var(--t-note-size);
+  color: var(--bruma-fraca);
+}

@@ -285,9 +285,103 @@ class ReferencePrecedent(BaseModel):
     note: str | None = None
 
 
+class ReferenceAdversarial(BaseModel):
+    """Leitura que, se estiver certa, ENFRAQUECE uma premissa do projeto.
+
+    Existe porque um projeto com n=36 se convence de coisas falsas lendo so
+    quem concorda. Servir isto ao lado do catalogo e deliberado.
+    """
+
+    claim: str          # a premissa nossa que esta sob ataque
+    challenge: str      # o argumento contrario
+    by: str | None      # id da pessoa/escola que o sustenta
+    consequence: str    # o que muda no projeto se proceder
+
+
 class ReferencesResponse(BaseModel):
     version: int
     updated: str
     reading_order: list[str]
     schools: list[ReferenceSchool]
     precedents: list[ReferencePrecedent]
+    adversarial: list[ReferenceAdversarial] = []
+
+
+# ---------------------------------------------------------------------------
+# §3b Risco municipal — prioridade preventiva por municipio
+# ---------------------------------------------------------------------------
+
+class Componente(BaseModel):
+    """Um componente do indice, com proveniencia PROPRIA.
+
+    O `basis` mora aqui, e nao so no envelope, porque o indice municipal
+    mistura naturezas: impacto e deficit sao medidos (declaracao da prefeitura
+    ao IBGE), perigo sazonal e modelado, e manutencao de ativos e uma ausencia
+    declarada. Um unico `basis` no topo apagaria essa diferenca, que e
+    precisamente a informacao que o §0 do contrato existe para preservar.
+
+    `valor=None` com `basis=None` e estado legitimo: a base nao responde por
+    este municipio. Ver `detalhe.motivo`.
+    """
+
+    valor: float | None = None
+    basis: Basis | None = None
+    detalhe: dict = Field(default_factory=dict)
+
+
+class ComponentesMunicipais(BaseModel):
+    impacto: Componente
+    deficit_prevencao: Componente
+    exposicao: Componente
+    perigo_sazonal: Componente
+    # Sempre presente, sempre vazio ate existir fonte. Declarar a lacuna no
+    # contrato e o que impede que ela seja esquecida: um campo ausente parece
+    # um campo que ninguem precisou, um campo nulo com motivo e uma divida.
+    manutencao_ativos: Componente
+
+
+class MunicipalRow(BaseModel):
+    cod_mun: int
+    municipio: str
+    populacao: int | None = None
+    # Memoria hidrica (JRC 1984-2021). Dimensao PARALELA: anexada a linha mas
+    # deliberadamente fora do indice composto — agua sazonal de satelite nao
+    # separa banhado de arroz irrigado. Ver `model_card.memoria_hidrica`.
+    # None quando a camada nao foi calculada; nunca zeros.
+    aguas: dict | None = None
+    # None quando a cobertura de dado nao alcanca o minimo do modelo. Nunca 0:
+    # zero afirmaria "avaliado e sem risco", que e uma afirmacao diferente.
+    score: float | None = None
+    level: Literal["low", "moderate", "elevated", "high"] | None = None
+    basis: Basis | None = None
+    completude: Literal["completo", "parcial", "insuficiente"]
+    componentes: ComponentesMunicipais
+
+
+class MunicipalRiskResponse(BaseModel):
+    as_of: str
+    provenance: Provenance
+    # Ficha do modelo (pesos, formula, cortes, limites) no proprio payload:
+    # indice composto sem os pesos publicados nao e auditavel.
+    model_card: dict
+    as_of_source: str
+    n_total: int
+    n_completo: int
+    n_parcial: int
+    n_insuficiente: int
+    oni: float | None = None
+    # Horizonte escolhido: atual | ond2026 | estrutural. `cenario_spec` traz o
+    # multiplicador aplicado, a fonte e — quando o multiplicador satura em
+    # 1.00 — a leitura de que a previsao nao aplica nenhum desconto.
+    cenario: str = "atual"
+    cenario_spec: dict = Field(default_factory=dict)
+    municipios: list[MunicipalRow]
+
+
+class MunicipalDetailResponse(BaseModel):
+    as_of: str
+    provenance: Provenance
+    posicao: int | None = None
+    n_ranqueados: int
+    municipio: MunicipalRow
+    model_card: dict

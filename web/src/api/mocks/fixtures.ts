@@ -163,9 +163,9 @@ export const ledgerSkillFixture: LedgerSkillResponse = {
 
 export const coverageFixture: CoverageResponse = {
   cells: [
-    { signal_id: 'prcp_a801', label: 'Porto Alegre', year: 2020, coverage: 0.98 },
-    { signal_id: 'prcp_a801', label: 'Porto Alegre', year: 2021, coverage: 0.5 },
-    { signal_id: 'prcp_a827', label: 'Caxias do Sul', year: 2020, coverage: 0.91 },
+    { station_id: 'prcp_a801', year: 2020, coverage_frac: 0.98 },
+    { station_id: 'prcp_a801', year: 2021, coverage_frac: 0.5 },
+    { station_id: 'prcp_a827', year: 2020, coverage_frac: 0.91 },
   ],
 };
 

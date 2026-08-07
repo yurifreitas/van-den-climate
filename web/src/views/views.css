@@ -1,40 +1,28 @@
-.risco-group {
-  margin-bottom: 1.5rem;
-}
+/*
+ * CSS especifico de visao.
+ *
+ * Casca de pagina, painel, grade, metrica e tabela NAO moram aqui — moram em
+ * components/ui (ver ui.css). Este arquivo guarda so o que e marca de dado
+ * propria de uma visao (a Regua de Surpresa) e o vocabulario de tabela/estado
+ * que a camada ui consome.
+ */
 
-.risco-group__title {
-  font-size: 0.85rem;
-  color: var(--bruma);
-  text-transform: none;
-  letter-spacing: 0;
-  font-family: var(--font-mono);
-  border-bottom: 1px solid var(--grid);
-  padding-bottom: 0.4rem;
-  margin-bottom: 0.75rem;
-}
-
-.risco-group__grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 0.75rem;
-}
-
-/* Regua de Surpresa: um canal (fader) por variavel */
+/* --- Regua de Surpresa: um canal (fader) por variavel --- */
 .ruler {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: var(--space-2);
 }
 
 .ruler-channel {
   display: grid;
   grid-template-columns: 140px 1fr 60px;
   align-items: center;
-  gap: 0.75rem;
+  gap: var(--space-3);
 }
 
 .ruler-channel__label {
-  font-size: 0.85rem;
+  font-size: var(--t-small-size);
 }
 
 .ruler-channel__track {
@@ -51,7 +39,7 @@
 .ruler-channel__value {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 0.8rem;
+  font-size: var(--t-note-size);
   color: var(--bruma);
   text-align: right;
 }
@@ -60,64 +48,13 @@
   opacity: 0.5;
 }
 
-.card-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 1rem;
-}
-
-.section-title-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-
-table.data-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.85rem;
-}
-
-table.data-table th,
-table.data-table td {
-  text-align: left;
-  padding: 0.4rem 0.6rem;
-  border-bottom: 1px solid var(--grid);
-}
-
-table.data-table th {
-  color: var(--bruma);
-  font-weight: 500;
-  text-transform: uppercase;
-  font-size: 0.7rem;
-  letter-spacing: 0.04em;
-}
-
-.scroll-x {
-  overflow-x: auto;
-}
-
-.acceptance-banner {
-  border: 1px dashed var(--bruma);
-  border-radius: 2px;
-  padding: 0.75rem 1rem;
-  background: var(--carta);
-}
-
-.acceptance-banner__verdict {
-  font-family: var(--font-mono);
-  color: var(--giz);
-  margin: 0 0 0.3rem 0;
-}
-
 @media (max-width: 640px) {
   .ruler-channel {
     grid-template-columns: 100px 1fr 44px;
   }
 }
 
+/* --- Estados de consulta (QueryState) --- */
 .query-skeleton {
   display: flex;
   flex-direction: column;
@@ -136,4 +73,12 @@ table.data-table th {
 
 .query-skeleton__line--short {
   width: 35%;
+}
+
+.query-error {
+  color: var(--bruma);
+  border-left: 2px solid var(--bruma-fraca);
+  padding-left: var(--space-3);
+  margin: 0;
+  max-width: 60ch;
 }

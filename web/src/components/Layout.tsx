@@ -4,6 +4,7 @@ import './Layout.css';
 
 const ROUTES = [
   { to: '/', label: 'Risco' },
+  { to: '/municipios', label: 'Municipios' },
   { to: '/estado', label: 'Estado' },
   { to: '/previsao', label: 'Previsao' },
   { to: '/evidencia', label: 'Evidencia' },
@@ -41,8 +42,11 @@ export function Layout() {
   return (
     <>
       <header className="app-header">
-        <h1 className="app-header__title">Central de Risco Climatico RS</h1>
-        <nav className="app-nav">
+        <span className="app-header__brand">
+          <span className="app-header__mark" aria-hidden="true" />
+          Central de Risco Climatico RS
+        </span>
+        <nav className="app-nav" aria-label="rotas principais">
           {ROUTES.map((r) => (
             <NavLink
               key={r.to}
@@ -59,7 +63,7 @@ export function Layout() {
       <main className="app-main">
         <Outlet />
       </main>
-      <footer className="app-footer footnote">
+      <footer className="app-footer t-note">
         Instrumento de leitura, nao produto SaaS. Rede de estacoes RS — escala divergente de anomalia.
       </footer>
     </>

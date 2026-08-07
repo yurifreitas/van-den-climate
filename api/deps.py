@@ -186,7 +186,24 @@ def state_headline() -> tuple[dict[str, Any], bool, list[str]]:
 # ---------------------------------------------------------------------------
 # §4 /health/sources — le provenance.json real em data/raw/<source_id>/<ts>/
 # ---------------------------------------------------------------------------
-KNOWN_SOURCES = ["cpc_oni", "cpc_aao", "cpc_soi", "psl_nino"]
+KNOWN_SOURCES = [
+    "cpc_oni",
+    "cpc_aao",
+    "cpc_soi",
+    "psl_nino",
+    # Dominio municipal (§3b). Entram aqui para que a saude do dado cubra a
+    # camada municipal tambem: se o MUNIC nao foi ingerido, /risk/municipal
+    # devolve 503 e /health/sources precisa dizer por que, em vez de deixar o
+    # operador descobrir pelo erro do front.
+    "ibge_munic_rs",
+    "ibge_malha_rs",
+    "ibge_pop_rs",
+    # Camada prospectiva. Entra na saude do dado porque e a unica fonte com
+    # prazo de validade explicito: o CPC publica a data do proximo boletim, e
+    # um outlook vencido na tela e pior que outlook ausente.
+    "cpc_enso_advisory",
+    "jrc_gsw",
+]
 
 
 def sources_health() -> list[dict[str, Any]]:

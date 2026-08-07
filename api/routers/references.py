@@ -15,6 +15,7 @@ import yaml
 from fastapi import APIRouter
 
 from api.models import (
+    ReferenceAdversarial,
     ReferencePerson,
     ReferencePrecedent,
     ReferenceSchool,
@@ -75,12 +76,23 @@ def _build_catalog() -> ReferencesResponse:
         for p in raw.get("precedents", []) or []
     ]
 
+    adversarial = [
+        ReferenceAdversarial(
+            claim=a.get("claim", ""),
+            challenge=(a.get("challenge") or "").strip(),
+            by=a.get("by"),
+            consequence=(a.get("consequence") or "").strip(),
+        )
+        for a in raw.get("adversarial", []) or []
+    ]
+
     return ReferencesResponse(
         version=raw.get("version", 1),
         updated=str(raw.get("updated", "")),
         reading_order=list(raw.get("reading_order", []) or []),
         schools=schools,
         precedents=precedents,
+        adversarial=adversarial,
     )
 
 

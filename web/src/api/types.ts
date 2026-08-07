@@ -179,10 +179,9 @@ export interface LedgerSkillResponse {
 // ---- /health/* --------------------------------------------------------------
 
 export interface CoverageCell {
-  signal_id: string;
-  label: string;
+  station_id: string;
   year: number;
-  coverage: number;
+  coverage_frac: number;
 }
 
 export interface CoverageResponse {
@@ -254,10 +253,212 @@ export interface ReferencePrecedent {
   note: string | null;
 }
 
+// Leituras adversariais: trabalho que, se estiver certo, ENFRAQUECE uma
+// premissa do projeto. Nomes de campo exatamente iguais ao payload da API
+// (claim, challenge, by, consequence) — tests/test_contract_sync.py compara
+// esta interface contra o schema OpenAPI real e falha se renomear.
+export interface ReferenceAdversarial {
+  claim: string;
+  challenge: string;
+  by: string | null;
+  consequence: string;
+}
+
 export interface ReferencesResponse {
   version: number;
   updated: string;
   reading_order: string[];
   schools: ReferenceSchool[];
   precedents: ReferencePrecedent[];
+  adversarial?: ReferenceAdversarial[];
+}
+
+// ---- /risk/municipal -------------------------------------------------
+
+export type NivelRisco = 'low' | 'moderate' | 'elevated' | 'high';
+export type Completude = 'completo' | 'parcial' | 'insuficiente';
+
+/**
+ * Um componente do indice, com proveniencia PROPRIA — o indice municipal
+ * mistura medido (impacto e deficit, declarados pela prefeitura ao IBGE) com
+ * modelado (perigo sazonal) e com ausencia declarada (manutencao de ativos).
+ * `valor: null` + `basis: null` e estado legitimo; ver `detalhe.motivo`.
+ */
+export interface ComponenteRisco {
+  valor: number | null;
+  basis: Basis | null;
+  detalhe: {
+    motivo?: string;
+    atingido?: boolean;
+    perigos?: string[];
+    danos?: string[];
+    score_perigos?: number;
+    score_danos?: number;
+    plano_contingencia?: boolean | null;
+    plano_executado?: boolean | null;
+    alerta_emitido?: boolean | null;
+    lacunas?: string[];
+    populacao_percentil?: number | null;
+    grupos_expostos?: string[];
+    oni?: number | null;
+    rotulo?: string;
+    escopo?: string;
+  };
+}
+
+/**
+ * Memoria hidrica do municipio (JRC 1984-2021). Dimensao PARALELA: nao entra
+ * no indice composto porque agua sazonal de satelite nao separa banhado de
+ * lavoura de arroz irrigada. `null` quando a camada nao foi calculada.
+ */
+export interface AguasMunicipio {
+  permanente: { km2: number | null; frac: number | null };
+  sazonal: { km2: number | null; frac: number | null };
+  perdida: { km2: number | null; frac: number | null };
+  efemera: { km2: number | null; frac: number | null };
+  area_grade_km2: number | null;
+  memoria_hidrica_km2: number;
+  memoria_hidrica_frac: number | null;
+  basis: Basis;
+}
+
+export interface AguasMeta {
+  disponivel: boolean;
+  motivo?: string;
+  basis?: Basis;
+  produto?: string;
+  janela?: string;
+  nao_cobre?: string;
+  recorte?: string;
+  area_estado_km2?: number;
+  total_km2?: Record<string, number>;
+  referencia?: string;
+  limites?: string[];
+  overlay?: {
+    png: string;
+    bbox: { lon_min: number; lon_max: number; lat_min: number; lat_max: number };
+    cores: Record<string, number[]>;
+    ordem_pintura: string[];
+  };
+}
+
+export interface CruzamentoAguas {
+  as_of: string;
+  n_com_memoria_e_inundacao: number;
+  criterio: string;
+  independencia: string;
+  municipios: {
+    cod_mun: number;
+    municipio: string;
+    memoria_hidrica_frac: number | null;
+    memoria_hidrica_km2: number;
+    agua_perdida_km2: number | null;
+    perigos_2024: string[];
+    score: number | null;
+    level: NivelRisco | null;
+  }[];
+}
+
+export interface MunicipioRisco {
+  cod_mun: number;
+  municipio: string;
+  populacao: number | null;
+  aguas: AguasMunicipio | null;
+  /** null quando a cobertura de dado nao alcanca o minimo do modelo. Nunca 0. */
+  score: number | null;
+  level: NivelRisco | null;
+  basis: Basis | null;
+  completude: Completude;
+  componentes: {
+    impacto: ComponenteRisco;
+    deficit_prevencao: ComponenteRisco;
+    exposicao: ComponenteRisco;
+    perigo_sazonal: ComponenteRisco;
+    manutencao_ativos: ComponenteRisco;
+  };
+}
+
+export interface ModelCard {
+  version: string;
+  formula: string;
+  pesos: Record<string, number>;
+  piso_sazonal: number;
+  cortes: Record<string, number>;
+  componentes: Record<string, string>;
+  limites: string[];
+  fontes: string[];
+}
+
+/** Horizonte do indice. `estrutural` e o unico defensavel para 2027+. */
+export type Cenario = 'atual' | 'ond2026' | 'estrutural';
+
+export interface CenarioSpec {
+  label: string;
+  horizonte: string;
+  basis: Basis | null;
+  fonte: string;
+  nota: string;
+  h_valor: number;
+  h_rotulo: string;
+  multiplicador: number;
+  saturado: boolean;
+  leitura_saturacao: string | null;
+  oni_ancora?: number;
+}
+
+export interface MunicipalRiskResponse {
+  as_of: string;
+  provenance: Provenance;
+  model_card: ModelCard;
+  as_of_source: string;
+  n_total: number;
+  n_completo: number;
+  n_parcial: number;
+  n_insuficiente: number;
+  oni: number | null;
+  cenario: Cenario;
+  cenario_spec: CenarioSpec;
+  municipios: MunicipioRisco[];
+}
+
+// ---- /outlook/enso ---------------------------------------------------
+
+/**
+ * Boletim ENSO do CPC/NOAA. A previsao e EXTERNA (ADR-012: contexto, nunca
+ * feature) — `engine_local.tem_previsao_aceita` continua false porque nenhum
+ * modelo desta engine passou a ADR-007.
+ */
+export interface OutlookResponse {
+  disponivel: boolean;
+  motivo?: string;
+  autoria?: string;
+  basis?: Basis;
+  issued?: string;
+  alert_status?: string;
+  synopsis?: string;
+  probabilities?: { percent: number; claim: string }[];
+  next_update?: string | null;
+  source_url?: string;
+  horizonte?: {
+    fonte_prospectiva: string;
+    limite_util_meses: number;
+    barreira: string;
+    consequencia: string;
+  };
+  engine_local?: { tem_previsao_aceita: boolean; motivo: string };
+}
+
+/** GeoJSON da malha do IBGE — `properties.codarea` e o codigo do municipio. */
+export interface MalhaFeature {
+  type: 'Feature';
+  properties: { codarea: string };
+  geometry: {
+    type: 'Polygon' | 'MultiPolygon';
+    coordinates: number[][][] | number[][][][];
+  };
+}
+
+export interface MalhaResponse {
+  type: 'FeatureCollection';
+  features: MalhaFeature[];
 }

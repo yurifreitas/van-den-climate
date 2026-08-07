@@ -1,6 +1,9 @@
+import { Link } from 'react-router-dom';
 import { useHazardsCatalog } from '../api/hooks';
 import { HazardCard } from '../components/HazardCard';
+import { MapaTeleconexao } from '../components/MapaTeleconexao';
 import { QueryState } from '../components/QueryState';
+import { View, Section, Grid, Empty, Panel } from '../components/ui';
 
 /**
  * Rota `/` — pergunta que responde: "quais perigos climaticos estao ativos
@@ -29,26 +32,41 @@ export function RiscoView() {
     : {};
 
   return (
-    <section>
-      <h2>Risco — carta de perigos ativos</h2>
-      <p className="muted">
-        Cada perigo e mostrado no horizonte que a engine sustenta. Um horizonte sem
-        camada construida aparece declarado, nao omitido.
-      </p>
+    <View
+      title="Risco"
+      intro="Quais perigos climaticos estao ativos agora no RS, e em qual horizonte a engine pode falar sobre eles."
+    >
+      {/* Onde o sinal nasce e onde ele chega. Fica ACIMA dos cards: a
+          pergunta geografica ("isto e sobre onde?") se responde antes da
+          lista de perigos, nao depois. */}
+      <Section
+        title="Geografia do sinal — Pacifico equatorial → RS"
+        note={
+          <>
+            Este mapa para no contorno do estado: o sinal sazonal e estadual e nao tem resolucao
+            municipal. Para descer ao municipio — impacto observado em 2024, deficit de prevencao
+            declarado e prioridade preventiva — veja <Link to="/municipios">Municipios</Link>.
+          </>
+        }
+      >
+        <Panel pad="tight">
+          <MapaTeleconexao />
+        </Panel>
+      </Section>
+
       <QueryState isLoading={isLoading} isError={isError}>
         {['seasonal', 'subseasonal', 'synoptic'].map((horizon) => (
-          <div key={horizon} className="risco-group">
-            <h3 className="risco-group__title">{HORIZON_LABEL[horizon]}</h3>
-            <div className="risco-group__grid">
+          <Section key={horizon} title={HORIZON_LABEL[horizon]}>
+            <Grid min={220}>
               {(grouped[horizon] ?? []).length === 0 ? (
-                <p className="muted">Nenhum perigo catalogado neste horizonte.</p>
+                <Empty>Nenhum perigo catalogado neste horizonte.</Empty>
               ) : (
                 grouped[horizon]!.map((h) => <HazardCard key={h.id} hazard={h} />)
               )}
-            </div>
-          </div>
+            </Grid>
+          </Section>
         ))}
       </QueryState>
-    </section>
+    </View>
   );
 }

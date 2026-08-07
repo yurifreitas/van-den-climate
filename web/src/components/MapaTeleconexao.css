@@ -1,0 +1,79 @@
+/*
+ * Mapa de teleconexao. O SVG carrega cor de DADO (divergente na caixa
+ * Nino 3.4, nivel no RS); este arquivo cuida so da casca, e por isso nao
+ * escreve nenhum hex de dado — os valores chegam via `style` a partir de
+ * theme/palette.
+ */
+
+.mapa {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.mapa__svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  border: 1px solid var(--linha);
+  border-radius: var(--radius-lg);
+  background: var(--abissal);
+}
+
+/* Rotulos dentro do mapa: giz/bruma sempre. Texto nunca veste a cor do
+   dado (DESIGN.md §1) — a cor mora na marca, nao no nome dela. */
+.mapa__rotulo {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  fill: var(--giz);
+}
+
+.mapa__valor {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+  fill: var(--giz);
+  letter-spacing: 0.04em;
+}
+
+.mapa__tick {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  fill: var(--bruma-fraca);
+  letter-spacing: 0.04em;
+}
+
+.mapa__legenda {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-6);
+}
+
+.mapa__chave {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-body);
+  font-size: var(--t-small-size);
+  color: var(--bruma);
+}
+
+/* amostra de cor: a cor chega por `style`, so o formato mora aqui */
+.mapa__amostra {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+  flex: none;
+}
+
+.mapa__nota {
+  flex-basis: 100%;
+  margin: 0;
+  max-width: 78ch;
+}

@@ -1,52 +1,111 @@
 .hazard-card {
-  background: var(--carta);
-  border: 1px solid var(--grid);
-  border-radius: 2px;
-  padding: 1rem;
+  background: var(--carta-grad);
+  border: 1px solid var(--linha);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--sombra-2);
+  padding: var(--space-4);
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: var(--space-2);
+  transition: border-color 120ms ease, transform 120ms ease;
+}
+
+.hazard-card:hover {
+  border-color: rgba(79, 227, 193, 0.3);
+  transform: translateY(-1px);
+}
+
+/* Medidor de nivel: o COMPRIMENTO e a codificacao primaria; a cor (que vem
+   de theme/palette via --nivel-cor) e reforco. Nenhum hex de dado aqui. */
+.hazard-card__gauge {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--grade);
+  overflow: hidden;
+  position: relative;
+}
+
+.hazard-card__gauge::after {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--nivel-fracao, 0%);
+  background: var(--nivel-cor, var(--bruma));
+  border-radius: 2px;
 }
 
 .hazard-card__header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.5rem;
+  gap: var(--space-2);
 }
 
 .hazard-card__header h3 {
   margin: 0;
-  font-size: 0.95rem;
+  font-size: 0.8rem;
+  letter-spacing: 0.05em;
+}
+
+.hazard-card__horizon {
+  margin: 0;
 }
 
 .hazard-card__level {
-  font-size: 1rem;
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--t-note-size);
+  color: var(--bruma);
 }
 
-/* Fora de escopo: destaque estrutural (borda tracejada, grafite mais claro),
-   nunca cor de dado — a ausencia de cobertura nao e uma "anomalia". */
+.hazard-card__level strong {
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: var(--giz);
+  font-variant-numeric: tabular-nums;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-left: 0.35rem;
+}
+
+.hazard-card__limits {
+  margin: 0;
+}
+
+/* Fora de escopo: destaque estrutural (borda tracejada, superficie mais
+   clara), nunca cor de dado — a ausencia de cobertura nao e uma "anomalia"
+   nem um erro. */
 .hazard-card--out-of-scope {
-  border: 1px dashed var(--bruma);
+  border: 1px dashed var(--bruma-fraca);
+  background: var(--carta-alta);
 }
 
 .hazard-card__scope-warning {
-  background: var(--abissal);
-  border: 1px dashed var(--bruma);
-  border-radius: 2px;
-  padding: 0.6rem 0.75rem;
+  border-top: 1px solid var(--linha);
+  padding-top: var(--space-2);
+  margin-top: var(--space-1);
 }
 
 .hazard-card__scope-title {
   font-family: var(--font-mono);
-  font-size: 0.75rem;
-  letter-spacing: 0.06em;
-  color: var(--giz);
-  margin: 0 0 0.3rem 0;
+  font-size: var(--t-note-size);
+  letter-spacing: 0.08em;
+  color: var(--bruma);
+  margin: 0 0 0.35rem 0;
 }
 
 .hazard-card__scope-warning p:last-child {
-  margin: 0;
+  margin: 0.35rem 0 0 0;
   color: var(--bruma);
-  font-size: 0.85rem;
+  font-size: var(--t-small-size);
+  line-height: 1.5;
+}
+
+.hazard-card__scope-referral {
+  margin: 0.5rem 0 0 0;
+  color: var(--bruma-fraca);
+  font-size: var(--t-note-size);
+  font-family: var(--font-mono);
+  line-height: 1.5;
 }

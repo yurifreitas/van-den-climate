@@ -6,14 +6,20 @@
 import { useQuery } from '@tanstack/react-query';
 import { apiGet } from './client';
 import type {
+  AguasMeta,
   AnalogsResponse,
+  Cenario,
+  CruzamentoAguas,
+  OutlookResponse,
   AttributionResponse,
   BreaksResponse,
   CoverageResponse,
   ForecastResponse,
   LedgerResponse,
   LedgerSkillResponse,
+  MalhaResponse,
   MetaResponse,
+  MunicipalRiskResponse,
   ReferencesResponse,
   RiskResponse,
   RulerResponse,
@@ -131,5 +137,64 @@ export function useReferences() {
     queryKey: ['references'],
     queryFn: () => apiGet<ReferencesResponse>('/references'),
     staleTime: STALE,
+  });
+}
+
+/**
+ * Risco municipal (497 linhas, ~600 KB). Sem paginacao de proposito: o mapa
+ * precisa dos 497 de uma vez para colorir, e paginar obrigaria o front a
+ * remontar a colecao inteira antes de desenhar qualquer coisa.
+ */
+export function useMunicipalRisk(cenario: Cenario = 'atual') {
+  return useQuery({
+    queryKey: ['risk', 'municipal', cenario],
+    queryFn: () => apiGet<MunicipalRiskResponse>('/risk/municipal', { cenario }),
+    staleTime: STALE,
+    // Troca de cenario mantem a tabela anterior na tela enquanto a nova chega:
+    // sem isso o mapa inteiro pisca para o esqueleto a cada clique, e a
+    // comparacao entre horizontes — que e o ponto do seletor — se perde.
+    placeholderData: (anterior) => anterior,
+  });
+}
+
+/** Metadados da memoria hidrica (bbox do overlay, totais, limites). */
+export function useAguasMeta() {
+  return useQuery({
+    queryKey: ['geo', 'aguas', 'meta'],
+    queryFn: () => apiGet<AguasMeta>('/geo/aguas/meta'),
+    staleTime: Infinity,
+    gcTime: Infinity,
+  });
+}
+
+/** Municipios onde a agua voltou: memoria hidrica + inundacao declarada em 2024. */
+export function useCruzamentoAguas() {
+  return useQuery({
+    queryKey: ['risk', 'municipal', 'cruzamento', 'aguas'],
+    queryFn: () => apiGet<CruzamentoAguas>('/risk/municipal/cruzamento/aguas', { limit: '30' }),
+    staleTime: STALE,
+  });
+}
+
+/** Boletim ENSO do CPC — a unica camada prospectiva. Contexto, nunca feature. */
+export function useEnsoOutlook() {
+  return useQuery({
+    queryKey: ['outlook', 'enso'],
+    queryFn: () => apiGet<OutlookResponse>('/outlook/enso'),
+    staleTime: STALE,
+  });
+}
+
+/**
+ * Malha municipal. `staleTime: Infinity` porque geometria de municipio muda
+ * por lei estadual, nao por ingestao — refazer o fetch de 256 KB a cada 5 min
+ * seria carga pura. Sai do cache so no reload.
+ */
+export function useMalhaMunicipal() {
+  return useQuery({
+    queryKey: ['geo', 'municipios'],
+    queryFn: () => apiGet<MalhaResponse>('/geo/municipios'),
+    staleTime: Infinity,
+    gcTime: Infinity,
   });
 }

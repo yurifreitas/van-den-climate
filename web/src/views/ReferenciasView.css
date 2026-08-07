@@ -202,3 +202,99 @@
 .ref-precedents__table td:nth-child(2) {
   font-family: var(--font-mono);
 }
+
+.ref-precedents__link {
+  color: var(--giz);
+  text-decoration: underline;
+  text-decoration-color: var(--bruma);
+  text-underline-offset: 2px;
+}
+
+.ref-precedents__link:hover {
+  text-decoration-color: var(--giz);
+}
+
+/* Barra de busca — texto e borda em giz/bruma, nunca frio/quente. */
+.ref-toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.ref-search {
+  flex: 1 1 320px;
+  min-width: 200px;
+  background: var(--carta);
+  border: 1px solid var(--grid);
+  border-radius: 2px;
+  color: var(--giz);
+  font-family: var(--font-body, inherit);
+  font-size: var(--text-sm);
+  padding: 0.45rem 0.7rem;
+}
+
+.ref-search:focus {
+  outline: 2px solid var(--giz);
+  outline-offset: 2px;
+}
+
+.ref-search::placeholder {
+  color: var(--bruma);
+}
+
+.ref-toolbar__count {
+  white-space: nowrap;
+}
+
+/* Leituras adversariais — tratamento distinto e serio: borda solida integral
+   (sem tracejado, sem opacidade reduzida), separada visualmente do resto. */
+.ref-adversarial {
+  border: 1px solid var(--bruma);
+  border-radius: 2px;
+  padding: var(--space-4) var(--space-6);
+  background: var(--carta);
+}
+
+.ref-adversarial__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: var(--space-4);
+  margin-top: var(--space-4);
+}
+
+.ref-adversarial__card {
+  border: 1px solid var(--grid);
+  border-left: 3px solid var(--giz);
+  border-radius: 2px;
+  padding: var(--space-3) var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  background: var(--abissal);
+}
+
+.ref-adversarial__label {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--bruma);
+  margin-bottom: 0.2rem;
+}
+
+.ref-adversarial__claim,
+.ref-adversarial__challenge,
+.ref-adversarial__consequence {
+  margin: 0;
+  font-size: var(--text-sm);
+  line-height: 1.5;
+  color: var(--giz);
+}
+
+.ref-adversarial__by {
+  margin: 0;
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--grid);
+}

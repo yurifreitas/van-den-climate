@@ -25,7 +25,12 @@ export function QueryState({
     );
   }
   if (isError) {
-    return <p className="muted">carta indisponivel — verifique a conexao com a API.</p>;
+    return (
+      <p className="query-error t-small" role="alert">
+        carta indisponivel — falha ao consultar a API. Os demais paineis desta pagina
+        continuam validos; tente recarregar em instantes.
+      </p>
+    );
   }
   return <>{children}</>;
 }

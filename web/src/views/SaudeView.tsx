@@ -1,8 +1,54 @@
 import { useHealthBreaks, useHealthCoverage, useHealthSources } from '../api/hooks';
 import { QueryState } from '../components/QueryState';
+import { CoverageMatrix } from '../components/CoverageMatrix';
+import { View, Panel, DataTable } from '../components/ui';
+import type { Column } from '../components/ui';
 import './views.css';
 
 const STATUS_LABEL: Record<string, string> = { ok: 'ok', stale: 'desatualizado', failed: 'falhou' };
+
+type Source = {
+  source_id: string;
+  last_ingested_at: string | null;
+  rows: number | null;
+  sha256: string | null;
+  status: string;
+};
+type Break = { label: string; detected_at: string; description: string };
+
+const SOURCE_COLUMNS: Column<Source>[] = [
+  { key: 'id', header: 'fonte', align: 'num', cell: (s) => s.source_id, sortValue: (s) => s.source_id },
+  {
+    key: 'ingested',
+    header: 'ultima ingestao',
+    align: 'num',
+    cell: (s) => s.last_ingested_at ?? '— (lacuna declarada)',
+    sortValue: (s) => s.last_ingested_at ?? '',
+  },
+  { key: 'rows', header: 'linhas', align: 'num', cell: (s) => s.rows ?? '—' },
+  {
+    key: 'hash',
+    header: 'hash',
+    align: 'num',
+    // hash completo e ilegivel na tabela; os 12 primeiros caracteres ja
+    // identificam o download de forma unica — o resto vai no title.
+    cell: (s) => s.sha256?.slice(0, 12) ?? '—',
+    title: (s) => s.sha256 ?? undefined,
+  },
+  { key: 'status', header: 'status', align: 'num', cell: (s) => STATUS_LABEL[s.status] ?? s.status },
+];
+
+const BREAK_COLUMNS: Column<Break>[] = [
+  { key: 'label', header: 'estacao', cell: (b) => b.label },
+  {
+    key: 'detected',
+    header: 'detectada em',
+    align: 'num',
+    cell: (b) => b.detected_at,
+    sortValue: (b) => b.detected_at,
+  },
+  { key: 'desc', header: 'descricao', cell: (b) => b.description },
+];
 
 /**
  * Rota `/saude` — pergunta: "a rede de estacoes tem cobertura suficiente,
@@ -17,92 +63,38 @@ export function SaudeView() {
   const sources = useHealthSources();
 
   return (
-    <section>
-      <h2>Saude dos dados</h2>
-
-      <div className="panel">
-        <h3>Status das fontes</h3>
+    <View
+      title="Saude dos dados"
+      intro="Se a rede de estacoes tem cobertura suficiente, onde ha quebras de homogeneidade, e se as fontes de ingestao estao vivas."
+    >
+      <Panel title="Status das fontes">
         <QueryState isLoading={sources.isLoading} isError={sources.isError}>
-          <div className="scroll-x">
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th>fonte</th>
-                  <th>ultima ingestao</th>
-                  <th>linhas</th>
-                  <th>hash</th>
-                  <th>status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {sources.data?.sources.map((s) => (
-                  <tr key={s.source_id}>
-                    <td className="num">{s.source_id}</td>
-                    <td className="num">{s.last_ingested_at ?? '— (lacuna declarada)'}</td>
-                    <td className="num">{s.rows ?? '—'}</td>
-                    {/* hash completo e ilegivel na tabela; os 12 primeiros
-                        caracteres ja identificam o download de forma unica */}
-                    <td className="num" title={s.sha256 ?? ''}>{s.sha256?.slice(0, 12) ?? '—'}</td>
-                    <td className="num">{STATUS_LABEL[s.status]}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <DataTable
+            columns={SOURCE_COLUMNS}
+            rows={sources.data?.sources ?? []}
+            rowKey={(s) => s.source_id}
+            empty="Nenhuma fonte registrada."
+          />
         </QueryState>
-      </div>
+      </Panel>
 
-      <div className="panel">
-        <h3>Cobertura — estacao x ano</h3>
+      <Panel title="Cobertura — sinal x ano">
         <QueryState isLoading={coverage.isLoading} isError={coverage.isError}>
-          <div className="scroll-x">
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th>estacao</th>
-                  <th>ano</th>
-                  <th>cobertura</th>
-                </tr>
-              </thead>
-              <tbody>
-                {coverage.data?.cells.map((c, i) => (
-                  <tr key={i}>
-                    <td>{c.label}</td>
-                    <td className="num">{c.year}</td>
-                    <td className="num">{(c.coverage * 100).toFixed(0)}%</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <CoverageMatrix cells={coverage.data?.cells ?? []} />
         </QueryState>
-      </div>
+      </Panel>
 
-      <div className="panel">
-        <h3>Quebras de homogeneidade</h3>
+      <Panel title="Quebras de homogeneidade">
         <QueryState isLoading={breaks.isLoading} isError={breaks.isError}>
-          <div className="scroll-x">
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th>estacao</th>
-                  <th>detectada em</th>
-                  <th>descricao</th>
-                </tr>
-              </thead>
-              <tbody>
-                {breaks.data?.breaks.map((b, i) => (
-                  <tr key={i}>
-                    <td>{b.label}</td>
-                    <td className="num">{b.detected_at}</td>
-                    <td>{b.description}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <DataTable
+            columns={BREAK_COLUMNS}
+            rows={breaks.data?.breaks ?? []}
+            rowKey={(_, i) => i}
+            defaultSort={{ key: 'detected', dir: 'desc' }}
+            empty="Nenhuma quebra de homogeneidade detectada."
+          />
         </QueryState>
-      </div>
-    </section>
+      </Panel>
+    </View>
   );
 }

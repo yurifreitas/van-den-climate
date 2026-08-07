@@ -1,0 +1,34 @@
+# Dependencias Python da Central de Risco Climatico RS.
+#
+# Pisos de versao, nao travas exatas: o projeto e uma engine de analise, nao um
+# servico com deploy reproduzivel bit a bit. Travar em `==` obrigaria a mexer
+# aqui a cada bump de patch de qualquer transitiva, sem ganho nenhum.
+#
+#   pip install -r requirements.txt
+
+# --- API (api/) ---
+fastapi>=0.115
+uvicorn>=0.34
+pydantic>=2.11
+
+# --- Dados e numerico (src/, api/deps.py) ---
+pandas>=2.2
+numpy>=2.0
+scipy>=1.14
+duckdb>=1.1          # leitura dos parquet direto, sem carregar tudo em memoria
+pyarrow>=17          # backend de parquet do pandas
+pyyaml>=6            # feature_blocks.yaml e manifests/
+
+# --- Ingestao ---
+openpyxl>=3.1        # MUNIC 2024 (xlsx de 25 MB, lido em modo read_only)
+rasterio>=1.4        # JRC Global Surface Water: GeoTIFF + rasterizacao zonal.
+                     # Traz GDAL na propria wheel — nao precisa de GDAL do sistema.
+pillow>=11           # overlay PNG da camada de agua
+
+# --- Ferramenta interna de depuracao (app/, ADR-015) ---
+streamlit>=1.40
+plotly>=6
+
+# --- Testes ---
+pytest>=8
+httpx>=0.28          # TestClient do FastAPI

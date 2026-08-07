@@ -2,12 +2,13 @@
   display: inline-block;
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 0.7rem;
+  font-size: 0.65rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   padding: 0.1rem 0.5rem;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   color: var(--bruma);
+  line-height: 1.6;
 }
 
 /* medido = borda solida (contrato §0: basis="measured") */
@@ -21,6 +22,6 @@
 }
 
 .provenance-badge--absent {
-  border: 1px dotted var(--bruma);
-  opacity: 0.7;
+  border: 1px dotted var(--bruma-fraca);
+  color: var(--bruma-fraca);
 }

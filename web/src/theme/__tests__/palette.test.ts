@@ -15,7 +15,7 @@ import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 
 const SRC = resolve(__dirname, '../../');
-const FORBIDDEN = ['#3E7FA8', '#C1553A'];
+const FORBIDDEN = ['#3E7FA8', '#2B8FD6', '#C1553A'];
 const ALLOWED_DIR = resolve(SRC, 'theme'); // unico lugar onde os hex podem ser escritos
 
 function listFiles(dir: string): string[] {
