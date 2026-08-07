@@ -86,6 +86,12 @@ def get_attribution(season: str) -> AttributionResponse:
     )
 
 
+def _season_year(season: str) -> int | None:
+    """Extrai o ano de um rotulo de temporada ("OND2026" -> 2026)."""
+    digits = "".join(c for c in season if c.isdigit())
+    return int(digits) if len(digits) == 4 else None
+
+
 @router.get("/forecast/{season}/analogs", response_model=AnalogsResponse)
 def get_analogs(season: str) -> AnalogsResponse:
     # Anos analogos por proximidade de ONI (medida real, sem exigir modelo
@@ -100,6 +106,12 @@ def get_analogs(season: str) -> AnalogsResponse:
         target_month = df["timestamp"].dt.month == df["timestamp"].dt.month.iloc[-1]
         current = float(df["value"].iloc[-1])
         yearly = df[target_month].groupby("year")["value"].mean().dropna()
+        # Excluir o proprio ano-alvo: ele e trivialmente seu melhor analogo
+        # (similaridade 1.0) e nao carrega informacao nenhuma. Pior, um
+        # analogo do ano corrente exibiria o desfecho observado do proprio
+        # ano que se quer prever — vazamento com cara de evidencia.
+        target_year = int(_season_year(season) or df["year"].iloc[-1])
+        yearly = yearly[yearly.index < target_year]
         diffs = (yearly - current).abs().sort_values()
         for year, _ in diffs.head(5).items():
             sim = 1.0 / (1.0 + float(diffs.loc[year]))

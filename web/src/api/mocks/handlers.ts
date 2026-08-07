@@ -19,4 +19,5 @@ export const handlers = [
   http.get(`${BASE}/health/coverage`, () => HttpResponse.json(fx.coverageFixture)),
   http.get(`${BASE}/health/breaks`, () => HttpResponse.json(fx.breaksFixture)),
   http.get(`${BASE}/health/sources`, () => HttpResponse.json(fx.sourcesFixture)),
+  http.get(`${BASE}/references`, () => HttpResponse.json(fx.referencesFixture)),
 ];

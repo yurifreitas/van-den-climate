@@ -33,6 +33,7 @@ ALL_ENDPOINTS = [
     "/api/v1/health/coverage",
     "/api/v1/health/breaks",
     "/api/v1/health/sources",
+    "/api/v1/references",
 ]
 
 
@@ -114,6 +115,30 @@ def test_hazards_catalog_includes_flash_flood_with_null_level():
     assert "Defesa Civil" in ff["limits"] or "SEMA" in ff["limits"]
 
 
+def test_references_catalog_has_reading_order_schools_and_precedents():
+    """GET /references le manifests/references.yaml real: 7 nomes na trilha
+    de leitura, escolas com layer/why/people, e precedentes de metodo.
+    """
+    body = client.get("/api/v1/references").json()
+    assert len(body["reading_order"]) >= 7
+    assert "van_den_dool" in body["reading_order"]
+    assert len(body["schools"]) >= 9
+    all_people_ids = set()
+    for school in body["schools"]:
+        assert school["layer"]
+        assert school["why"]
+        assert len(school["people"]) > 0
+        for person in school["people"]:
+            assert person["resolve"]
+            assert person["status"] in ("core", "supporting", "context")
+            all_people_ids.add(person["id"])
+    assert len(all_people_ids) >= 40
+    assert len(body["precedents"]) >= 4
+    for prec in body["precedents"]:
+        assert prec["ours"]
+        assert prec["established"]
+
+
 def test_forecast_ond2026_is_not_accepted_with_null_rpss():
     """§2: status not_accepted com climatologia vigente e RPSS null e o
     RESULTADO correto hoje (ADR-007), nao um erro a esconder.
@@ -175,3 +200,19 @@ def test_hazard_level_is_never_declared_measured():
             assert "ADR-007" in (h.get("limits") or ""), (
                 f"{h['id']}: nivel sem declaracao de que nao ha modelo calibrado"
             )
+
+
+def test_analogs_exclude_the_target_year():
+    """O ano-alvo nao pode ser analogo de si mesmo.
+
+    Alem de nao informar nada (similaridade 1.0 trivial), um analogo do ano
+    corrente exibiria o desfecho observado do proprio ano que se quer prever
+    — vazamento com aparencia de evidencia.
+    """
+    from fastapi.testclient import TestClient
+    from api.main import app
+
+    body = TestClient(app).get("/api/v1/forecast/OND2026/analogs").json()
+    years = [a["year"] for a in body["analogs"]]
+    assert 2026 not in years, f"ano-alvo presente entre os analogos: {years}"
+    assert all(y < 2026 for y in years), f"analogo no futuro do alvo: {years}"

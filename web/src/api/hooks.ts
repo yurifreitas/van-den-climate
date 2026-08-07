@@ -14,6 +14,7 @@ import type {
   LedgerResponse,
   LedgerSkillResponse,
   MetaResponse,
+  ReferencesResponse,
   RiskResponse,
   RulerResponse,
   SeriesResponse,
@@ -121,6 +122,14 @@ export function useHealthSources() {
   return useQuery({
     queryKey: ['health', 'sources'],
     queryFn: () => apiGet<SourcesResponse>('/health/sources'),
+    staleTime: STALE,
+  });
+}
+
+export function useReferences() {
+  return useQuery({
+    queryKey: ['references'],
+    queryFn: () => apiGet<ReferencesResponse>('/references'),
     staleTime: STALE,
   });
 }

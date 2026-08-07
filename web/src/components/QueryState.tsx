@@ -16,7 +16,13 @@ export function QueryState({
   children: ReactNode;
 }) {
   if (isLoading) {
-    return <p className="muted">carregando carta...</p>;
+    return (
+      <div className="query-skeleton" role="status" aria-label="carregando carta">
+        <span className="skeleton query-skeleton__line query-skeleton__line--wide" />
+        <span className="skeleton query-skeleton__line" />
+        <span className="skeleton query-skeleton__line query-skeleton__line--short" />
+      </div>
+    );
   }
   if (isError) {
     return <p className="muted">carta indisponivel — verifique a conexao com a API.</p>;

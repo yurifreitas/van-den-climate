@@ -250,3 +250,44 @@ class MetaResponse(BaseModel):
     contract_version: str
     api_prefix: str
     generated_at: str
+
+
+# ---------------------------------------------------------------------------
+# Catalogo de referencias (manifests/references.yaml) — nao faz parte do
+# contrato v0 congelado (docs/API_CONTRACT.md); e um endpoint auxiliar que
+# serve, estruturado, o catalogo de leitura curado do projeto.
+# ---------------------------------------------------------------------------
+
+ReferenceStatus = Literal["core", "supporting", "context"]
+
+
+class ReferencePerson(BaseModel):
+    id: str
+    name: str
+    affiliation: str | None = None
+    status: ReferenceStatus
+    resolve: str
+    work: str | None = None
+
+
+class ReferenceSchool(BaseModel):
+    id: str
+    label: str
+    layer: str
+    why: str
+    people: list[ReferencePerson]
+
+
+class ReferencePrecedent(BaseModel):
+    ours: str
+    established: str
+    by: str | None = None
+    note: str | None = None
+
+
+class ReferencesResponse(BaseModel):
+    version: int
+    updated: str
+    reading_order: list[str]
+    schools: list[ReferenceSchool]
+    precedents: list[ReferencePrecedent]

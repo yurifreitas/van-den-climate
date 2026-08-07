@@ -13,6 +13,7 @@ import type {
   LedgerResponse,
   LedgerSkillResponse,
   MetaResponse,
+  ReferencesResponse,
   RiskResponse,
   RulerResponse,
   SeriesResponse,
@@ -33,18 +34,18 @@ export const stateFixture: StateResponse = {
   headline: { oni: 1.39, classification: 'El Nino moderado', rate_per_season: 0.43 },
   blocks: [
     {
-      id: 'enso_state',
+      signal_id: 'enso_state',
       label: 'Estado ENSO',
       percentile: 0.94,
-      value: 1.39,
+      value_current: 1.39,
       trail_12m: [0.21, 0.28, 0.35, 0.4, 0.52, 0.6, 0.68, 0.75, 0.81, 0.88, 0.91, 0.94],
       provenance: provMeasured,
     },
     {
-      id: 'sam_state',
+      signal_id: 'sam_state',
       label: 'Modo Anular Sul',
       percentile: 0.22,
-      value: -0.8,
+      value_current: -0.8,
       trail_12m: [0.5, 0.48, 0.44, 0.4, 0.38, 0.35, 0.3, 0.28, 0.26, 0.25, 0.23, 0.22],
       provenance: { ...provMeasured, source_ids: ['noaa_sam'], n_effective: 24 },
     },
@@ -101,10 +102,10 @@ export const forecastNotAcceptedFixture: ForecastResponse = {
 
 export const attributionFixture: AttributionResponse = {
   season: 'OND2026',
-  blocks: [
-    { id: 'enso', label: 'ENSO', share_full: 0.42, share_without_enso: 0 },
-    { id: 'sam', label: 'SAM', share_full: 0.18, share_without_enso: 0.25 },
-    { id: 'satl', label: 'Atlantico Sul', share_full: 0.15, share_without_enso: 0.2 },
+  shares: [
+    { block_id: 'enso', label: 'ENSO', share_full: 0.42, share_without_enso: 0 },
+    { block_id: 'sam', label: 'SAM', share_full: 0.18, share_without_enso: 0.25 },
+    { block_id: 'satl', label: 'Atlantico Sul', share_full: 0.15, share_without_enso: 0.2 },
   ],
   provenance: provMeasured,
 };
@@ -154,8 +155,8 @@ export const ledgerFixture: LedgerResponse = {
 export const ledgerSkillFixture: LedgerSkillResponse = {
   target_id: 'wetday_freq',
   metrics: [
-    { name: 'RPSS', point: 0.08, lo: -0.02, hi: 0.19, permutation_null: 0.0 },
-    { name: 'BSS', point: 0.05, lo: -0.05, hi: 0.15, permutation_null: 0.0 },
+    { metric: 'RPSS', point: 0.08, lo: -0.02, hi: 0.19, permutation_null: 0.0 },
+    { metric: 'BSS', point: 0.05, lo: -0.05, hi: 0.15, permutation_null: 0.0 },
   ],
   provenance: { ...provMeasured, n_effective: 36 },
 };
@@ -181,9 +182,41 @@ export const breaksFixture: BreaksResponse = {
 
 export const sourcesFixture: SourcesResponse = {
   sources: [
-    { source_id: 'cpc_oni', label: 'CPC ONI', last_ingested_at: '2026-08-01T00:00:00Z', hash: 'a1b2c3', status: 'ok' },
-    { source_id: 'inmet', label: 'INMET', last_ingested_at: null, hash: null, status: 'failed' },
+    { source_id: 'cpc_oni', last_ingested_at: '2026-08-01T00:00:00Z', sha256: 'a1b2c3', status: 'ok', rows: 919, notes: null },
+    { source_id: 'inmet', last_ingested_at: null, sha256: null, status: 'failed', rows: null, notes: 'API instavel' },
   ],
 };
 
 export const metaFixture: MetaResponse = { api_version: 'v1' };
+
+export const referencesFixture: ReferencesResponse = {
+  version: 1,
+  updated: '2026-08-07',
+  reading_order: ['van_den_dool', 'ghil', 'faranda', 'gneiting', 'vera', 'cavalcanti', 'ditlevsen_p'],
+  schools: [
+    {
+      id: 'empirica',
+      label: 'Previsao empirica e analogos',
+      layer: 'Camada 5 — motor preditivo',
+      why: 'A camada supervisionada tem n=36.',
+      people: [
+        {
+          id: 'van_den_dool',
+          name: 'Huug van den Dool',
+          affiliation: 'NOAA Climate Prediction Center',
+          status: 'core',
+          resolve: 'O "constructed analogue" e a forma canonica do metodo de landmarks com kernel.',
+          work: 'Empirical Methods in Short-Term Climate Prediction (2007)',
+        },
+      ],
+    },
+  ],
+  precedents: [
+    {
+      ours: 'Landmarks com kernel para previsao de estado',
+      established: 'Constructed analogue',
+      by: 'van_den_dool',
+      note: 'Metodo classico em previsao sazonal.',
+    },
+  ],
+};

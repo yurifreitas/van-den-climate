@@ -28,7 +28,7 @@ export function EstadoView() {
       <QueryState isLoading={ruler.isLoading} isError={ruler.isError}>
         <div className="ruler panel">
           {ruler.data?.channels.map((c) => (
-            <div className="ruler-channel" key={c.id}>
+            <div className="ruler-channel" key={c.signal_id}>
               <span className="ruler-channel__label">
                 {c.label} <ProvenanceBadge basis={c.provenance.basis} />
               </span>

@@ -3,6 +3,10 @@ import { QueryState } from '../components/QueryState';
 import { ProvenanceBadge } from '../components/ProvenanceBadge';
 import './views.css';
 
+/** Metrica ausente e "—", nunca 0 nem tela quebrada. */
+const num = (v: number | null | undefined) =>
+  v === null || v === undefined ? '—' : v.toFixed(3);
+
 const TERCIL = ['Abaixo', 'Perto', 'Acima'];
 
 /**
@@ -36,14 +40,17 @@ export function LedgerView() {
                 </tr>
               </thead>
               <tbody>
+                {/* `num(...)` em vez de `.toFixed()` direto: com nenhum modelo
+                    aceito sob a ADR-007, a API devolve `null` — que e o
+                    RESULTADO correto, nao ausencia de dado. Chamar .toFixed()
+                    em null derrubava a tela justamente no estado que o projeto
+                    considera certo. */}
                 {skill.data?.metrics.map((m) => (
-                  <tr key={m.name}>
-                    <td>{m.name}</td>
-                    <td className="num">{m.point.toFixed(3)}</td>
-                    <td className="num">
-                      [{m.lo.toFixed(3)}, {m.hi.toFixed(3)}]
-                    </td>
-                    <td className="num">{m.permutation_null.toFixed(3)}</td>
+                  <tr key={m.metric}>
+                    <td>{m.metric}</td>
+                    <td className="num">{num(m.point)}</td>
+                    <td className="num">[{num(m.lo)}, {num(m.hi)}]</td>
+                    <td className="num">{num(m.permutation_null)}</td>
                   </tr>
                 ))}
               </tbody>

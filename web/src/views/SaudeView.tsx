@@ -29,6 +29,7 @@ export function SaudeView() {
                 <tr>
                   <th>fonte</th>
                   <th>ultima ingestao</th>
+                  <th>linhas</th>
                   <th>hash</th>
                   <th>status</th>
                 </tr>
@@ -36,9 +37,12 @@ export function SaudeView() {
               <tbody>
                 {sources.data?.sources.map((s) => (
                   <tr key={s.source_id}>
-                    <td>{s.label}</td>
+                    <td className="num">{s.source_id}</td>
                     <td className="num">{s.last_ingested_at ?? '— (lacuna declarada)'}</td>
-                    <td className="num">{s.hash ?? '—'}</td>
+                    <td className="num">{s.rows ?? '—'}</td>
+                    {/* hash completo e ilegivel na tabela; os 12 primeiros
+                        caracteres ja identificam o download de forma unica */}
+                    <td className="num" title={s.sha256 ?? ''}>{s.sha256?.slice(0, 12) ?? '—'}</td>
                     <td className="num">{STATUS_LABEL[s.status]}</td>
                   </tr>
                 ))}

@@ -25,8 +25,8 @@ export function AttributionChart({ blocks }: { blocks: AttributionBlock[] }) {
           contentStyle={{ background: CARTA, border: `1px solid ${GRID}`, fontFamily: 'IBM Plex Mono', fontSize: 12 }}
         />
         <Legend wrapperStyle={{ fontSize: 11, color: BRUMA }} />
-        <Bar dataKey="atribuicao (todos os blocos)" fill={BRUMA} />
-        <Bar dataKey="contrafactual — sem ENSO" fill={CARTA} stroke={GIZ} strokeWidth={1} />
+        <Bar isAnimationActive={false} dataKey="atribuicao (todos os blocos)" fill={BRUMA} />
+        <Bar isAnimationActive={false} dataKey="contrafactual — sem ENSO" fill={CARTA} stroke={GIZ} strokeWidth={1} />
       </BarChart>
     </ResponsiveContainer>
   );

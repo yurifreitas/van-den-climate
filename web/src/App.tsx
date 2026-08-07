@@ -7,6 +7,7 @@ import { PrevisaoView } from './views/PrevisaoView';
 import { EvidenciaView } from './views/EvidenciaView';
 import { LedgerView } from './views/LedgerView';
 import { SaudeView } from './views/SaudeView';
+import { ReferenciasView } from './views/ReferenciasView';
 
 const queryClient = new QueryClient();
 
@@ -22,6 +23,7 @@ function App() {
             <Route path="/evidencia" element={<EvidenciaView />} />
             <Route path="/ledger" element={<LedgerView />} />
             <Route path="/saude" element={<SaudeView />} />
+            <Route path="/referencias" element={<ReferenciasView />} />
           </Route>
         </Routes>
       </BrowserRouter>

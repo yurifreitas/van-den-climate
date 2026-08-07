@@ -19,6 +19,27 @@
   --font-display: 'Archivo Variable', system-ui, sans-serif;
   --font-body: 'Inter Tight Variable', system-ui, sans-serif;
   --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+
+  /* Escala modular de espaco/ritmo vertical — base 4px, dobra em 8/12/16/24/32/48. */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+
+  /* Escala tipografica modular (razao ~1.2), ancorada em 16px corpo. */
+  --text-xs: 0.7rem;
+  --text-sm: 0.8125rem;
+  --text-base: 1rem;
+  --text-md: 1.2rem;
+  --text-lg: 1.44rem;
+  --text-xl: 1.728rem;
+  --text-2xl: 2.074rem;
+
+  /* Largura maxima de leitura — a carta nao e full-bleed. */
+  --content-width: 1120px;
 }
 
 * {
@@ -86,3 +107,43 @@ a, button {
   border-radius: 2px;
   padding: 1rem;
 }
+
+/* Nota de rodape tecnica — disclaimers e limites de metodo, nunca corpo de
+   texto principal: menor, mono, discreta (prioridade 2 do refino visual). */
+.footnote {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--bruma);
+  letter-spacing: 0.01em;
+  line-height: 1.5;
+}
+
+/* Esqueleto de carregamento — placeholder solido com shimmer sutil, nunca
+   spinner generico (regra do refino visual). Reduced-motion desliga o shimmer
+   e deixa so o placeholder solido. */
+.skeleton {
+  display: block;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--carta) 0%, var(--grid) 50%, var(--carta) 100%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.6s ease-in-out infinite;
+}
+
+@keyframes skeleton-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+    background: var(--carta);
+  }
+}
+
+/* Regua fina: marcas de escala em vocabulario de instrumento cientifico. */
+.tick-rule {
+  border-top: 1px solid var(--grid);
+  position: relative;
+}
+

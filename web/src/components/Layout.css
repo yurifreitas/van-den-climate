@@ -1,21 +1,70 @@
 .app-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--abissal);
   border-bottom: 1px solid var(--grid);
-  padding: 1rem 1.5rem;
+  padding: var(--space-3) var(--space-6);
   display: flex;
   flex-wrap: wrap;
-  align-items: baseline;
-  gap: 1rem 2rem;
+  align-items: center;
+  gap: var(--space-3) var(--space-6);
 }
 
 .app-header__title {
-  font-size: 1.1rem;
+  font-size: var(--text-md);
   margin: 0;
+  white-space: nowrap;
 }
 
 .app-nav {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.25rem;
+  gap: var(--space-1);
+}
+
+.system-state {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--bruma);
+  border: 1px solid var(--grid);
+  border-radius: 2px;
+  padding: 0.3rem 0.6rem;
+}
+
+.system-state__label {
+  color: var(--bruma);
+}
+
+.system-state__value {
+  color: var(--giz);
+  font-size: var(--text-sm);
+  font-weight: 500;
+}
+
+.system-state__classification {
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--bruma);
+}
+
+.system-state--absent {
+  color: var(--bruma);
+  border: 1px dashed var(--grid);
+  border-radius: 2px;
+  padding: 0.3rem 0.6rem;
+}
+
+.system-state__skeleton {
+  margin-left: auto;
+  width: 9rem;
+  height: 1.4rem;
 }
 
 .app-nav__link {
@@ -42,26 +91,32 @@
 
 .app-main {
   flex: 1;
-  padding: 1.5rem;
-  max-width: 1200px;
+  padding: var(--space-6);
+  max-width: var(--content-width);
   width: 100%;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: var(--space-6);
 }
 
 .app-footer {
-  padding: 1rem 1.5rem;
+  padding: var(--space-4) var(--space-6);
   border-top: 1px solid var(--grid);
-  font-size: 0.75rem;
+  max-width: var(--content-width);
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 @media (max-width: 640px) {
   .app-header {
-    padding: 0.75rem 1rem;
+    padding: var(--space-2) var(--space-4);
+  }
+  .system-state {
+    margin-left: 0;
   }
   .app-main {
-    padding: 1rem;
+    padding: var(--space-4);
   }
 }

@@ -1,0 +1,204 @@
+/* Visao Referencias — catalogo de leitura curado.
+ * Status core/supporting/context distinguido SOMENTE por giz/bruma (peso de
+ * opacidade/borda), nunca por FRIO/QUENTE — regra dura de paleta. */
+
+.ref-reading-order {
+  border: 1px solid var(--grid);
+  border-radius: 2px;
+  background: var(--carta);
+  padding: var(--space-4) var(--space-6);
+}
+
+.ref-reading-order__title {
+  margin: 0 0 var(--space-4) 0;
+  padding-top: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--bruma);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-family: var(--font-mono);
+}
+
+.ref-reading-order__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.ref-reading-order__item {
+  display: grid;
+  grid-template-columns: 2.2rem 1fr;
+  gap: var(--space-3);
+  align-items: baseline;
+  border-top: 1px solid var(--grid);
+  padding-top: var(--space-3);
+}
+
+.ref-reading-order__item:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+
+.ref-reading-order__index {
+  color: var(--bruma);
+  font-size: var(--text-lg);
+}
+
+.ref-reading-order__name {
+  margin: 0 0 0.2rem 0;
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  font-size: var(--text-base);
+}
+
+.ref-reading-order__resolve {
+  margin: 0;
+  color: var(--giz);
+  font-size: var(--text-sm);
+  line-height: 1.5;
+}
+
+.ref-filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.ref-filter-btn {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--bruma);
+  background: transparent;
+  border: 1px solid var(--grid);
+  border-radius: 999px;
+  padding: 0.3rem 0.7rem;
+  cursor: pointer;
+}
+
+.ref-filter-btn:hover {
+  color: var(--giz);
+}
+
+.ref-filter-btn--active {
+  color: var(--giz);
+  border-color: var(--bruma);
+}
+
+.ref-schools {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+
+.ref-school__header {
+  margin-bottom: var(--space-3);
+}
+
+.ref-school__title-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--grid);
+  padding-bottom: var(--space-2);
+}
+
+.ref-school__label {
+  margin: 0;
+  font-size: var(--text-md);
+}
+
+.ref-school__layer {
+  white-space: nowrap;
+}
+
+.ref-school__why {
+  margin: var(--space-2) 0 0 0;
+  color: var(--bruma);
+  font-size: var(--text-sm);
+  max-width: 68ch;
+}
+
+.ref-school__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--space-3);
+}
+
+.ref-person {
+  background: var(--carta);
+  border: 1px solid var(--grid);
+  border-radius: 2px;
+  padding: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+/* Peso visual por status: core = borda solida giz, supporting = bruma,
+   context = tracejada e mais discreta. Sempre giz/bruma, nunca frio/quente. */
+.ref-person--core {
+  border-color: var(--bruma);
+}
+
+.ref-person--context {
+  border-style: dashed;
+  opacity: 0.85;
+}
+
+.ref-person__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.ref-person__name {
+  margin: 0;
+  font-size: var(--text-sm);
+}
+
+.ref-status-badge {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.05rem 0.4rem;
+  border-radius: 999px;
+  color: var(--bruma);
+  border: 1px solid var(--grid);
+  white-space: nowrap;
+}
+
+.ref-status-badge--core {
+  color: var(--giz);
+  border-color: var(--bruma);
+}
+
+.ref-person__affiliation {
+  margin: 0;
+}
+
+.ref-person__resolve {
+  margin: 0;
+  font-size: var(--text-sm);
+  line-height: 1.5;
+  color: var(--giz);
+}
+
+.ref-person__work {
+  margin: 0;
+}
+
+.ref-precedents__table td:first-child,
+.ref-precedents__table td:nth-child(2) {
+  font-family: var(--font-mono);
+}

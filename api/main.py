@@ -18,7 +18,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from api.deps import CONTRACT_VERSION
 from api.models import MetaResponse
-from api.routers import forecast, health, ledger, risk, state
+from api.routers import forecast, health, ledger, references, risk, state
 
 app = FastAPI(
     title="Central de Risco Climatico RS — API",
@@ -44,6 +44,7 @@ app.include_router(forecast.router, prefix=API_PREFIX)
 app.include_router(risk.router, prefix=API_PREFIX)
 app.include_router(ledger.router, prefix=API_PREFIX)
 app.include_router(health.router, prefix=API_PREFIX)
+app.include_router(references.router, prefix=API_PREFIX)
 
 
 @app.get(f"{API_PREFIX}/meta", response_model=MetaResponse)

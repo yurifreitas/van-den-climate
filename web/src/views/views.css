@@ -117,3 +117,23 @@ table.data-table th {
     grid-template-columns: 100px 1fr 44px;
   }
 }
+
+.query-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-2) 0;
+}
+
+.query-skeleton__line {
+  height: 1.1rem;
+  width: 60%;
+}
+
+.query-skeleton__line--wide {
+  width: 90%;
+}
+
+.query-skeleton__line--short {
+  width: 35%;
+}

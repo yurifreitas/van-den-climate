@@ -41,8 +41,8 @@ export function TercileChart({
           labelStyle={{ color: BRUMA }}
         />
         <Legend wrapperStyle={{ fontSize: 11, color: BRUMA }} />
-        <Bar dataKey="climatologia" name="climatologia (1951-1990)" fill={CARTA} stroke={BRUMA} strokeWidth={1} />
-        <Bar dataKey="previsao" name="previsao vigente" fill={BRUMA}>
+        <Bar isAnimationActive={false} dataKey="climatologia" name="climatologia (1951-1990)" fill={CARTA} stroke={BRUMA} strokeWidth={1} />
+        <Bar isAnimationActive={false} dataKey="previsao" name="previsao vigente" fill={BRUMA}>
           <ErrorBar dataKey="err" stroke={GIZ} width={4} />
         </Bar>
       </BarChart>

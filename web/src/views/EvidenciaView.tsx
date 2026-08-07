@@ -39,7 +39,7 @@ export function EvidenciaView() {
           {attribution.data && <ProvenanceBadge basis={attribution.data.provenance.basis} />}
         </div>
         <QueryState isLoading={attribution.isLoading} isError={attribution.isError}>
-          {attribution.data && <AttributionChart blocks={attribution.data.blocks} />}
+          {attribution.data && <AttributionChart blocks={attribution.data.shares} />}
         </QueryState>
       </div>
 
