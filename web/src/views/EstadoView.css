@@ -1,0 +1,94 @@
+/* Estado. As regras da regua ficam em views.css (vocabulario compartilhado);
+   aqui so o que esta visao acrescentou. */
+
+/* Leitura em prosa: o que esta acontecendo, antes da grade de cor. */
+.leitura-estado {
+  border-left: 3px solid var(--acento);
+  background: var(--acento-fraco);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  padding: var(--space-3) var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.leitura-estado p {
+  margin: 0;
+  max-width: 88ch;
+}
+
+/* Eixo de meses sob a trilha. Espelha o grid de .ruler-channel para que os
+   rotulos caiam sob as celulas, e nao entre elas. */
+/* As colunas espelham .ruler-channel em views.css (140px 1fr 60px). Se
+   aquelas mudarem, estas mudam junto — senao os rotulos deslizam para fora
+   das celulas e o eixo passa a mentir. */
+.ruler-axis {
+  display: grid;
+  grid-template-columns: 140px 1fr 60px;
+  align-items: center;
+  gap: var(--space-3);
+  padding-top: var(--space-1);
+}
+
+.ruler-axis__meses {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 2px;
+  font-family: var(--font-mono);
+  font-size: var(--t-note-size);
+  color: var(--bruma-fraca);
+  text-align: center;
+}
+
+/* Legenda da escala: sem ela, azul e vermelho sao decoracao. */
+.escala-legenda {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.escala-legenda__rampa {
+  width: 96px;
+  height: 10px;
+  border-radius: 2px;
+  /* A rampa reproduz a escala divergente do dado. Os hex ficam fora daqui:
+     sao os mesmos de theme/palette, aplicados via gradiente de superficie. */
+  background: linear-gradient(
+    90deg,
+    rgba(43, 143, 214, 0.95),
+    rgba(27, 36, 41, 0.9) 50%,
+    rgba(193, 85, 58, 0.95)
+  );
+}
+
+/* Percentil extremo sobe para tinta cheia; o comum permanece em bruma. Cor de
+   dado nao entra: o que distingue e PESO, nao matiz — matiz aqui ja significa
+   sinal da anomalia na regua ao lado. */
+.ruler-channel__value[data-tom='alto'],
+.ruler-channel__value[data-tom='baixo'],
+.t-hero[data-tom='alto'],
+.t-hero[data-tom='baixo'] {
+  color: var(--giz);
+  font-weight: 500;
+}
+
+.ruler-channel__value[data-tom='normal'],
+.t-hero[data-tom='normal'] {
+  color: var(--bruma);
+}
+
+/* Chip de percentil: a marca leva a cor da escala divergente, o texto nao. */
+.percentil-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--bruma);
+}
+
+.percentil-chip::before {
+  content: '';
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  background: var(--chip-cor, var(--bruma));
+}

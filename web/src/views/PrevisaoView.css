@@ -1,0 +1,78 @@
+/* Veredito de aceitacao. Nenhuma cor de dado: "nao aceito" nao e uma anomalia
+   nem um erro — e um resultado, e usa o vocabulario estrutural (borda
+   tracejada) que o projeto ja reserva para veredito de criterio. */
+
+.veredito-bloco {
+  border: 1px dashed var(--bruma);
+  border-left: 3px solid var(--acento);
+  border-radius: var(--radius-lg);
+  background: var(--carta-grad);
+  padding: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.veredito-bloco__titulo {
+  margin: 0;
+  font-size: 1.4rem;
+  letter-spacing: 0.04em;
+  color: var(--giz);
+}
+
+.veredito-bloco__linha {
+  margin: 0;
+  max-width: 70ch;
+  color: var(--giz);
+}
+
+.veredito-bloco__nota {
+  margin: 0;
+  max-width: 78ch;
+  border-top: 1px solid var(--linha);
+  padding-top: var(--space-3);
+}
+
+/* Previsao aceita ganharia peso proprio; hoje o caminho nunca e exercitado,
+   mas deixar a regra escrita evita que o estado positivo apareca com a
+   tipografia do negativo no dia em que existir. */
+.veredito-bloco[data-status='accepted'] {
+  border-style: solid;
+}
+
+/* Lista de deltas: rotulo, valor, intervalo. Grade fixa para que os numeros
+   alinhem na vertical — comparar valores em coluna e o unico jeito de ler
+   quatro metricas de escalas diferentes sem se perder. */
+.lista-desloc {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.lista-desloc li {
+  display: grid;
+  grid-template-columns: 1fr auto minmax(9ch, auto);
+  align-items: baseline;
+  gap: var(--space-3);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--linha);
+}
+
+.lista-desloc li:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.lista-desloc .t-small { color: var(--bruma); }
+.lista-desloc .t-data { color: var(--bruma); text-align: right; }
+.lista-desloc .t-note { text-align: right; }
+
+/* Quem separa de zero sobe para tinta cheia. O que cruza zero permanece
+   legivel mas rebaixado — a diferenca entre os dois e o que muda a decisao. */
+.lista-desloc li[data-sep='sim'] .t-data {
+  color: var(--giz);
+  font-weight: 500;
+}

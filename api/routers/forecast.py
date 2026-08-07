@@ -56,9 +56,13 @@ def get_forecast(season: str) -> ForecastResponse:
         issued_at=None,
         status="not_accepted",
         acceptance=Acceptance(
-            criterion="lower bound of 90% CI of RPSS > 0",
+            # Portugues, como o resto do produto. Estes dois campos vao direto
+            # para a tela, e "climatology remains in force" no meio de uma
+            # interface em portugues parecia string de depuracao esquecida —
+            # o que rebaixa justamente a afirmacao mais importante da engine.
+            criterion="limite inferior do IC 90% de RPSS > 0",
             rpss=RpssBand(point=None, lo=None, hi=None),
-            verdict="climatology remains in force",
+            verdict="a climatologia permanece vigente",
         ),
         targets=targets,
     )
