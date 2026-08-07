@@ -342,6 +342,47 @@ export interface AguasMeta {
   };
 }
 
+// ---- /recursos -------------------------------------------------------
+
+/**
+ * Quao completa e a FONTE do recurso — distinta de `Completude`, que mede
+ * quanto de dado um municipio tem no indice. Sem esta distincao, um vazio do
+ * OpenStreetMap parece um vazio real do territorio.
+ */
+export type CompletudeFonte = 'cadastro' | 'cadastro_parcial' | 'colaborativa';
+
+export interface PapelRecurso {
+  label: string;
+  fonte: string;
+  completude: CompletudeFonte;
+  n: number;
+  municipios_alem_do_limiar: number | null;
+}
+
+export interface RecursosResponse {
+  as_of: string;
+  provenance: Provenance;
+  resumo: {
+    version: string;
+    total_pontos: number;
+    por_papel: Record<string, PapelRecurso>;
+    limiar_vazio_km: number;
+    subtipos_moveis: Record<string, number>;
+    ressalvas: string[];
+  };
+  vazios: {
+    cod_mun: number;
+    municipio: string;
+    score: number | null;
+    level: NivelRisco | null;
+    populacao: number | null;
+    faltas: { papel: string; label: string; km: number | null; completude: CompletudeFonte }[];
+    pior_km: number;
+  }[];
+  pontos: { id: string; papel: string; nome: string | null; subtipo: string | null; lat: number; lon: number; fonte: string }[];
+  por_municipio: Record<string, Record<string, { n_no_municipio: number; km_mais_proximo: number | null; completude: CompletudeFonte }>>;
+}
+
 // ---- /plano ----------------------------------------------------------
 
 /** Uma acao e sua evidencia. `evidencia` e o campo exato que a disparou. */

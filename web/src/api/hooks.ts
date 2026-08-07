@@ -13,6 +13,7 @@ import type {
   HistoricoResponse,
   OutlookResponse,
   PlanoResponse,
+  RecursosResponse,
   RespostaResponse,
   AttributionResponse,
   BreaksResponse,
@@ -157,6 +158,19 @@ export function useMunicipalRisk(cenario: Cenario = 'atual') {
     // sem isso o mapa inteiro pisca para o esqueleto a cada clique, e a
     // comparacao entre horizontes — que e o ponto do seletor — se perde.
     placeholderData: (anterior) => anterior,
+  });
+}
+
+/**
+ * Mapa geral de recursos e vazios de cobertura. `staleTime` alto: cadastro
+ * de estabelecimento e mapeamento OSM nao mudam em escala de minutos.
+ */
+export function useRecursos() {
+  return useQuery({
+    queryKey: ['recursos'],
+    queryFn: () => apiGet<RecursosResponse>('/recursos'),
+    staleTime: Infinity,
+    gcTime: Infinity,
   });
 }
 

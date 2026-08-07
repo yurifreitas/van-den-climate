@@ -60,7 +60,60 @@ TIPOS = {
     20: "pronto_socorro_geral",
     21: "pronto_socorro_especializado",
     73: "pronto_atendimento",
+    # --- capacidade MOVEL: e o que se desloca ate a vitima, e o que se
+    # realoca antes da temporada. Sem isto o mapa de recursos so mostra
+    # predio, e predio nao chega em area ilhada.
+    #
+    # O tipo 43 do CNES NAO entra. A leitura obvia do rotulo ("Unidade Movel
+    # de Nivel Pre-Hospitalar") esta errada na pratica: a consulta devolve
+    # 3.733 registros no RS, encabecados por PANVEL FARMACIAS e farmacias
+    # municipais. Incluir 43 teria posto quase quatro mil farmacias no mapa
+    # como ambulancia — erro que passa despercebido porque o total so parece
+    # "boa cobertura". Conferido nome a nome antes de decidir.
+    40: "unidade_movel_terrestre",     # misto: ver SUBTIPO_MOVEL
+    76: "central_regulacao_urgencia",  # quem decide para onde a ambulancia vai
+    # --- capacidade de recuperacao psicossocial. Entra aqui porque a camada
+    # de resposta mostrou 206 municipios sem apoio psicologico em 2024, e a
+    # pergunta seguinte — "com que estrutura?" — se responde com CAPS.
+    70: "caps",
 }
+
+# Agrupamento para leitura. Um mapa com nove categorias nao se le; estes
+# quatro papeis sao os que mudam decisao de alocacao.
+PAPEL = {
+    "hospital_geral": "fixo_hospitalar",
+    "hospital_especializado": "fixo_hospitalar",
+    "pronto_socorro_geral": "fixo_urgencia",
+    "pronto_socorro_especializado": "fixo_urgencia",
+    "pronto_atendimento": "fixo_urgencia",
+    "unidade_movel_terrestre": "movel",
+    "central_regulacao_urgencia": "regulacao",
+    "caps": "psicossocial",
+}
+
+# O tipo 40 mistura bombeiro voluntario, ambulancia, unidade movel de saude,
+# farmacia movel e unidade odontologica. O CNES nao separa. A classificacao
+# abaixo e HEURISTICA sobre o nome fantasia — util para leitura, mas NAO e
+# cadastro: por isso o subtipo viaja com basis `modeled`, enquanto o
+# estabelecimento em si continua `measured`.
+#
+# Ordem importa: o primeiro padrao que casar vence.
+SUBTIPO_MOVEL: list[tuple[str, tuple[str, ...]]] = [
+    ("bombeiro", ("BOMBEIRO",)),
+    ("resgate", ("RESGATE", "SAMU", "SALVAMENTO")),
+    ("ambulancia", ("AMBULANC", "AMBULARE", "UTI MOVEL", "REMOCAO")),
+    ("farmacia_movel", ("FARMACIA",)),
+    ("odontologica", ("ODONTOL",)),
+    ("saude_movel", ("SAUDE", "ATENCAO PRIMARIA", "CONSULTORIO", "MAMOGRAF", "VETERINAR")),
+]
+
+
+def _subtipo_movel(nome: str | None) -> str:
+    alvo = (nome or "").upper()
+    for rotulo, chaves in SUBTIPO_MOVEL:
+        if any(k in alvo for k in chaves):
+            return rotulo
+    return "nao_classificada"
 
 CAMPOS = [
     "codigo_cnes",
@@ -121,7 +174,16 @@ def coletar() -> list[dict]:
             if not itens:
                 break
             for e in itens:
-                linhas.append({**{c: e.get(c) for c in CAMPOS}, "tipo": rotulo})
+                linhas.append({
+                    **{c: e.get(c) for c in CAMPOS},
+                    "tipo": rotulo,
+                    "papel": PAPEL[rotulo],
+                    "subtipo": (
+                        _subtipo_movel(e.get("nome_fantasia"))
+                        if rotulo == "unidade_movel_terrestre"
+                        else None
+                    ),
+                })
             offset += PAGINA
             if offset > 20_000:  # guarda contra paginacao infinita
                 raise IngestError(f"{SOURCE_ID}: paginacao nao terminou no tipo {tipo}")

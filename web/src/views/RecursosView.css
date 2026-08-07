@@ -1,0 +1,76 @@
+/* Recursos. As cores de papel vem de theme/palette (escala categorica, que e
+   identidade e nao magnitude) e chegam por `style`; aqui so forma. */
+
+.recursos-legenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  padding-bottom: var(--space-3);
+}
+
+/* Cada item e um botao: ligar e desligar camada e a unica interacao que faz
+   um mapa de 1.600 pontos ser legivel. */
+.recursos-legenda__item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 0.3rem 0.7rem;
+  min-height: 30px;
+  border: 1px solid var(--linha);
+  border-radius: var(--radius-pill);
+  background: var(--carta-alta);
+  color: var(--bruma);
+  font-family: var(--font-body);
+  font-size: var(--t-small-size);
+  cursor: pointer;
+  transition: opacity 120ms ease, border-color 120ms ease;
+}
+
+.recursos-legenda__item strong {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--giz);
+}
+
+.recursos-legenda__item:hover { border-color: var(--bruma); }
+
+/* Desligado permanece legivel: some do mapa, nao da legenda — quem desligou
+   precisa saber o que desligou. */
+.recursos-legenda__item--off {
+  opacity: 0.4;
+}
+
+.recursos-legenda__marca {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex: none;
+}
+
+/* --- tabela de vazios --- */
+.faltas {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.falta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--t-small-size);
+  color: var(--bruma);
+}
+
+.falta strong {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--giz);
+}
+
+.falta__marca {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex: none;
+}

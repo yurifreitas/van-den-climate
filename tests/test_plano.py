@@ -37,8 +37,13 @@ def test_toda_acao_carrega_evidencia(p):
 
 
 def test_evidencia_nomeia_a_base(p):
-    """A evidencia comeca pelo nome da base — quem le sabe onde conferir."""
-    prefixos = ("MUNIC 2024", "CNES", "JRC")
+    """A evidencia comeca pelo nome da base — quem le sabe onde conferir.
+
+    A lista cresce junto com o catalogo de fontes. Deixa-la explicita e
+    proposital: uma acao com evidencia que nao nomeia a base passaria a existir
+    sem que ninguem notasse, e este teste e o que obriga a decisao consciente.
+    """
+    prefixos = ("MUNIC 2024", "CNES", "JRC", "OpenStreetMap")
     for m in p["municipios"]:
         for a in m["acoes"]:
             assert a["evidencia"].startswith(prefixos), a["evidencia"]

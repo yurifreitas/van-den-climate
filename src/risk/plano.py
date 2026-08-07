@@ -49,7 +49,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Callable
 
-from src.risk import municipal, resposta
+from src.risk import municipal, recursos, resposta
 
 VERSION = "plano-v1"
 
@@ -72,8 +72,11 @@ LIMIAR_KM_REFERENCIA = 25.0
 class Acao:
     """Uma acao possivel e o gatilho que a torna necessaria.
 
-    `gatilho` recebe (linha do indice municipal, linha da camada de resposta)
-    e devolve a evidencia textual quando dispara, ou None quando nao se aplica.
+    `gatilho` recebe (linha do indice, linha da camada de resposta, cobertura
+    de recursos) e devolve a evidencia textual quando dispara, ou None quando
+    nao se aplica. Os dois ultimos podem vir None quando a camada nao foi
+    ingerida — e nesse caso a acao simplesmente nao aparece, em vez de
+    aparecer sem lastro.
     """
 
     id: str
@@ -81,7 +84,7 @@ class Acao:
     horizonte: str            # imediato | estrutural
     esforco: str              # baixo | medio | alto — editorial, ver docstring
     fonte: str
-    gatilho: Callable[[dict, dict | None], str | None]
+    gatilho: Callable[..., str | None]
     detalhe: str = ""
 
 
@@ -94,14 +97,14 @@ def _det(linha: dict, caminho: str) -> Any:
 # ---------------------------------------------------------------------------
 # Catalogo de acoes
 # ---------------------------------------------------------------------------
-def _sem_plano(m: dict, _r: dict | None) -> str | None:
+def _sem_plano(m: dict, _r: dict | None, _cob: dict | None = None) -> str | None:
     d = _det(m, "deficit_prevencao")
     if d.get("plano_contingencia") is False:
         return "MUNIC 2024: municipio declarou NAO possuir plano de contingencia"
     return None
 
 
-def _plano_nao_executado(m: dict, _r: dict | None) -> str | None:
+def _plano_nao_executado(m: dict, _r: dict | None, _cob: dict | None = None) -> str | None:
     d = _det(m, "deficit_prevencao")
     if d.get("plano_contingencia") is True and d.get("plano_executado") is False:
         motivos = [l for l in (d.get("lacunas") or []) if l.startswith("falta")]
@@ -110,14 +113,14 @@ def _plano_nao_executado(m: dict, _r: dict | None) -> str | None:
     return None
 
 
-def _sem_alerta(m: dict, _r: dict | None) -> str | None:
+def _sem_alerta(m: dict, _r: dict | None, _cob: dict | None = None) -> str | None:
     d = _det(m, "deficit_prevencao")
     if d.get("alerta_emitido") is False:
         return "MUNIC 2024: nenhum alerta foi emitido a populacao durante o evento"
     return None
 
 
-def _alerta_sem_alcance(m: dict, _r: dict | None) -> str | None:
+def _alerta_sem_alcance(m: dict, _r: dict | None, _cob: dict | None = None) -> str | None:
     d = _det(m, "deficit_prevencao")
     for l in d.get("lacunas") or []:
         if "alcancou apenas" in l or "canal automatico" in l:
@@ -125,13 +128,13 @@ def _alerta_sem_alcance(m: dict, _r: dict | None) -> str | None:
     return None
 
 
-def _sem_psicologico(_m: dict, r: dict | None) -> str | None:
+def _sem_psicologico(_m: dict, r: dict | None, _cob: dict | None = None) -> str | None:
     if r and r["resposta"]["apoio_psicologico"] is False:
         return "MUNIC 2024: municipio declarou NAO ter oferecido apoio psicologico as vitimas"
     return None
 
 
-def _sem_referencia_saude(_m: dict, r: dict | None) -> str | None:
+def _sem_referencia_saude(_m: dict, r: dict | None, _cob: dict | None = None) -> str | None:
     if not r:
         return None
     cap = r["capacidade"]
@@ -141,7 +144,7 @@ def _sem_referencia_saude(_m: dict, r: dict | None) -> str | None:
     return None
 
 
-def _saude_vulneravel(_m: dict, r: dict | None) -> str | None:
+def _saude_vulneravel(_m: dict, r: dict | None, _cob: dict | None = None) -> str | None:
     if not r:
         return None
     impactos = r["saude"]["impactos"]
@@ -151,7 +154,7 @@ def _saude_vulneravel(_m: dict, r: dict | None) -> str | None:
     return None
 
 
-def _autonomia_baixa(_m: dict, r: dict | None) -> str | None:
+def _autonomia_baixa(_m: dict, r: dict | None, _cob: dict | None = None) -> str | None:
     if not r:
         return None
     a = r["autonomia_logistica"]
@@ -162,7 +165,7 @@ def _autonomia_baixa(_m: dict, r: dict | None) -> str | None:
     return None
 
 
-def _mapear_planicie(m: dict, _r: dict | None) -> str | None:
+def _mapear_planicie(m: dict, _r: dict | None, _cob: dict | None = None) -> str | None:
     ag = m.get("aguas")
     if not ag or ag.get("memoria_hidrica_frac") is None:
         return None
@@ -175,7 +178,7 @@ def _mapear_planicie(m: dict, _r: dict | None) -> str | None:
     return None
 
 
-def _grupos_expostos(_m: dict, r: dict | None) -> str | None:
+def _grupos_expostos(_m: dict, r: dict | None, _cob: dict | None = None) -> str | None:
     if not r:
         return None
     grupos = r["vulneraveis"]["grupos"]
@@ -185,6 +188,44 @@ def _grupos_expostos(_m: dict, r: dict | None) -> str | None:
     ]
     if prioritarios:
         return f"MUNIC 2024: grupos atingidos que exigem evacuacao assistida — {'; '.join(prioritarios)}"
+    return None
+
+
+def _vazio_urgencia(_m: dict, _r: dict | None, cob: dict | None = None) -> str | None:
+    if not cob:
+        return None
+    km = cob.get("fixo_urgencia", {}).get("km_mais_proximo")
+    if km is not None and km >= recursos.LIMIAR_VAZIO_KM:
+        return f"CNES: pronto-socorro ou pronto-atendimento mais proximo a {km:.0f} km (linha reta)"
+    return None
+
+
+def _vazio_bombeiro(_m: dict, _r: dict | None, cob: dict | None = None) -> str | None:
+    if not cob:
+        return None
+    km = cob.get("bombeiro", {}).get("km_mais_proximo")
+    if km is not None and km >= recursos.LIMIAR_VAZIO_KM:
+        return (
+            f"OpenStreetMap: quartel de bombeiros mapeado mais proximo a {km:.0f} km — "
+            "base colaborativa, confirmar com o CBMRS antes de agir"
+        )
+    return None
+
+
+def _vazio_psicossocial(_m: dict, r: dict | None, cob: dict | None = None) -> str | None:
+    if not cob:
+        return None
+    km = cob.get("psicossocial", {}).get("km_mais_proximo")
+    if km is None or km < recursos.LIMIAR_VAZIO_KM:
+        return None
+    # So vira acao onde a lacuna JA se manifestou: municipio distante de CAPS
+    # e que tambem nao ofereceu apoio psicologico em 2024. Distancia sozinha e
+    # geografia; distancia mais falha declarada e problema.
+    if r and r["resposta"]["apoio_psicologico"] is False:
+        return (
+            f"CNES + MUNIC 2024: CAPS mais proximo a {km:.0f} km e o municipio nao ofereceu "
+            "apoio psicologico no evento"
+        )
     return None
 
 
@@ -273,6 +314,35 @@ ACOES: list[Acao] = [
         detalhe="Atendimento suspenso ou paciente remanejado em 2024 indica ponto unico de falha.",
     ),
     Acao(
+        id="realocar_urgencia",
+        titulo="Pactuar retaguarda de urgencia e pre-posicionar ambulancia na temporada",
+        horizonte="imediato",
+        esforco="medio",
+        fonte="cnes_rs",
+        gatilho=_vazio_urgencia,
+        detalhe="Pre-posicionar e ato de escala e contrato, nao compra de frota — cabe antes de "
+                "OND. A distancia e em linha reta: por estrada e maior, e em cheia pode nao existir.",
+    ),
+    Acao(
+        id="cobertura_bombeiro",
+        titulo="Avaliar cobertura de bombeiros e acordo de auxilio mutuo",
+        horizonte="estrutural",
+        esforco="alto",
+        fonte="osm_emergencia",
+        gatilho=_vazio_bombeiro,
+        detalhe="Base colaborativa (OpenStreetMap): confirmar com o CBMRS antes de agir. "
+                "Ausencia no mapa nao prova ausencia no territorio.",
+    ),
+    Acao(
+        id="cobertura_psicossocial",
+        titulo="Pactuar retaguarda psicossocial com CAPS de referencia",
+        horizonte="imediato",
+        esforco="medio",
+        fonte="cnes_rs",
+        gatilho=_vazio_psicossocial,
+        detalhe="Distancia sozinha e geografia; distancia MAIS falha declarada em 2024 e problema.",
+    ),
+    Acao(
         id="mapear_planicie",
         titulo="Mapear planicie reocupavel e revisar uso do solo",
         horizonte="estrutural",
@@ -304,12 +374,21 @@ def build(cenario: str = "atual", oni: float | None = None) -> dict[str, Any]:
     tabela = municipal.build_table(oni, cenario)
     resp = {r["cod_mun"]: r for r in resposta.build_table().rows}
 
+    # Cobertura de recursos e opcional: se as bases nao foram ingeridas, as
+    # acoes de realocacao simplesmente nao aparecem — nenhuma delas passa a
+    # existir "por precaucao".
+    try:
+        cobertura = recursos.build().por_municipio
+    except FileNotFoundError:
+        cobertura = {}
+
     planos: list[PlanoMunicipio] = []
     for linha in tabela.rows:
         r = resp.get(linha["cod_mun"])
+        cob = cobertura.get(linha["cod_mun"])
         acoes = []
         for acao in ACOES:
-            evidencia = acao.gatilho(linha, r)
+            evidencia = acao.gatilho(linha, r, cob)
             if evidencia is None:
                 continue
             acoes.append({

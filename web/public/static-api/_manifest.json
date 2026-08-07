@@ -1,5 +1,5 @@
 {
-  "capturado_em": "2026-08-07T22:29:53Z",
+  "capturado_em": "2026-08-07T23:39:55Z",
   "aviso": "Demo estatica: os dados sao uma fotografia tirada na data acima e NAO se atualizam sozinhos. Para dados vivos, rode a API local (.\\run.ps1).",
   "rotas": [
     {
@@ -185,6 +185,11 @@
         "cenario": "estrutural"
       },
       "arquivo": "plano~cenario-estrutural.json"
+    },
+    {
+      "path": "/recursos",
+      "params": null,
+      "arquivo": "recursos.json"
     },
     {
       "path": "/geo/aguas.png",

@@ -1,6 +1,6 @@
 import { useMemo, useRef, useState } from 'react';
 import type { MalhaResponse, MunicipioRisco } from '../api/types';
-import { BRUMA_FRACA, GRID, LINHA, NIVEL, alpha, sequencial } from '../theme/palette';
+import { ABISSAL, BRUMA_FRACA, GIZ, GRID, LINHA, NIVEL, alpha, sequencial } from '../theme/palette';
 import './MapaMunicipal.css';
 
 /**
@@ -23,7 +23,13 @@ const W = 1000;
 const H = 760;
 const PAD = 12;
 
-type Camada = 'risco' | 'impacto' | 'deficit' | 'exposicao' | 'aguas';
+/**
+ * `recursos` e `aguas` compartilham o preenchimento transparente e diferem na
+ * BORDA: na camada de agua a malha e ruido de fundo (a informacao esta no
+ * raster), na de recursos ela e a unica referencia geografica que resta —
+ * sem borda cheia, 1.600 pontos flutuam sobre o nada.
+ */
+type Camada = 'risco' | 'impacto' | 'deficit' | 'exposicao' | 'aguas' | 'recursos';
 
 export const CAMADAS: { id: Camada; label: string; hint: string }[] = [
   { id: 'risco', label: 'Risco integrado', hint: 'I+D+E modulados pelo estado sazonal' },
@@ -78,6 +84,10 @@ function valorDaCamada(m: MunicipioRisco, camada: Camada): number | null {
       // A informacao desta camada esta no raster, nao no poligono. O valor
       // serve so para o tooltip: fracao do municipio com precedente de agua.
       return m.aguas?.memoria_hidrica_frac ?? null;
+    case 'recursos':
+      // A informacao esta nos pontos. O tooltip mostra o indice, que e o que
+      // torna um vazio de cobertura relevante ou irrelevante.
+      return m.score === null ? null : m.score / 100;
   }
 }
 
@@ -93,7 +103,7 @@ function valorDaCamada(m: MunicipioRisco, camada: Camada): number | null {
 function cor(m: MunicipioRisco, camada: Camada): string | null {
   // Na camada de agua o poligono NAO e preenchido: quem carrega a informacao
   // e o raster embaixo. Preencher aqui cobriria exatamente o que se quer ver.
-  if (camada === 'aguas') return 'none';
+  if (camada === 'aguas' || camada === 'recursos') return 'none';
   const v = valorDaCamada(m, camada);
   if (v === null) return null;
   if (camada === 'risco') return m.level ? NIVEL[m.level] : null;
@@ -108,6 +118,8 @@ export function MapaMunicipal({
   selecionado,
   onSelecionar,
   aguas,
+  recursos,
+  coresRecurso,
 }: {
   malha: MalhaResponse;
   municipios: MunicipioRisco[];
@@ -116,6 +128,10 @@ export function MapaMunicipal({
   onSelecionar: (cod: number | null) => void;
   /** Overlay de memoria hidrica. `null` esconde a camada. */
   aguas?: { url: string; bbox: { lon_min: number; lon_max: number; lat_min: number; lat_max: number } } | null;
+  /** Pontos de recurso (hospital, bombeiro, CAPS...). `null` esconde. */
+  recursos?: { lon: number; lat: number; papel: string; nome: string | null }[] | null;
+  /** Cor por papel, vinda de quem chama — o mapa nao inventa vocabulario. */
+  coresRecurso?: Record<string, string>;
 }) {
   const [hover, setHover] = useState<{ m: MunicipioRisco; x: number; y: number } | null>(null);
   const svgRef = useRef<SVGSVGElement>(null);
@@ -228,6 +244,24 @@ export function MapaMunicipal({
             </path>
           );
         })}
+
+        {/* Pontos de recurso POR CIMA dos poligonos: sao o objeto da leitura
+            nesta camada, e um ponto de 3px sob o preenchimento desapareceria.
+            `pointer-events: none` para nao roubar o clique do municipio. */}
+        {recursos?.map((p, i) => (
+          <circle
+            key={`${p.papel}-${i}`}
+            cx={px(p.lon)}
+            cy={py(p.lat)}
+            r={3}
+            fill={coresRecurso?.[p.papel] ?? GIZ}
+            stroke={ABISSAL}
+            strokeWidth={0.8}
+            style={{ pointerEvents: 'none' }}
+          >
+            <title>{p.nome ? `${p.nome} · ${p.papel}` : p.papel}</title>
+          </circle>
+        ))}
       </svg>
 
       {hover && (

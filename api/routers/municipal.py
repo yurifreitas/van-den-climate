@@ -43,7 +43,7 @@ from src.ingest import cpc_enso_advisory as advisory
 from src.risk import aguas
 from src.risk import historico
 from src.risk import municipal as model
-from src.risk import plano, resposta
+from src.risk import plano, recursos, resposta
 
 router = APIRouter(tags=["risco municipal"])
 
@@ -325,6 +325,47 @@ def get_resposta(
         # capacidade precisa topar com "isto nao e leito" no mesmo payload.
         "lacunas": tabela.lacunas,
         "municipios": linhas,
+    }
+
+
+@router.get("/recursos")
+def get_recursos(pontos: bool = Query(True, description="Inclui a lista de pontos para o mapa")) -> dict:
+    """Mapa geral de recursos de resposta e vazios de cobertura.
+
+    Tres ressalvas viajam no payload e nao sao rodape (ver `resumo.ressalvas`):
+    e BASE e nunca viatura; o CNES nao registra a frota do SAMU; e bombeiro e
+    policia vem do OpenStreetMap, que e colaborativo — ausencia no mapa nao
+    prova ausencia no territorio.
+    """
+    try:
+        r = recursos.build()
+    except FileNotFoundError as exc:
+        raise HTTPException(
+            status_code=503,
+            detail=(
+                "Bases de recursos ausentes. Rode `python -m src.ingest.cnes_rs` e "
+                f"`python -m src.ingest.osm_emergencia`. ({exc})"
+            ),
+        ) from exc
+
+    headline, is_synth, _ = deps.state_headline()
+    oni = None if is_synth else headline.get("oni")
+    indice = model.build_table(oni).rows
+
+    return {
+        "as_of": deps.now_iso()[:10],
+        "provenance": {
+            "basis": "measured",
+            "horizon": "seasonal",
+            "source_ids": ["cnes_rs", "osm_emergencia", "ibge_malha_rs"],
+            "as_of": deps.now_iso()[:10],
+        },
+        "resumo": r.resumo,
+        "vazios": recursos.vazios_priorizados(indice, limite=40),
+        # `pontos=false` para quem so quer os numeros: sao ~1.600 registros e
+        # nem todo consumidor vai desenhar o mapa.
+        "pontos": r.pontos if pontos else [],
+        "por_municipio": {str(k): v for k, v in r.por_municipio.items()},
     }
 
 

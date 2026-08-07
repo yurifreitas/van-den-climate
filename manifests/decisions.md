@@ -121,6 +121,28 @@ em nota de rodapé: contagem de leitos, dias letivos perdidos, recuperação
 financeira, alcance do apoio psicológico e prazo/custo de reconstrução. Cada
 uma nomeia a fonte que a resolveria.
 
+## Mapa de recursos e realocação
+
+| # | Data | Decisão | Razão | Estado |
+|---|------|---------|-------|--------|
+| 053 | 2026-08-07 | **É base, nunca viatura.** Nenhum número desta camada representa frota | Não existe dado público de frota de ambulância, viatura policial ou caminhão de bombeiro no RS. "Realocar" aqui só pode significar *onde o vazio é maior diante do risco*; dizer "mova N carros de A para B" exigiria frota, malha viária e modelo de tempo-resposta. Mesma disciplina da ADR-036 | ativa |
+| 054 | 2026-08-07 | **Tipo 43 do CNES fica FORA do catálogo** | O rótulo é "Unidade Móvel de Nível Pré-Hospitalar", mas a consulta devolve 3.733 registros no RS encabeçados por PANVEL FARMACIAS. Incluí-lo teria posto quase quatro mil farmácias no mapa como ambulância — erro que passa despercebido porque o total só parece "boa cobertura". Conferido nome a nome. Travado por teste | ativa |
+| 055 | 2026-08-07 | O tipo 40 é mantido, mas o **subtipo é heurística sobre o nome**, com `basis: modeled` | O CNES mistura bombeiro voluntário, ambulância, farmácia móvel e unidade odontológica no mesmo tipo. A classificação é útil para leitura e não é cadastro — o estabelecimento segue `measured`, o subtipo não | ativa |
+| 056 | 2026-08-07 | Bombeiro e polícia vêm do **OpenStreetMap**, marcados como `completude: colaborativa` | Não há cadastro público aberto do CBMRS nem da Brigada Militar com coordenada. Ausência no mapa **não prova** ausência no território — um vazio ali é hipótese de vazio, e a interface diz isso ao lado do total | ativa |
+| 057 | 2026-08-07 | Distância é **linha reta sobre centroide**, declarada como piso | Em cheia a distância real cresce e às vezes deixa de existir quando a rodovia corta. O número é um piso da dificuldade de acesso, nunca estimativa de tempo de rota | ativa |
+| 058 | 2026-08-07 | Vazio psicossocial só vira ação onde **já se manifestou** | Distância a CAPS sozinha é geografia. Distância *mais* falha declarada em 2024 é problema. Sem esse duplo critério a lista viraria mapa de densidade populacional | ativa |
+
+**A cobertura do RS**: 1.621 pontos — 346 hospitais, 148 pronto-socorros, 7
+centrais de regulação SAMU, 251 CAPS, 163 unidades móveis, 129 quartéis (OSM) e
+577 unidades policiais (OSM). Vazios acima de 30 km: **184 municípios sem
+quartel próximo, 106 sem CAPS, 101 sem pronto-socorro**. Santa Vitória do
+Palmar está a 145 km do pronto-socorro mais próximo.
+
+**Descoberta sobre o SAMU**: das 205 unidades móveis cadastradas, apenas 31 se
+identificam por nome como ambulância, resgate ou bombeiro. A frota real opera
+sob o CNES da central de regulação, não registrada uma a uma — as 7 centrais
+são o sinal confiável de cobertura SAMU; a contagem de móveis **não é**.
+
 ## Plano de ação preventiva
 
 | # | Data | Decisão | Razão | Estado |
