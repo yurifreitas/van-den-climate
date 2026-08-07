@@ -42,6 +42,7 @@ from api.models import (
 from src.ingest import cpc_enso_advisory as advisory
 from src.risk import aguas
 from src.risk import municipal as model
+from src.risk import resposta
 
 router = APIRouter(tags=["risco municipal"])
 
@@ -278,6 +279,51 @@ def get_cruzamento_aguas(
             "declaratorio e posterior ao evento. Concordancia aqui e evidencia, nao circularidade."
         ),
         "municipios": itens[:limit],
+    }
+
+
+@router.get("/resposta/municipios")
+def get_resposta(
+    limit: int | None = Query(None, ge=1, le=497),
+    sem_unidade: bool = Query(False, description="So municipios sem hospital nem pronto-socorro"),
+) -> dict:
+    """Vulnerabilidade, capacidade de saude, autonomia logistica e resposta.
+
+    Dominio do DEPOIS do evento, deliberadamente separado do indice de
+    prioridade (que mede o antes). Ver o docstring de `src/risk/resposta.py`
+    para por que os dois nao se somam.
+
+    `capacidade.unidade` e sempre `"estabelecimentos"` — NUNCA leitos. A
+    lacuna esta declarada em `lacunas`, com a fonte que resolveria.
+    """
+    try:
+        tabela = resposta.build_table()
+    except FileNotFoundError as exc:
+        raise HTTPException(
+            status_code=503,
+            detail=f"Base municipal ausente. Rode `python -m src.ingest.ibge_rs`. ({exc})",
+        ) from exc
+
+    linhas = tabela.rows
+    if sem_unidade:
+        linhas = [r for r in linhas if r["capacidade"]["total"] == 0]
+        linhas.sort(key=lambda r: -(r["capacidade"]["km_ate_unidade_mais_proxima"] or 0))
+    if limit is not None:
+        linhas = linhas[:limit]
+
+    return {
+        "as_of": deps.now_iso()[:10],
+        "provenance": {
+            "basis": "measured",
+            "horizon": "seasonal",
+            "source_ids": ["ibge_munic_rs", "cnes_rs", "ibge_pop_rs"],
+            "as_of": deps.now_iso()[:10],
+        },
+        "resumo": tabela.resumo,
+        # As lacunas viajam com o dado, nao so na documentacao: quem consome a
+        # capacidade precisa topar com "isto nao e leito" no mesmo payload.
+        "lacunas": tabela.lacunas,
+        "municipios": linhas,
     }
 
 

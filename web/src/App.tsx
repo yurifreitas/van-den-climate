@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Layout } from './components/Layout';
 import { RiscoView } from './views/RiscoView';
 import { MunicipiosView } from './views/MunicipiosView';
+import { RespostaView } from './views/RespostaView';
 import { EstadoView } from './views/EstadoView';
 import { PrevisaoView } from './views/PrevisaoView';
 import { EvidenciaView } from './views/EvidenciaView';
@@ -24,6 +25,7 @@ function App() {
           <Route element={<Layout />}>
             <Route path="/" element={<RiscoView />} />
             <Route path="/municipios" element={<MunicipiosView />} />
+            <Route path="/resposta" element={<RespostaView />} />
             <Route path="/estado" element={<EstadoView />} />
             <Route path="/previsao" element={<PrevisaoView />} />
             <Route path="/evidencia" element={<EvidenciaView />} />

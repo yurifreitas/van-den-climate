@@ -1,5 +1,5 @@
 {
-  "capturado_em": "2026-08-07T18:02:53Z",
+  "capturado_em": "2026-08-07T18:44:06Z",
   "aviso": "Demo estatica: os dados sao uma fotografia tirada na data acima e NAO se atualizam sozinhos. Para dados vivos, rode a API local (.\\run.ps1).",
   "rotas": [
     {
@@ -154,6 +154,11 @@
         "limit": 30
       },
       "arquivo": "risk_municipal_cruzamento_aguas~limit-30.json"
+    },
+    {
+      "path": "/resposta/municipios",
+      "params": null,
+      "arquivo": "resposta_municipios.json"
     },
     {
       "path": "/geo/aguas.png",

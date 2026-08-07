@@ -203,6 +203,7 @@ KNOWN_SOURCES = [
     # um outlook vencido na tela e pior que outlook ausente.
     "cpc_enso_advisory",
     "jrc_gsw",
+    "cnes_rs",
 ]
 
 

@@ -92,6 +92,7 @@ ROTAS: list[tuple[str, dict[str, Any] | None]] = [
     # os tres horizontes do seletor de cenario
     *[("/risk/municipal", {"cenario": c}) for c in ("atual", "ond2026", "estrutural")],
     ("/risk/municipal/cruzamento/aguas", {"limit": 30}),
+    ("/resposta/municipios", None),
 ]
 
 # Binarios servidos pela API que viram asset estatico.

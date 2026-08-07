@@ -342,6 +342,72 @@ export interface AguasMeta {
   };
 }
 
+// ---- /resposta/municipios --------------------------------------------
+
+/** Escala ordinal do MUNIC traduzida. `aplicavel: false` = nao foi testado. */
+export interface EscalaLogistica {
+  id: string;
+  rotulo: string;
+  resposta: string | null;
+  valor: number | null;
+  aplicavel: boolean;
+}
+
+export interface MunicipioResposta {
+  cod_mun: number;
+  municipio: string;
+  populacao: number | null;
+  /** `unidade` e sempre "estabelecimentos" — NUNCA leitos. Ver `lacunas`. */
+  capacidade: {
+    unidade: string;
+    total: number;
+    hospitais: number;
+    urgencia: number;
+    centro_cirurgico: number;
+    centro_obstetrico: number;
+    por_100k: number | null;
+    km_ate_unidade_mais_proxima: number | null;
+    basis: Basis | null;
+  };
+  vulneraveis: { grupos: string[]; n_respondidos: number; basis: Basis | null };
+  saude: { impactos: string[]; n_respondidos: number; basis: Basis | null };
+  resposta: {
+    prestadas: string[];
+    n_respondidos: number;
+    apoio_psicologico: boolean | null;
+    basis: Basis | null;
+  };
+  autonomia_logistica: {
+    indice: number | null;
+    n_aplicaveis: number;
+    itens: EscalaLogistica[];
+    basis: Basis | null;
+  };
+}
+
+export interface RespostaResponse {
+  as_of: string;
+  provenance: Provenance;
+  resumo: {
+    version: string;
+    n_municipios: number;
+    capacidade: {
+      unidade: string;
+      aviso: string;
+      total_estabelecimentos: number;
+      municipios_sem_unidade: number;
+      km_mediano_ate_unidade: number | null;
+    };
+    saude_afetada: number;
+    apoio_psicologico: { ofereceram: number; nao_ofereceram: number };
+    autonomia: { n_avaliados: number; mediana: number | null };
+    fora_do_indice: string;
+  };
+  /** Lacunas declaradas: leitos, dias letivos, recuperacao financeira... */
+  lacunas: { id: string; titulo: string; motivo: string }[];
+  municipios: MunicipioResposta[];
+}
+
 export interface CruzamentoAguas {
   as_of: string;
   n_com_memoria_e_inundacao: number;

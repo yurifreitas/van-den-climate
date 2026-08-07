@@ -99,6 +99,28 @@ Jacuí, imediatamente a montante de Porto Alegre — e a lista do cruzamento tra
 Esteio e Campo Bom, no vale do Sinos. Todos entre os mais atingidos em maio de
 2024, identificados por uma série que termina em 2021.
 
+## Resposta, vulnerabilidade e recuperação — o depois do evento
+
+| # | Data | Decisão | Razão | Estado |
+|---|------|---------|-------|--------|
+| 035 | 2026-08-07 | As 54 colunas restantes do MUNIC entram como **domínio próprio**, fora do índice de prioridade | Descrevem consequência e resposta, não predisposição. Somá-las transformaria a lista de "onde agir antes" num ranking de quem sofreu mais — outra pergunta, que já tem resposta própria | ativa |
+| 036 | 2026-08-07 | Capacidade de saúde é **estabelecimento, nunca leito** | O CNES-LT do DATASUS é `.dbc` sem API. A razão entre estabelecimento e leito varia de 10 a 400 entre um hospital de interior e um terciário; chamar um de outro vira decisão de encaminhamento errada, e passa despercebido porque o número continua plausível. Travado por teste | ativa |
+| 037 | 2026-08-07 | "Não houve/não necessitou" nas escalas logísticas é **não-aplicável**, nunca nota máxima | Município que não precisou de resgate não demonstrou capacidade de resgate. Tratar como 1.0 premiaria quem foi poupado e enterraria quem foi testado — inverteria o sinal que a escala mede. Travado por teste | ativa |
+| 038 | 2026-08-07 | Índice de autonomia é média **só das escalas aplicáveis** | Município testado em duas capacidades e bem nas duas não pode ser penalizado por não ter sido testado nas outras cinco | ativa |
+| 039 | 2026-08-07 | A tradução das 7 escalas ordinais fica **escrita como tabela literal** em `ESCALAS` | Converter texto ordinal em número é interpretação, não ingestão. Deixá-la explícita permite que quem discorde aponte a linha exata — inclusive nas duas escalas de fornecimento, cuja direção declarei por leitura e não por definição do IBGE | ativa |
+| 040 | 2026-08-07 | Mapa de risco municipal do ano corrente vai para a **tela inicial** | "Onde está o risco agora" é a razão de existir da central e não pode exigir navegação. O detalhamento continua em `/municipios` | ativa |
+
+**Achados que a camada produziu**: 201 dos 497 municípios não têm hospital nem
+pronto-socorro (mediana de 13,5 km até a unidade mais próxima; pior caso
+Maçambará, 55,9 km). 242 tiveram o sistema de saúde afetado em 2024. **206
+municípios não ofereceram apoio psicológico às vítimas**, contra 228 que
+ofereceram.
+
+**Cinco lacunas declaradas no payload** (`/resposta/municipios.lacunas`), não
+em nota de rodapé: contagem de leitos, dias letivos perdidos, recuperação
+financeira, alcance do apoio psicológico e prazo/custo de reconstrução. Cada
+uma nomeia a fonte que a resolveria.
+
 **Limite mais caro da camada municipal, e que a interface repete em três lugares**: o
 MUNIC é auto-declaração municipal sobre **um** evento. Há incentivo assimétrico
 — relatar dano dá acesso a repasse, relatar falha de prevenção não dá nada. Um

@@ -1,9 +1,14 @@
 import { Link } from 'react-router-dom';
-import { useHazardsCatalog } from '../api/hooks';
+import { useHazardsCatalog, useMalhaMunicipal, useMunicipalRisk } from '../api/hooks';
 import { HazardCard } from '../components/HazardCard';
+import { MapaMunicipal } from '../components/MapaMunicipal';
 import { MapaTeleconexao } from '../components/MapaTeleconexao';
 import { QueryState } from '../components/QueryState';
 import { View, Section, Grid, Empty, Panel } from '../components/ui';
+import { NIVEL } from '../theme/palette';
+
+/** Ano do dado em tela, nao do relogio: o titulo tem de acompanhar o dado. */
+const ANO_CORRENTE = new Date().getFullYear();
 
 /**
  * Rota `/` — pergunta que responde: "quais perigos climaticos estao ativos
@@ -23,6 +28,8 @@ const HORIZON_LABEL: Record<string, string> = {
 
 export function RiscoView() {
   const { data, isLoading, isError } = useHazardsCatalog();
+  const municipal = useMunicipalRisk('atual');
+  const malha = useMalhaMunicipal();
 
   const grouped = data
     ? data.hazards.reduce<Record<string, typeof data.hazards>>((acc, h) => {
@@ -52,6 +59,58 @@ export function RiscoView() {
         <Panel pad="tight">
           <MapaTeleconexao />
         </Panel>
+      </Section>
+
+      {/* Mapa de risco do ano corrente, na primeira tela. A pergunta "onde
+          esta o risco agora" nao pode exigir uma navegacao: ela e a razao de
+          existir da central. O detalhamento fica em /municipios. */}
+      <Section
+        title={`Risco municipal — ${ANO_CORRENTE}`}
+        note={
+          municipal.data && malha.data
+            ? `Cenario "agora", ONI medido ${municipal.data.oni?.toFixed(2) ?? '—'}. ` +
+              `${municipal.data.n_completo} municipios com base completa. ` +
+              'Indice de prioridade preventiva, nao previsao de cheia.'
+            : undefined
+        }
+        actions={<Link to="/municipios">abrir detalhamento</Link>}
+      >
+        <Grid min={380}>
+          <Panel pad="tight">
+            {municipal.data && malha.data ? (
+              <MapaMunicipal
+                malha={malha.data}
+                municipios={municipal.data.municipios}
+                camada="risco"
+                selecionado={null}
+                onSelecionar={() => {}}
+              />
+            ) : (
+              <span className="skeleton" style={{ height: 320, display: 'block' }} />
+            )}
+          </Panel>
+          <Panel title="Prioridade mais alta agora">
+            {municipal.data ? (
+              <ol className="topo-risco">
+                {municipal.data.municipios
+                  .filter((m) => m.score !== null)
+                  .slice(0, 10)
+                  .map((m) => (
+                    <li key={m.cod_mun}>
+                      <span
+                        className="topo-risco__marca"
+                        style={{ background: m.level ? NIVEL[m.level] : 'var(--bruma)' }}
+                      />
+                      <span className="topo-risco__nome">{m.municipio}</span>
+                      <span className="t-data">{m.score!.toFixed(1)}</span>
+                    </li>
+                  ))}
+              </ol>
+            ) : (
+              <span className="skeleton" style={{ height: 240, display: 'block' }} />
+            )}
+          </Panel>
+        </Grid>
       </Section>
 
       <QueryState isLoading={isLoading} isError={isError}>

@@ -7,6 +7,42 @@
  * que a camada ui consome.
  */
 
+/* --- Top-N de risco na tela inicial ---
+   Marca de nivel, nome, valor. A cor chega por `style` a partir de
+   theme/palette; nenhum hex de dado neste arquivo. */
+.topo-risco {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.topo-risco li {
+  display: grid;
+  grid-template-columns: 4px 1fr auto;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.topo-risco__marca {
+  width: 4px;
+  height: 1.1em;
+  border-radius: 2px;
+}
+
+.topo-risco__nome {
+  font-size: var(--t-small-size);
+  color: var(--giz);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.topo-risco .t-data { color: var(--giz); }
+
 /* --- Regua de Surpresa: um canal (fader) por variavel --- */
 .ruler {
   display: flex;

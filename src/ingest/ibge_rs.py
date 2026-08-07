@@ -243,6 +243,41 @@ MUNIC_COLS: dict[str, str] = {
     "Mers116": "exp_situacao_rua",
     "Mers117": "exp_comunidades_tradicionais",
     "Mers118": "exp_deficiencia",
+    "Mers111": "exp_criancas",
+    "Mers112": "exp_mulheres",
+    "Mers113": "exp_lgbtqia",
+    "Mers114": "exp_gestantes",
+    "Mers115": "exp_populacao_negra",
+    "Mers119": "exp_doencas_cronicas",
+    # 2b. Impacto sobre o sistema de saude
+    "Mers121": "saude_estruturas_afetadas",
+    "Mers122": "saude_campanha_vacinal",
+    "Mers123": "saude_danos_equipamentos",
+    "Mers124": "saude_atendimento_suspenso",
+    "Mers125": "saude_remanejamento_pacientes",
+    "Mers126": "saude_combustivel",
+    "Mers135": "saude_doencas_inundacao",
+    "Mers1311": "dano_acolhimento_institucional",
+    # 3. Resposta prestada — o que o municipio conseguiu entregar
+    "Mers161": "resp_equipes_resgate",
+    "Mers162": "resp_transporte_vitimas",
+    "Mers163": "resp_ambulancias",
+    "Mers164": "resp_recursos_sus",
+    "Mers165": "resp_abrigo",
+    "Mers166": "resp_apoio_psicologico",
+    "Mers167": "resp_alimentos_agua",
+    "Mers169": "resp_farmacos",
+    "Mers1613": "resp_medicamentos_atencao",
+    "Mers1616": "resp_visita_domiciliar",
+    "Mers1617": "resp_limpeza_vias",
+    # 3b. Autonomia logistica — as sete perguntas ordinais (nao sao Sim/Nao)
+    "Mers17": "log_tempo_primeira_resposta",
+    "Mers18": "log_recursos_durante",
+    "Mers19": "log_dias_fornecimento",
+    "Mers20": "log_cobertura_bairros",
+    "Mers21": "log_72h_criticas",
+    "Mers22": "log_alimentacao",
+    "Mers23": "log_cooperacao",
     # 3. Danos
     "Mers131": "dano_obitos",
     "Mers132": "dano_desaparecidos",
@@ -265,7 +300,18 @@ _NAO = {"não", "nao"}
 
 
 def _tri(value: object) -> bool | None:
-    """Sim -> True, Não -> False, qualquer outra coisa ('-', vazio) -> None."""
+    """Sim -> True, Não -> False, qualquer outra coisa -> None.
+
+    O "qualquer outra coisa" agrupa quatro respostas que o MUNIC distingue:
+    `-` (nao aplicavel, porque o municipio nao foi atingido), `Nao sabe
+    informar`, `Nao informou` e `Recusa`. Todas viram None de proposito: do
+    ponto de vista do indice, nenhuma delas e um "nao" — e tratar "nao sabe"
+    como ausencia de problema seria a leitura mais otimista possivel do
+    silencio, exatamente o erro que a cobertura minima do modelo evita.
+
+    A distincao entre elas se perde aqui e esta declarada como limite: quem
+    precisar separar "nao aplicavel" de "nao sabe" tem o bruto em disco.
+    """
     if value is None:
         return None
     s = str(value).strip().lower()
@@ -301,12 +347,17 @@ def parse_munic(raw: bytes) -> pd.DataFrame:
     out["populacao"] = pd.to_numeric(out["populacao"], errors="coerce").astype("Int64")
     out["municipio"] = out["municipio"].astype(str).str.strip()
 
-    # alerta_alcance e faixa textual ("Menos de 5%", "50% ou mais"...) —
-    # mantida como texto; a normalizacao numerica e decisao do modelo, nao
-    # da ingestao (Camada 1 nao interpreta).
-    out["alerta_alcance"] = out["alerta_alcance"].astype(str).str.strip()
+    # Colunas ORDINAIS, nao booleanas: alerta_alcance e faixa textual ("Menos
+    # de 5%"), e as sete `log_*` sao escalas proprias do MUNIC ("Igual a
+    # procura", "Menor em 15%", "Nao houve/nao necessitou"...). Ficam como
+    # texto — traduzir escala ordinal para numero e decisao do MODELO, nao da
+    # ingestao: a Camada 1 registra, nao interpreta.
+    ORDINAIS = {"alerta_alcance", *[c for c in out.columns if c.startswith("log_")]}
+    for col in ORDINAIS:
+        out[col] = out[col].astype(str).str.strip()
 
-    bool_cols = [c for c in out.columns if c not in {"cod_mun", "municipio", "populacao", "regiao_ibge", "alerta_alcance"}]
+    nao_bool = {"cod_mun", "municipio", "populacao", "regiao_ibge", *ORDINAIS}
+    bool_cols = [c for c in out.columns if c not in nao_bool]
     for col in bool_cols:
         out[col] = out[col].map(_tri).astype("boolean")
 

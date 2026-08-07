@@ -11,6 +11,7 @@ import type {
   Cenario,
   CruzamentoAguas,
   OutlookResponse,
+  RespostaResponse,
   AttributionResponse,
   BreaksResponse,
   CoverageResponse,
@@ -154,6 +155,18 @@ export function useMunicipalRisk(cenario: Cenario = 'atual') {
     // sem isso o mapa inteiro pisca para o esqueleto a cada clique, e a
     // comparacao entre horizontes — que e o ponto do seletor — se perde.
     placeholderData: (anterior) => anterior,
+  });
+}
+
+/**
+ * Vulnerabilidade, capacidade de saude, autonomia logistica e resposta.
+ * Dominio do DEPOIS do evento — separado do indice de prioridade de propósito.
+ */
+export function useResposta() {
+  return useQuery({
+    queryKey: ['resposta', 'municipios'],
+    queryFn: () => apiGet<RespostaResponse>('/resposta/municipios'),
+    staleTime: STALE,
   });
 }
 
