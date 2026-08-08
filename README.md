@@ -49,10 +49,13 @@ pip install -r requirements.txt
 python -m pytest -q                       # gate + harness, roda sem dado
 
 # ingestão (rede; ~130 MB no primeiro run por causa do JRC)
-python -m src.ingest.cli                  # índices CPC/PSL
+python -m src.ingest.cli --all            # índices CPC/PSL (sem --all só imprime ajuda)
 python -m src.ingest.ibge_rs              # MUNIC 2024, malha, população
 python -m src.ingest.cpc_enso_advisory    # boletim ENSO
 python -m src.ingest.jrc_gsw              # Global Surface Water
+python -m src.ingest.ghcn_rs              # chuva diária 1934–1999 (~6 MB, 67 estações)
+python -m src.ingest.cnes_rs              # estabelecimentos de saúde
+python -m src.ingest.osm_emergencia       # bombeiros e polícia (OpenStreetMap)
 python -m src.risk.aguas                  # estatística zonal + overlay
 
 cd web && npm install

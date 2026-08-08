@@ -393,6 +393,11 @@ def get_recursos(pontos: bool = Query(True, description="Inclui a lista de ponto
 
     return {
         "as_of": deps.now_iso()[:10],
+        # O envelope cobre o CADASTRO de recursos, que e medido: cada ponto foi
+        # observado. `vazios` NAO entra nele — carrega o indice de prioridade,
+        # que e modelado, e por isso tem selo proprio abaixo. Selar tudo como
+        # measured afirmaria medicao onde ha composicao, que e exatamente a
+        # fronteira que a regra 2 do projeto existe para manter visivel.
         "provenance": {
             "basis": "measured",
             "horizon": "seasonal",
@@ -400,7 +405,21 @@ def get_recursos(pontos: bool = Query(True, description="Inclui a lista de ponto
             "as_of": deps.now_iso()[:10],
         },
         "resumo": r.resumo,
-        "vazios": recursos.vazios_priorizados(indice, limite=40),
+        "vazios": {
+            "provenance": {
+                "basis": "synthetic" if is_synth else "modeled",
+                "horizon": "seasonal",
+                # cpc_oni entra porque o score que ordena esta lista depende do
+                # ONI corrente — omiti-lo escondia uma dependencia real.
+                "source_ids": ["cnes_rs", "osm_emergencia", "ibge_munic_rs", "cpc_oni"],
+                "as_of": deps.now_iso()[:10],
+            },
+            "nota": (
+                "A ordem cruza o indice de prioridade (modelado) com a distancia ao recurso "
+                "mais proximo (medida). O cadastro de recursos e medido; a ORDEM nao e."
+            ),
+            "itens": recursos.vazios_priorizados(indice, limite=40),
+        },
         # `pontos=false` para quem so quer os numeros: sao ~1.600 registros e
         # nem todo consumidor vai desenhar o mapa.
         "pontos": r.pontos if pontos else [],

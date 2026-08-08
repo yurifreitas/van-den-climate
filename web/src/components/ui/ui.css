@@ -25,9 +25,13 @@
 .ui-stack[data-gap='12'] { gap: var(--space-12); }
 
 /* --- Grid: auto-fill com largura minima declarada pelo chamador --- */
+/* `min(--ui-grid-min, 100%)` e o que impede a grade de estourar.
+   Com o piso rigido, uma chamada com min={420} forcava 420px de coluna e
+   produzia rolagem HORIZONTAL abaixo de ~452px de viewport — no telefone, que
+   e o aparelho mais provavel de estar na mao durante um evento. */
 .ui-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(var(--ui-grid-min, 280px), 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(var(--ui-grid-min, 280px), 100%), 1fr));
   gap: var(--space-4);
 }
 

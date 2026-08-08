@@ -96,8 +96,29 @@ export function Layout() {
       <main className="app-main">
         <Outlet />
       </main>
-      <footer className="app-footer t-note">
-        Instrumento de leitura, nao produto SaaS. Rede de estacoes RS — escala divergente de anomalia.
+      <footer className="app-footer">
+        <p className="t-note">
+          Instrumento de leitura, nao produto SaaS. Rede de estacoes RS — escala divergente de
+          anomalia.
+        </p>
+        {/*
+          ATRIBUICAO DE FONTES — obrigacao, nao cortesia.
+          O OpenStreetMap e licenciado sob ODbL, que EXIGE atribuicao visivel em
+          qualquer obra derivada publicada. A demo e publica; o dado do OSM
+          alimenta /recursos e aparece desenhado no mapa. Sem esta linha o
+          projeto esta em descumprimento de licenca, nao apenas mal-educado.
+          As demais fontes entram junto porque a exigencia de citacao do JRC
+          (CC BY 4.0) e do IBGE tem a mesma natureza.
+        */}
+        <p className="app-footer__fontes t-note">
+          Fontes:{' '}
+          <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer noopener">
+            © colaboradores do OpenStreetMap
+          </a>{' '}
+          (ODbL) · Global Surface Water, Joint Research Centre — Pekel et al., <em>Nature</em> 540,
+          418–422 (2016), CC BY 4.0 · IBGE (MUNIC 2024, malha municipal, estimativas de populacao) ·
+          CNES/DATASUS — Ministerio da Saude · GHCN-Daily e ONI/SOI/AAO — NOAA/NCEI e CPC.
+        </p>
       </footer>
     </>
   );

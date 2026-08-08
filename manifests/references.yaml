@@ -758,6 +758,67 @@ schools:
         status: context
         resolve: "GPCC — a grade de estacoes mais longa disponivel (1891-)."
 
+      # -----------------------------------------------------------------
+      # As entradas acima descrevem produtos PLANEJADOS (CHIRPS, ERA5, GPCC,
+      # RMM) — nenhum deles tem ingestor hoje. As abaixo sao os que o projeto
+      # de fato ingere, e entraram depois do pivo para Central de Risco.
+      # Manter as duas listas separadas e explicitas evita o que a revisao
+      # multi-agente encontrou: uma secao intitulada "produtos que o projeto
+      # ingere" citando so o que ele NAO ingere.
+      # -----------------------------------------------------------------
+      - id: pekel
+        name: Jean-Francois Pekel
+        affiliation: Joint Research Centre, Comissao Europeia
+        status: core
+        resolve: >
+          Global Surface Water (Nature 540, 418-422, 2016) — a base da camada de
+          memoria hidrica. Classifica cada pixel de 30 m entre 1984 e 2021 como
+          agua permanente, sazonal, PERDIDA ou nova. Licenca CC BY 4.0, exige
+          citacao. E a unica fonte que responde "onde ja foi agua e deixou de
+          ser", que e a pergunta por tras de "areas que voltaram a encher".
+
+      - id: menne
+        name: Matthew J. Menne
+        affiliation: NOAA / NCEI
+        status: core
+        resolve: >
+          GHCN-Daily — a serie de chuva diaria mais longa disponivel para o RS
+          (66 estacoes, 1934-1999). E sobre ela que a ADR-042 registra o
+          contato com o alvo. Conhecer os controles de qualidade do GHCN e o
+          que justifica descartar o dia com qualquer flag em vez de corrigi-lo.
+
+      - id: ibge_munic
+        name: IBGE — Pesquisa de Informacoes Basicas Municipais (MUNIC)
+        affiliation: Instituto Brasileiro de Geografia e Estatistica
+        status: core
+        resolve: >
+          Suplemento "Evento Climatico Rio Grande do Sul" 2024: 497 municipios
+          x 100 variaveis sobre o evento de 26/04/2024. E auto-declaracao da
+          prefeitura ao IBGE — saber disso e o que sustenta o limite declarado
+          de incentivo assimetrico entre relatar dano e relatar falha de
+          prevencao.
+
+      - id: osm
+        name: Colaboradores do OpenStreetMap
+        affiliation: OpenStreetMap Foundation
+        status: core
+        resolve: >
+          Quarteis de bombeiros e unidades policiais do RS. Licenca ODbL, que
+          EXIGE atribuicao visivel em obra derivada publicada — obrigacao
+          legal, nao cortesia. E base colaborativa: ausencia no mapa nao prova
+          ausencia no territorio, e todo vazio derivado dela carrega essa
+          ressalva.
+
+      - id: cnes
+        name: CNES / DATASUS
+        affiliation: Ministerio da Saude
+        status: core
+        resolve: >
+          Cadastro de estabelecimentos de saude. Conhecer a taxonomia de
+          `codigo_tipo_unidade` e o que impediu um erro grave: o tipo 43, cujo
+          rotulo diz "Unidade Movel de Nivel Pre-Hospitalar", devolve farmacias
+          — quase quatro mil delas entrariam no mapa como ambulancia.
+
   # -------------------------------------------------------------------
   - id: sesa_extremos
     label: Extremos e clima regional no Cone Sul

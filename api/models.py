@@ -240,6 +240,13 @@ class SourceStatus(BaseModel):
     status: Literal["ok", "stale", "missing"]
     rows: int | None = None
     notes: str | None = None
+    # A ingestao ser recente NAO significa que o dado seja recente: o GHCN foi
+    # baixado hoje e a serie termina em 1999. Sem separar as duas coisas, o
+    # painel de saude dizia "ok" para um arquivo parado ha 27 anos.
+    # None = serie corrente, acompanha o calendario.
+    cobertura_ate: str | None = None
+    idade_dias: int | None = None
+    vence_em: str | None = None
 
 
 class SourcesHealthResponse(BaseModel):

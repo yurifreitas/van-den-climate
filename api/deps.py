@@ -205,6 +205,7 @@ KNOWN_SOURCES = [
     "jrc_gsw",
     "cnes_rs",
     "ghcn_rs",
+    "osm_emergencia",
 ]
 
 
@@ -249,8 +250,80 @@ def sources_health() -> list[dict[str, Any]]:
             "source_id": source_id,
             "last_ingested_at": prov.get("fetched_at"),
             "sha256": prov.get("sha256"),
-            "status": "ok",
+            "status": _status_fonte(source_id, prov),
             "rows": prov.get("rows"),
             "notes": prov.get("notes"),
+            # A ingestao ser recente NAO significa que o dado seja recente: o
+            # GHCN foi baixado hoje e termina em 1999. Sem estes dois campos o
+            # painel de saude dizia "ok" para uma serie parada ha 27 anos.
+            "cobertura_ate": COBERTURA_ATE.get(source_id),
+            "idade_dias": _idade_dias(prov.get("fetched_at")),
+            "vence_em": prov.get("next_update"),
         })
     return out
+
+
+# Ate quando cada fonte COBRE o fenomeno — distinto de quando foi baixada.
+# None = serie corrente, acompanha o calendario.
+COBERTURA_ATE: dict[str, str | None] = {
+    "cpc_oni": None,
+    "cpc_aao": None,
+    "cpc_soi": None,
+    "psl_nino": None,
+    "cpc_enso_advisory": None,
+    "ibge_munic_rs": "2024 (evento de 26/04/2024)",
+    "ibge_malha_rs": "2024",
+    "ibge_pop_rs": "2024",
+    "cnes_rs": None,
+    "osm_emergencia": None,
+    "jrc_gsw": "2021",
+    "ghcn_rs": "1999",
+}
+
+# Janela alem da qual a ingestao e considerada velha, por fonte. O boletim do
+# CPC e mensal; o resto muda em cadencia anual ou nunca.
+MAX_IDADE_DIAS: dict[str, int] = {
+    "cpc_oni": 45,
+    "cpc_aao": 45,
+    "cpc_soi": 45,
+    "psl_nino": 45,
+    "cpc_enso_advisory": 40,
+}
+MAX_IDADE_PADRAO = 400
+
+
+def _idade_dias(fetched_at: str | None) -> int | None:
+    if not fetched_at:
+        return None
+    try:
+        return int((pd.Timestamp.now(tz="UTC") - pd.Timestamp(fetched_at)).total_seconds() // 86400)
+    except Exception:
+        return None
+
+
+def _status_fonte(source_id: str, prov: dict[str, Any]) -> str:
+    """ok | stale — comparando a IDADE DA INGESTAO com o limite da fonte.
+
+    Antes esta funcao nao existia e o campo era a string literal "ok". Um
+    painel de saude que nunca diz "nao ok" nao e painel de saude: e decoracao
+    que custa a confianca de tudo o mais que a tela afirma.
+
+    A cobertura do dado (ate 1999, ate 2021) NAO entra no status: uma serie
+    historica encerrada nao esta com defeito, ela e o que e. Isso viaja em
+    `cobertura_ate`, para o front dizer a janela sem chamar de falha.
+    """
+    idade = _idade_dias(prov.get("fetched_at"))
+    if idade is None:
+        return "stale"
+    if idade > MAX_IDADE_DIAS.get(source_id, MAX_IDADE_PADRAO):
+        return "stale"
+    # Boletim com data de proximo numero ja vencida: o CPC publicou e nos nao
+    # reingerimos.
+    prox = prov.get("next_update")
+    if prox:
+        try:
+            if pd.Timestamp(prox) < pd.Timestamp.now(tz="UTC").tz_localize(None):
+                return "stale"
+        except Exception:
+            pass
+    return "ok"

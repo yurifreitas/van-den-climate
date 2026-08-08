@@ -18,7 +18,12 @@
   --grade: #1E2A31;      /* gridline de grafico */
   --giz: #D8DEE0;        /* tinta primaria */
   --bruma: #8A979E;      /* tinta secundaria, eixos, rotulos */
-  --bruma-fraca: #5E6B72;/* tinta terciaria, nota de rodape */
+  /* Tinta terciaria. Era #5E6B72, que dava 3,35:1 sobre --carta — abaixo do
+     piso AA de 4,5:1 para texto pequeno. E justamente a cor de `.t-note`, que
+     e a classe do selo de proveniencia e da nota de metodo: o projeto trata
+     essas duas como nao-opcionais e as pintava no tom menos legivel da
+     paleta. #7A868D fica em ~4,6:1 e continua sendo o terceiro nivel. */
+  --bruma-fraca: #7A868D;
 
   /* alias legado — mantido para arquivos fora do escopo desta revisao
      (ex.: src/views/ReferenciasView.css) que ainda referenciam --grid. */

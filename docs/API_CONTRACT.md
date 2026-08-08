@@ -263,6 +263,9 @@ lacuna declarada, não exceção silenciosa (ver ARCHITECTURE §1).
 3. **Erro é resposta, não exceção**: fonte ausente → 200 com
    `basis: null` e `limits` preenchido. A central de risco não pode ter tela
    branca.
-4. **CORS liberado só para `localhost:5173`** em dev.
+4. **CORS liberado só para `localhost:5931`** em dev — a porta própria do
+   projeto, nunca a default do Vite. O contrato dizia 5173 e o código usa 5931
+   (`api/main.py`): era o documento descrevendo exatamente a armadilha que o
+   `CLAUDE.md` manda evitar.
 5. Toda alteração de contrato bumpa `/api/v1` → `/v2`. O front pinga
    `GET /meta` no boot e avisa se a versão divergir.
