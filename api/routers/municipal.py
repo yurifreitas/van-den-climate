@@ -43,7 +43,7 @@ from src.ingest import cpc_enso_advisory as advisory
 from src.risk import aguas
 from src.risk import historico
 from src.risk import municipal as model
-from src.risk import dossie, geotecnico, pessoal, plano, recursos, resposta, territorios
+from src.risk import contencao, dossie, geotecnico, pessoal, plano, recursos, resposta, territorios
 
 router = APIRouter(tags=["risco municipal"])
 
@@ -397,6 +397,44 @@ def get_territorios() -> dict:
         },
         "resumo": t.resumo,
         "territorios": t.rows,
+    }
+
+
+@router.get("/contencao")
+def get_contencao(cenario: str = "atual") -> dict:
+    """Estrategias de contencao cabiveis, com o par convencional/natureza.
+
+    Cada estrategia so aparece onde o GATILHO fisico existe no dado: regime de
+    bacia (ANA), ocorrencia geotecnica declarada (MUNIC), memoria hidrica
+    (JRC) ou superficie construida (GHSL). Nao ha recomendacao generica.
+
+    `impermeabilizacao.limiar` e o percentil 90 do proprio estado, nao um
+    numero da literatura: a fracao aqui e de MUNICIPIO, e os limites classicos
+    de 10-25% sao de BACIA — denominadores diferentes por uma ordem de
+    grandeza. O corte absoluto anterior deixava passar 13 municipios de 497.
+
+    Nenhuma entrada e projeto. Sao familias de intervencao; dimensionamento,
+    custo e prazo exigem estudo fora desta central.
+    """
+    try:
+        tabela = model.build_table(None, cenario)
+        c = contencao.build(tabela.rows, geotecnico.build().rows)
+    except FileNotFoundError as exc:
+        raise HTTPException(
+            status_code=503,
+            detail=f"Rode `python -m src.ingest.ana_bacias` e `python -m src.ingest.ghsl_built`. ({exc})",
+        ) from exc
+    return {
+        "as_of": deps.now_iso()[:10],
+        "provenance": {
+            # `modeled`, nao `measured`: os gatilhos sao medidos, mas a
+            # correspondencia mecanismo -> familia de obra e criterio nosso.
+            "basis": "modeled",
+            "horizon": "seasonal",
+            "source_ids": ["ana_bacias", "ibge_munic", "jrc_gsw", "ghsl_built"],
+            "as_of": deps.now_iso()[:10],
+        },
+        **c,
     }
 
 

@@ -53,13 +53,34 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 INTERIM = REPO_ROOT / "data" / "interim"
 
 BACIAS_PARQUET = INTERIM / "ana_bacias.parquet"
+CONSTRUIDA_PARQUET = INTERIM / "ghsl_built_rs.parquet"
 
 VERSION = "contencao-v1"
 
 # Fracao de area construida a partir da qual a drenagem urbana vira o problema
-# dominante. 8% e piso deliberadamente baixo: em municipio pequeno a mancha
-# urbana e pequena em area e concentra toda a populacao e o dano.
-LIMIAR_IMPERMEAVEL = 0.08
+# dominante.
+#
+# Este limite era 0,08 absoluto, escrito antes de existir o dado. Com o GHSL
+# ingerido ele se revelou errado por um motivo que vale registrar, porque e o
+# tipo de erro que passa despercebido: a literatura classica de hidrologia
+# urbana (modelo de cobertura impermeavel, Schueler) situa a degradacao entre
+# 10% e 25% — mas esses numeros sao de **bacia**, e o que temos e fracao de
+# **municipio**. Sao denominadores diferentes por uma ordem de grandeza: um
+# municipio inclui toda a area rural, e a mancha urbana onde a chuva de fato
+# cai sobre concreto pode passar de 60% enquanto o municipio inteiro marca 5%.
+# Aplicar o limite de bacia sobre a fracao municipal e erro de categoria, e no
+# RS ele deixava passar 13 municipios de 497.
+#
+# A leitura que o dado sustenta e ordinal (ver o modulo de ingestao). Entao o
+# corte e o **percentil 90 do proprio estado**, calculado a cada build e
+# declarado no payload: "esta entre os 10% mais impermeabilizados do RS" e uma
+# afirmacao verificavel; "passou de 8%" nao era.
+PERCENTIL_IMPERMEAVEL = 0.90
+
+# Piso absoluto sob o percentil. Sem ele, um estado inteiro pouco urbanizado
+# ainda teria 10% dos seus municipios rotulados como problema de drenagem —
+# percentil sempre acha um topo, mesmo quando nao ha nada la.
+PISO_IMPERMEAVEL = 0.01
 
 
 @dataclass(frozen=True)
@@ -115,12 +136,14 @@ def _encosta(ctx: dict) -> str | None:
 
 def _urbano(ctx: dict) -> str | None:
     frac = ctx.get("frac_construida")
-    if frac is not None and frac >= LIMIAR_IMPERMEAVEL:
-        return (
-            f"GHSL 2025: {frac * 100:.1f}% da area do municipio e superficie construida — "
-            "a chuva que cai ali nao infiltra"
-        )
-    return None
+    limiar = ctx.get("limiar_impermeavel")
+    if frac is None or limiar is None or frac < limiar:
+        return None
+    return (
+        f"GHSL 2025: {frac * 100:.1f}% da area do municipio e superficie construida, "
+        f"acima do percentil {PERCENTIL_IMPERMEAVEL:.0%} do RS ({limiar * 100:.1f}%) — "
+        "a chuva que cai ali nao infiltra"
+    )
 
 
 def _alagamento(ctx: dict) -> str | None:
@@ -272,8 +295,32 @@ ESTRATEGIAS: list[Estrategia] = [
 ]
 
 
+def carregar_construida() -> dict[int, float]:
+    """Fracao construida por municipio, do GHSL. Ausente devolve vazio.
+
+    Ausente NAO e erro: a estrategia de drenagem urbana simplesmente nao
+    dispara, e o payload declara a cobertura em `n_com_frac_construida`. O que
+    seria erro e tratar ausencia como zero e afirmar que nao ha cidade ali.
+    """
+    if not CONSTRUIDA_PARQUET.exists():
+        return {}
+    d = pd.read_parquet(CONSTRUIDA_PARQUET).dropna(subset=["frac_construida"])
+    return {int(r.cod_mun): float(r.frac_construida) for r in d.itertuples()}
+
+
+def _limiar_impermeavel(construida: dict[int, float]) -> float | None:
+    """Percentil do proprio estado, com piso. Sem dado, nao ha limite."""
+    if len(construida) < 30:
+        return None
+    import numpy as np
+
+    p = float(np.quantile(list(construida.values()), PERCENTIL_IMPERMEAVEL))
+    return round(max(p, PISO_IMPERMEAVEL), 5)
+
+
 def _contexto(cod: int, municipal_row: dict, geo_row: dict | None,
-              bacia: dict | None, construida: float | None) -> dict[str, Any]:
+              bacia: dict | None, construida: float | None,
+              limiar: float | None) -> dict[str, Any]:
     ag = municipal_row.get("aguas") or {}
     det = (municipal_row.get("componentes", {}).get("impacto", {}) or {}).get("detalhe", {}) or {}
     perigos = det.get("perigos") or []
@@ -284,6 +331,7 @@ def _contexto(cod: int, municipal_row: dict, geo_row: dict | None,
         "memoria_hidrica_frac": ag.get("memoria_hidrica_frac"),
         "geotecnico_ocorrencias": (geo_row or {}).get("geotecnico", {}).get("ocorrencias"),
         "frac_construida": construida,
+        "limiar_impermeavel": limiar,
         "teve_alagamento": "oc_alagamento" in perigos or "alagamento (drenagem urbana)" in perigos,
     }
 
@@ -299,12 +347,16 @@ def build(indice: list[dict[str, Any]], geo_rows: list[dict[str, Any]] | None = 
     por_bacia = {int(r["cod_mun"]): {"regime": r["regime"], "bacia": r["bacia"]}
                  for _, r in bac.iterrows()}
     por_geo = {g["cod_mun"]: g for g in (geo_rows or [])}
-    construida = construida or {}
+    # `None` significa "use o GHSL do disco"; `{}` significa "sem esta camada".
+    # A distincao importa: chamador de teste passa {} de proposito.
+    construida = carregar_construida() if construida is None else construida
+    limiar = _limiar_impermeavel(construida)
 
     linhas = []
     for m in indice:
         cod = m["cod_mun"]
-        ctx = _contexto(cod, m, por_geo.get(cod), por_bacia.get(cod), construida.get(cod))
+        ctx = _contexto(cod, m, por_geo.get(cod), por_bacia.get(cod),
+                        construida.get(cod), limiar)
         aplicaveis = []
         for e in ESTRATEGIAS:
             ev = e.gatilho(ctx)
@@ -348,6 +400,19 @@ def build(indice: list[dict[str, Any]], geo_rows: list[dict[str, Any]] | None = 
     return {
         "version": VERSION,
         "n_municipios": len(linhas),
+        "impermeabilizacao": {
+            "n_com_frac_construida": len(construida),
+            "limiar": limiar,
+            "percentil": PERCENTIL_IMPERMEAVEL,
+            "piso": PISO_IMPERMEAVEL,
+            "basis": "measured" if construida else None,
+            "nota": (
+                "Fracao de MUNICIPIO, nao de bacia — proxy ordinal de "
+                "impermeabilizacao. O corte e o percentil do proprio estado "
+                "porque o limite de bacia da literatura nao se aplica a este "
+                "denominador."
+            ),
+        },
         "por_regime": regimes,
         "por_estrategia": por_estrategia,
         "municipios": linhas,

@@ -91,12 +91,14 @@ def _camadas(cenario: str, oni: float | None) -> dict[str, Any]:
     try:
         from src.risk import contencao
 
+        construida = contencao.carregar_construida()
+        limiar_imperm = contencao._limiar_impermeavel(construida)
         estrategias = {
             m["cod_mun"]: m["estrategias"]
             for m in contencao.build(tabela.rows, geo_todos)["municipios"]
         }
     except FileNotFoundError:
-        estrategias = {}
+        construida, limiar_imperm, estrategias = {}, None, {}
 
     return {
         "tabela": tabela,
@@ -114,6 +116,8 @@ def _camadas(cenario: str, oni: float | None) -> dict[str, Any]:
         "regimes": regimes,
         "territorios": territ,
         "estrategias": estrategias,
+        "construida": construida,
+        "limiar_impermeavel": limiar_imperm,
         "plano": {m["cod_mun"]: m for m in plano.build(cenario, oni)["municipios"]},
     }
 
@@ -150,6 +154,7 @@ def build(cod_mun: int, cenario: str = "atual", oni: float | None = None) -> Dos
     cobertura = c["cobertura"].get(cod_mun)
     regime = c["regimes"].get(cod_mun)
     plano_mun = c["plano"].get(cod_mun)
+    frac_construida = c["construida"].get(cod_mun)
     territ = _territorios_do_municipio(cod_mun, c["territorios"])
     estrategias = c["estrategias"].get(cod_mun, [])
 
@@ -206,6 +211,20 @@ def build(cod_mun: int, cenario: str = "atual", oni: float | None = None) -> Dos
             "geotecnico": geo["geotecnico"] if geo else None,
             "acesso": geo["acesso"] if geo else None,
             "barragem": geo["barragem"] if geo else None,
+            # Fracao de MUNICIPIO, nao de bacia: proxy ordinal. O limiar e o
+            # percentil 90 do proprio RS, nao um numero da literatura de
+            # hidrologia urbana — que e de bacia e nao se aplica aqui.
+            "impermeabilizacao": {
+                "frac_construida": frac_construida,
+                "limiar_rs": c["limiar_impermeavel"],
+                "acima_do_limiar": (
+                    None if frac_construida is None or c["limiar_impermeavel"] is None
+                    else frac_construida >= c["limiar_impermeavel"]
+                ),
+                "basis": "measured" if frac_construida is not None else None,
+                "nota": "GHSL 2025. Superficie construida e proxy de impermeabilizacao, "
+                        "nao medida dela: nao ve piso drenante nem compactacao de solo agricola.",
+            } if frac_construida is not None or c["limiar_impermeavel"] is not None else None,
         },
 
         # 3. quem esta exposto

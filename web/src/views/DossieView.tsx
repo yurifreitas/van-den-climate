@@ -150,6 +150,29 @@ export function DossieView() {
                       <p className="t-small">Nenhuma ocorrencia geotecnica declarada.</p>
                     )}
                   </Painel>
+                  <Painel
+                    titulo="Impermeabilizacao"
+                    basis={d.perigo.impermeabilizacao?.basis ?? null}
+                  >
+                    {d.perigo.impermeabilizacao?.frac_construida != null ? (
+                      <>
+                        <p className="t-hero">
+                          {(d.perigo.impermeabilizacao.frac_construida * 100).toFixed(1)}%
+                        </p>
+                        <p className="t-small">
+                          da area do municipio e superficie construida
+                          {d.perigo.impermeabilizacao.acima_do_limiar && (
+                            <> — entre os 10% mais impermeabilizados do RS</>
+                          )}
+                        </p>
+                        {/* Sem esta nota o numero convida a comparacao com os
+                            10-25% da literatura, que sao de BACIA. */}
+                        <p className="t-note">{d.perigo.impermeabilizacao.nota}</p>
+                      </>
+                    ) : (
+                      <p className="t-note">camada nao calculada</p>
+                    )}
+                  </Painel>
                   <Painel titulo="Acesso" basis={d.perigo.acesso?.basis ?? null}>
                     <ul className="lista-marcas">
                       <li>

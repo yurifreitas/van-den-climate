@@ -264,6 +264,26 @@ export interface ReferenceAdversarial {
   consequence: string;
 }
 
+/**
+ * Precedente construtivo atipico: obra ou pratica real que ataca um mecanismo
+ * do catalogo de contencao por um caminho fora do repertorio padrao.
+ *
+ * `limite` e obrigatorio no tipo porque e obrigatorio na leitura — a interface
+ * nao tem permissao de mostrar a obra sem mostrar onde ela nao resolve.
+ */
+export interface ReferenceConstrutiva {
+  id: string;
+  titulo: string;
+  onde: string;
+  quando: string;
+  mecanismo: string;
+  /** ids de estrategia em src/risk/contencao.py */
+  aplicavel_a: string[];
+  por_que_atipica: string;
+  limite: string;
+  fonte: string;
+}
+
 export interface ReferencesResponse {
   version: number;
   updated: string;
@@ -271,6 +291,7 @@ export interface ReferencesResponse {
   schools: ReferenceSchool[];
   precedents: ReferencePrecedent[];
   adversarial?: ReferenceAdversarial[];
+  construtivos?: ReferenceConstrutiva[];
 }
 
 // ---- /risk/municipal -------------------------------------------------
@@ -378,6 +399,14 @@ export interface DossieResponse {
       basis: Basis | null;
     } | null;
     barragem: { dano_declarado: boolean | null; basis: Basis | null; nota: string } | null;
+    /** Fracao de MUNICIPIO, nao de bacia — proxy ordinal, limiar = percentil 90 do RS. */
+    impermeabilizacao: {
+      frac_construida: number | null;
+      limiar_rs: number | null;
+      acima_do_limiar: boolean | null;
+      basis: Basis | null;
+      nota: string;
+    } | null;
   };
   exposicao: {
     populacao: number | null;
