@@ -98,6 +98,7 @@ ROTAS: list[tuple[str, dict[str, Any] | None]] = [
     ("/recursos", None),
     ("/pessoal", None),
     ("/geotecnico", None),
+    ("/territorios", None),
 ]
 
 # Binarios servidos pela API que viram asset estatico.
@@ -127,7 +128,20 @@ def main() -> int:
     }
     falhas: list[str] = []
 
-    for path, params in ROTAS:
+    # O dossie e por municipio: 497 arquivos, ~13 KB cada (~6 MB no total).
+    # So o cenario `atual` — a visao nao oferece seletor de horizonte, e
+    # multiplicar por tres triplicaria o peso da demo sem nada consumir.
+    rotas = list(ROTAS)
+    lista = client.get(f"{API_PREFIX}/risk/municipal", params={"cenario": "atual"})
+    if lista.status_code == 200:
+        rotas += [
+            (f"/dossie/{m['cod_mun']}", {"cenario": "atual"})
+            for m in lista.json()["municipios"]
+        ]
+    else:
+        falhas.append(f"/risk/municipal (para expandir /dossie) -> {lista.status_code}")
+
+    for path, params in rotas:
         r = client.get(f"{API_PREFIX}{path}", params=params)
         nome = slug(path, params)
         if r.status_code != 200:

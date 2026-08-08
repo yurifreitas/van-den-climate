@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Layout } from './components/Layout';
 import { RiscoView } from './views/RiscoView';
+import { DossieView } from './views/DossieView';
 import { MunicipiosView } from './views/MunicipiosView';
 import { RespostaView } from './views/RespostaView';
 import { HistoricoView } from './views/HistoricoView';
@@ -28,6 +29,7 @@ function App() {
           <Route element={<Layout />}>
             <Route path="/" element={<RiscoView />} />
             <Route path="/municipios" element={<MunicipiosView />} />
+            <Route path="/dossie" element={<DossieView />} />
             <Route path="/resposta" element={<RespostaView />} />
             <Route path="/historico" element={<HistoricoView />} />
             <Route path="/plano" element={<PlanoView />} />

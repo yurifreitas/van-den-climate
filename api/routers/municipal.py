@@ -43,7 +43,7 @@ from src.ingest import cpc_enso_advisory as advisory
 from src.risk import aguas
 from src.risk import historico
 from src.risk import municipal as model
-from src.risk import geotecnico, pessoal, plano, recursos, resposta
+from src.risk import dossie, geotecnico, pessoal, plano, recursos, resposta, territorios
 
 router = APIRouter(tags=["risco municipal"])
 
@@ -325,6 +325,78 @@ def get_resposta(
         # capacidade precisa topar com "isto nao e leito" no mesmo payload.
         "lacunas": tabela.lacunas,
         "municipios": linhas,
+    }
+
+
+@router.get("/dossie/{cod_mun}")
+def get_dossie(cod_mun: int, cenario: str = Query("atual")) -> dict:
+    """Dossie municipal — as dez camadas reunidas, na ordem da decisao.
+
+    Um gestor municipal nao tem dez perguntas; tem uma: "o que preciso saber
+    sobre a MINHA cidade para decidir?". Este endpoint responde sem exigir
+    visitar dez rotas e juntar na cabeca.
+
+    Cada bloco carrega `basis` proprio, e o bloco `lacunas` NAO e rodape:
+    quem decide sem saber o que a central nao sabe decide pior do que quem
+    nao consultou nada.
+    """
+    if cenario not in model.CENARIOS:
+        raise HTTPException(status_code=422, detail=f"cenario invalido: {cenario!r}")
+    headline, is_synth, _ = deps.state_headline()
+    oni = None if is_synth else headline.get("oni")
+    try:
+        d = dossie.build(cod_mun, cenario, oni)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except FileNotFoundError as exc:
+        raise HTTPException(
+            status_code=503,
+            detail=f"Bases ausentes. Rode `python -m src.ingest.ibge_rs`. ({exc})",
+        ) from exc
+    return {
+        "as_of": deps.now_iso()[:10],
+        "provenance": {
+            # `modeled` no envelope porque o indice que ancora o dossie e
+            # modelado. Cada bloco interno tem selo proprio — achatar tudo
+            # aqui apagaria a diferenca entre medido e composto.
+            "basis": "synthetic" if is_synth else "modeled",
+            "horizon": "seasonal",
+            "source_ids": [
+                "ibge_munic_rs", "cnes_rs", "osm_emergencia", "jrc_gsw",
+                "ana_bacias", "ibge_quilombola", "ibge_indigena", "cpc_oni",
+            ],
+            "as_of": deps.now_iso()[:10],
+        },
+        **d.dados,
+    }
+
+
+@router.get("/territorios")
+def get_territorios() -> dict:
+    """Territorios indigenas e quilombolas cruzados com memoria hidrica.
+
+    `resumo.limites` traz o vies que mais importa: territorio nao mapeado nao
+    aparece, e quem tem menos acesso a Estado tem menos chance de estar
+    mapeado. Um vazio aqui provavelmente significa ausencia de politica
+    fundiaria, nao ausencia de comunidade.
+    """
+    try:
+        t = territorios.build()
+    except FileNotFoundError as exc:
+        raise HTTPException(
+            status_code=503,
+            detail=f"Rode `python -m src.ingest.territorios`. ({exc})",
+        ) from exc
+    return {
+        "as_of": deps.now_iso()[:10],
+        "provenance": {
+            "basis": "measured",
+            "horizon": "seasonal",
+            "source_ids": ["ibge_quilombola", "ibge_indigena", "jrc_gsw", "cnes_rs"],
+            "as_of": deps.now_iso()[:10],
+        },
+        "resumo": t.resumo,
+        "territorios": t.rows,
     }
 
 

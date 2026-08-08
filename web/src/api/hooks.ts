@@ -10,6 +10,7 @@ import type {
   AnalogsResponse,
   Cenario,
   CruzamentoAguas,
+  DossieResponse,
   HistoricoResponse,
   OutlookResponse,
   PessoalResponse,
@@ -159,6 +160,16 @@ export function useMunicipalRisk(cenario: Cenario = 'atual') {
     // sem isso o mapa inteiro pisca para o esqueleto a cada clique, e a
     // comparacao entre horizontes — que e o ponto do seletor — se perde.
     placeholderData: (anterior) => anterior,
+  });
+}
+
+/** Dossie municipal: as dez camadas reunidas na ordem da decisao. */
+export function useDossie(codMun: number | null, cenario: Cenario = 'atual') {
+  return useQuery({
+    queryKey: ['dossie', codMun, cenario],
+    queryFn: () => apiGet<DossieResponse>(`/dossie/${codMun}`, { cenario }),
+    enabled: codMun !== null,
+    staleTime: STALE,
   });
 }
 

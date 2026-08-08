@@ -342,6 +342,91 @@ export interface AguasMeta {
   };
 }
 
+// ---- /dossie/{cod_mun} -----------------------------------------------
+
+/**
+ * As dez camadas reunidas na ordem da DECISAO, nao da construcao.
+ * Cada bloco carrega `basis` proprio: achatar num selo unico apagaria a
+ * diferenca entre medido, modelado e inexistente.
+ */
+export interface DossieResponse {
+  as_of: string;
+  provenance: Provenance;
+  version: string;
+  cod_mun: number;
+  municipio: string;
+  cenario: Cenario;
+  posicao: {
+    indice: number | null;
+    nivel: NivelRisco | null;
+    basis: Basis | null;
+    completude: Completude;
+    posicao_no_ranking: number | null;
+    de: number;
+    populacao: number | null;
+    regime_cheia: { regime: string | null; bacia: string | null } | null;
+  };
+  perigo: {
+    componentes: MunicipioRisco['componentes'];
+    memoria_hidrica: AguasMunicipio | null;
+    geotecnico: { score: number | null; ocorrencias: string[]; basis: Basis | null } | null;
+    acesso: {
+      score: number | null;
+      ocorrencias: string[];
+      ficou_ilhado: boolean | null;
+      dano_viario: boolean | null;
+      basis: Basis | null;
+    } | null;
+    barragem: { dano_declarado: boolean | null; basis: Basis | null; nota: string } | null;
+  };
+  exposicao: {
+    populacao: number | null;
+    grupos_vulneraveis: { grupos: string[]; n_respondidos: number; basis: Basis | null } | null;
+    territorios_tradicionais: {
+      tipo: string;
+      nome: string | null;
+      grupo_etnico: string | null;
+      situacao_juridica: string | null;
+      area_legal_ha: number | null;
+      memoria_hidrica_frac: number | null;
+      km_ate_urgencia: number | null;
+    }[];
+    n_territorios: number;
+  };
+  capacidade: {
+    saude: MunicipioResposta['capacidade'] | null;
+    cobertura_recursos: Record<string, { n_no_municipio: number; km_mais_proximo: number | null }> | null;
+    pontes: { n_malha_principal: number; n_estruturantes: number; nota: string } | null;
+    quadro_pessoal: PessoalResponse['municipios'][number]['quadro'] | null;
+    voluntariado: { km_brigada_mais_proxima: number | null; tem_no_municipio: boolean } | null;
+  };
+  falhas_2024: {
+    deficit_prevencao: ComponenteRisco;
+    autonomia_logistica: MunicipioResposta['autonomia_logistica'] | null;
+    saude_afetada: MunicipioResposta['saude'] | null;
+    resposta_prestada: MunicipioResposta['resposta'] | null;
+    faltou_pessoal: boolean | null;
+  };
+  acao: {
+    n_acoes: number;
+    n_imediatas: number;
+    acoes: AcaoPlano[];
+    estrategias_contencao: {
+      id: string;
+      titulo: string;
+      mecanismo: string;
+      evidencia: string;
+      convencional: string;
+      natureza: string;
+      quando_natureza_ganha: string;
+      limite: string;
+      basis: Basis;
+    }[];
+  };
+  /** NAO e rodape: quem decide sem saber o que falta decide pior. */
+  lacunas: { camada: string; id: string; titulo: string; motivo: string }[];
+}
+
 // ---- /pessoal --------------------------------------------------------
 
 export interface PessoalResponse {

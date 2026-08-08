@@ -1,0 +1,153 @@
+/* Painel de decisao. Cor de dado so no nivel de risco e nas barras de
+   componente; o resto e cromo. Reusa .acao, .lista-marcas, .marca-falta e
+   .seletor das outras visoes — se algum dia migrarem para ui/, migram juntos. */
+
+.dossie-hero {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(230px, 100%), 1fr));
+  gap: var(--space-6);
+  padding: var(--space-6);
+  border: 1px solid var(--linha);
+  border-radius: var(--radius-lg);
+  background: var(--carta-grad);
+  box-shadow: var(--sombra-2);
+  position: relative;
+  overflow: hidden;
+}
+
+.dossie-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 2px;
+  background: var(--acento-grad);
+  opacity: 0.7;
+}
+
+.dossie-hero > div {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.dossie-hero p { margin: 0; }
+
+.dossie-hero__nome {
+  font-size: 1.6rem;
+  margin: 0;
+}
+
+.dossie-hero__indice {
+  align-items: flex-start;
+}
+
+.dossie-hero__indice .t-hero {
+  font-size: 3rem;
+  color: var(--giz);
+}
+
+.dossie-hero__nivel {
+  font-family: var(--font-mono);
+  font-size: var(--t-note-size);
+  letter-spacing: 0.08em;
+  color: var(--nivel-cor);
+  border: 1px solid var(--nivel-cor);
+  border-radius: var(--radius-pill);
+  padding: 1px var(--space-2);
+}
+
+.dossie-hero__regime-nome {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-stretch: 125%;
+  font-size: 1.05rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--giz);
+}
+
+/* --- barras de componente --- */
+.comp-barras {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.comp-barra__trilho {
+  display: block;
+  height: 5px;
+  border-radius: 3px;
+  background: var(--grade);
+  position: relative;
+  overflow: hidden;
+}
+
+.comp-barra__trilho::after {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--frac, 0%);
+  background: var(--acento-grad);
+  border-radius: 3px;
+}
+
+/* Ausente NAO e barra vazia — barra vazia le como zero. */
+.comp-barra__trilho[data-ausente='sim'] {
+  background: repeating-linear-gradient(
+    45deg, var(--grade), var(--grade) 3px,
+    var(--bruma-fraca) 3px, var(--bruma-fraca) 4px
+  );
+}
+.comp-barra__trilho[data-ausente='sim']::after { display: none; }
+
+/* --- territorio --- */
+.territorio {
+  padding: var(--space-2) var(--space-3);
+  border-left: 3px solid var(--acento);
+  background: var(--acento-fraco);
+  border-radius: 0 var(--radius) var(--radius) 0;
+}
+
+.territorio p { margin: 0; }
+
+.territorio__nome {
+  font-size: var(--t-small-size);
+  color: var(--giz);
+}
+
+/* --- estrategia com o par convencional/natureza --- */
+.estrategia-nota {
+  margin: var(--space-4) 0 var(--space-2) 0;
+  max-width: 88ch;
+}
+
+.estrategia {
+  padding: var(--space-4);
+  border: 1px solid var(--linha);
+  border-radius: var(--radius-lg);
+  background: var(--carta-grad);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.estrategia__titulo {
+  font-size: var(--t-body-size);
+  color: var(--giz);
+}
+
+/* As duas colunas lado a lado, sempre. Empilhar no telefone e aceitavel; o
+   que nao pode e uma aparecer sem a outra — o par E o conteudo. */
+.estrategia__par {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr));
+  gap: var(--space-4);
+}
+
+.estrategia__par p { margin: var(--space-1) 0 0 0; }
+
+.estrategia__natureza {
+  border-left: 3px solid var(--acento);
+  padding-left: var(--space-3);
+}

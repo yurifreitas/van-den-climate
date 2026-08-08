@@ -277,3 +277,52 @@ MUNIC é auto-declaração municipal sobre **um** evento. Há incentivo assimét
 — relatar dano dá acesso a repasse, relatar falha de prevenção não dá nada. Um
 município poupado em 2024 por sorte de trajetória aparece com impacto baixo.
 O índice ordena prioridade; ele não mede risco absoluto.
+
+## ADR-072 a 076 — Territórios tradicionais e o dossiê municipal
+
+A central tinha dez camadas e nenhum lugar onde elas se encontrassem. Um
+gestor municipal não tem dez perguntas; tem uma — *o que eu preciso saber
+sobre a minha cidade para decidir?* — e respondê-la exigia visitar dez telas
+e fazer a junção de cabeça.
+
+O dossiê faz a junção. A decisão de projeto que o organiza é a **ordem**:
+onde estou → qual o perigo → quem está exposto → com o que conto → o que
+falhou → o que fazer → **o que não sei**. A numeração aparece na tela de
+propósito; um painel de decisão sem ordem declarada vira lista de widgets e
+cada leitor inventa a própria sequência.
+
+| # | Data | Decisão | Razão | Estado |
+|---|------|---------|-------|--------|
+| 072 | 2026-08-08 | O dossiê **não carrega selo de proveniência próprio**; cada bloco carrega o seu | Um selo único sobre dez camadas apagaria a diferença entre medido, modelado e ausente — que é a informação mais importante quando a decisão é cara. Travado por `test_nao_ha_selo_unico_no_topo` | ativa |
+| 073 | 2026-08-08 | O bloco de lacunas é o **bloco 7**, com o mesmo peso visual dos outros — nunca rodapé | Quem decide sem saber o que a central não sabe decide pior do que quem não a consultou. As lacunas são propagadas do payload de cada camada, não escritas à mão, para que uma lacuna nova apareça sozinha | ativa |
+| 074 | 2026-08-08 | Território tradicional **nunca é convertido em número de pessoas** | O polígono não traz população. Converter área exposta em gente exposta exige o setor censitário do Censo 2022, não ingerido. `test_nunca_afirma_populacao` proíbe qualquer campo que convide à leitura | ativa |
+| 075 | 2026-08-08 | Ausência de território mapeado **não é ausência de comunidade**, e o resumo é obrigado a dizer isso | O viés é sistemático e numa direção só: quem tem menos acesso a Estado tem menos chance de ter processo fundiário aberto. Um vazio no mapa provavelmente significa ausência de política fundiária, não ausência de gente | ativa |
+| 076 | 2026-08-08 | `situacao_juridica` sempre visível ao lado do nome do território | Terra em estudo e terra homologada são o mesmo polígono e realidades opostas em conflito fundiário. Omitir o campo faz o painel afirmar direito que não foi concedido | ativa |
+
+### O que a camada de territórios encontrou
+
+**40 territórios** com centroide dentro do RS: 29 quilombolas e 11 terras
+indígenas (Guarani, Guarani Mbyá, Kaingang).
+
+O achado que não era esperado: **35% deles estão em bacia lagunar**, contra 8%
+dos municípios do estado — concentração de 4×. Bacia lagunar é o regime em que
+o nível é governado por vento, não por chuva local, e em que a drenagem por
+gravidade falha justamente quando mais se precisa dela. A concentração é
+histórica, não climática: terra remanescente é a terra que sobrou, e a que
+sobra é a de várzea.
+
+Casca aparece com **15,7% do território com memória hídrica** — área que foi
+água entre 1984 e 2021 e hoje não é. Campo dos Poli está a **79,9 km da
+unidade de urgência mais próxima**, em linha reta ao centroide; a estrada real
+é sempre mais longa.
+
+### Custo de montagem, e por que ele importa
+
+O dossiê não calcula nada — ele junta. Mas a junção ingênua remontava a tabela
+do estado inteiro, o plano dos 497 municípios, o geotécnico, o raster dos
+territórios e o mapa de recursos **por município consultado**, para descartar
+496 linhas: 4,2 s por dossiê. Nos 497 do snapshot estático isso seria mais de
+meia hora, e na API 4 s de espera por clique. Com as camadas montadas uma vez
+por `(cenário, oni)`, o segundo dossiê em diante custa ~0 ms. O objeto em
+cache é compartilhado e somente lido — quem precisar mutar copia antes, ou o
+dossiê de um município contamina o do próximo.
