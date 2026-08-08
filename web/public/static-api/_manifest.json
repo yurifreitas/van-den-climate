@@ -1,5 +1,5 @@
 {
-  "capturado_em": "2026-08-08T15:59:48Z",
+  "capturado_em": "2026-08-08T16:31:53Z",
   "aviso": "Demo estatica: os dados sao uma fotografia tirada na data acima e NAO se atualizam sozinhos. Para dados vivos, rode a API local (.\\run.ps1).",
   "rotas": [
     {

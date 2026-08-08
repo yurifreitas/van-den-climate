@@ -220,3 +220,142 @@ export const referencesFixture: ReferencesResponse = {
     },
   ],
 };
+
+// ---------------------------------------------------------------------------
+// Dominio municipal — fixtures MINIMAS
+//
+// Deliberadamente pequenas: existem para que o MSW nao deixe a requisicao
+// vazar e polua o teste com erro de rede. O que cada tela realmente afirma e
+// testado no backend (224 testes em Python), onde o dado e real. Inflar estas
+// fixtures ate parecerem a producao criaria uma segunda verdade para manter
+// em sincronia — e ela divergiria na primeira mudanca de contrato.
+// ---------------------------------------------------------------------------
+
+export const municipalFixture = {
+  as_of: '2026-08-08',
+  provenance: {
+    basis: 'modeled',
+    horizon: 'seasonal',
+    source_ids: ['ibge_munic_rs'],
+    as_of: '2026-08-08',
+    n_effective: 1,
+  },
+  model_card: {
+    version: 'municipal-v1',
+    formula: 'R = 100 * (0.38*I + 0.34*D + 0.28*E) * (0.62 + 0.38*H)',
+    pesos: { impacto: 0.38, deficit: 0.34, exposicao: 0.28 },
+    piso_sazonal: 0.62,
+    cortes: { high: 55, elevated: 42, moderate: 28 },
+    componentes: {},
+    limites: ['Nao e previsao de evento.'],
+    fontes: ['ibge_munic_rs'],
+  },
+  as_of_source: 'IBGE MUNIC 2024',
+  n_total: 1,
+  n_completo: 1,
+  n_parcial: 0,
+  n_insuficiente: 0,
+  oni: 1.39,
+  cenario: 'atual',
+  cenario_spec: {
+    label: 'Agora — ONI medido',
+    horizonte: 'estado corrente',
+    basis: 'measured',
+    fonte: 'cpc_oni',
+    nota: 'Multiplicador do ONI da ultima temporada publicada.',
+    h_valor: 0.817,
+    h_rotulo: 'El Nino forte',
+    multiplicador: 0.93,
+    saturado: false,
+    leitura_saturacao: null,
+  },
+  municipios: [
+    {
+      cod_mun: 4314902,
+      municipio: 'Porto Alegre',
+      populacao: 1332570,
+      aguas: null,
+      score: 52.4,
+      level: 'elevated',
+      basis: 'modeled',
+      completude: 'completo',
+      componentes: {
+        impacto: { valor: 0.8, basis: 'measured', detalhe: { atingido: true, perigos: [], danos: [] } },
+        deficit_prevencao: { valor: 0.1, basis: 'measured', detalhe: { lacunas: [] } },
+        exposicao: { valor: 0.99, basis: 'measured', detalhe: { grupos_expostos: [] } },
+        perigo_sazonal: { valor: 0.817, basis: 'modeled', detalhe: { oni: 1.39 } },
+        manutencao_ativos: { valor: null, basis: null, detalhe: { motivo: 'sem fonte publica' } },
+      },
+    },
+  ],
+};
+
+/** Um quadrado simples: o teste nao inspeciona geometria. */
+export const malhaFixture = {
+  type: 'FeatureCollection',
+  features: [
+    {
+      type: 'Feature',
+      properties: { codarea: '4314902' },
+      geometry: {
+        type: 'Polygon',
+        coordinates: [[[-51.3, -30.1], [-51.1, -30.1], [-51.1, -29.9], [-51.3, -29.9], [-51.3, -30.1]]],
+      },
+    },
+  ],
+};
+
+export const planoFixture = {
+  as_of: '2026-08-08',
+  provenance: {
+    basis: 'modeled',
+    horizon: 'seasonal',
+    source_ids: ['ibge_munic_rs'],
+    as_of: '2026-08-08',
+    n_effective: null,
+  },
+  version: 'plano-v1',
+  cenario: 'atual',
+  n_municipios: 1,
+  n_com_acao: 1,
+  n_acoes_total: 1,
+  n_imediatas_total: 1,
+  por_acao: [
+    {
+      id: 'implantar_alerta',
+      titulo: 'Implantar emissao de alerta a populacao',
+      horizonte: 'imediato',
+      esforco: 'baixo',
+      fonte: 'ibge_munic_rs',
+      detalhe: 'Sem alerta emitido, o resto do plano chega depois da agua.',
+      n_municipios: 1,
+      populacao_coberta: 1332570,
+      exemplos: ['Porto Alegre'],
+    },
+  ],
+  municipios: [],
+  regras: { ordenacao: 'risco' },
+  limites: ['Nao e plano de engenharia.'],
+};
+
+export const outlookFixture = {
+  disponivel: true,
+  autoria: 'CPC/NCEP/NWS — NOAA. Previsao EXTERNA (ADR-012).',
+  basis: 'modeled',
+  issued: '2026-07-09',
+  alert_status: 'El Nino Advisory',
+  synopsis: 'El Nino continues and will strengthen through the end of the year.',
+  probabilities: [{ percent: 81, claim: 'of a very strong El Nino during October-December' }],
+  next_update: '2026-08-13',
+  source_url: 'https://www.cpc.ncep.noaa.gov/',
+  horizonte: {
+    fonte_prospectiva: 'CPC/NOAA',
+    limite_util_meses: 9,
+    barreira: 'barreira da primavera boreal',
+    consequencia: 'Nao ha previsao ENSO defensavel para 2027.',
+  },
+  engine_local: {
+    tem_previsao_aceita: false,
+    motivo: 'nenhum modelo passou o criterio da ADR-007',
+  },
+};

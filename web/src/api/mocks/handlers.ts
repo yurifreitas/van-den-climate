@@ -20,4 +20,15 @@ export const handlers = [
   http.get(`${BASE}/health/breaks`, () => HttpResponse.json(fx.breaksFixture)),
   http.get(`${BASE}/health/sources`, () => HttpResponse.json(fx.sourcesFixture)),
   http.get(`${BASE}/references`, () => HttpResponse.json(fx.referencesFixture)),
+
+  // --- rotas do dominio municipal ---------------------------------------
+  // A tela principal passou a consumir estas quatro. Sem handler, o MSW
+  // grita "intercepted a request without a matching request handler" e o
+  // teste falha por rede, nao por regressao — ruido que esconde o defeito
+  // real. Fixtures MINIMAS de proposito: o teste da tela principal verifica
+  // o card de flash_flood, nao o conteudo do plano.
+  http.get(`${BASE}/risk/municipal`, () => HttpResponse.json(fx.municipalFixture)),
+  http.get(`${BASE}/geo/municipios`, () => HttpResponse.json(fx.malhaFixture)),
+  http.get(`${BASE}/plano`, () => HttpResponse.json(fx.planoFixture)),
+  http.get(`${BASE}/outlook/enso`, () => HttpResponse.json(fx.outlookFixture)),
 ];

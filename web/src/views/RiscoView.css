@@ -1,0 +1,200 @@
+/*
+ * Tela principal. Cor de dado (nivel de risco) chega por `style` a partir de
+ * theme/palette; o resto e cromo de interface (--acento).
+ */
+
+/* --- HERO: o estado agora ---------------------------------------------
+   Tres colunas que respondem, da esquerda para a direita, "onde estamos",
+   "qual o perigo" e "o que se espera". A ordem importa: medido primeiro,
+   modelado por ultimo. */
+.hero {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr));
+  gap: var(--space-6);
+  padding: var(--space-6);
+  border: 1px solid var(--linha);
+  border-radius: var(--radius-lg);
+  background:
+    radial-gradient(900px 300px at 0% 0%, rgba(79, 227, 193, 0.07), transparent 65%),
+    var(--carta-grad);
+  box-shadow: var(--sombra-2);
+  position: relative;
+  overflow: hidden;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 2px;
+  background: var(--acento-grad);
+  opacity: 0.7;
+}
+
+.hero__principal,
+.hero__coluna {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  align-items: flex-start;
+  min-width: 0;
+}
+
+/* Separador entre colunas — some no empilhamento, onde viraria linha solta. */
+.hero__coluna {
+  border-left: 1px solid var(--linha);
+  padding-left: var(--space-6);
+}
+
+@media (max-width: 760px) {
+  .hero__coluna {
+    border-left: none;
+    border-top: 1px solid var(--linha);
+    padding-left: 0;
+    padding-top: var(--space-4);
+  }
+}
+
+.hero p { margin: 0; }
+
+.hero__oni,
+.hero__prob {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+
+.hero__oni .t-hero,
+.hero__prob .t-hero {
+  font-size: 3.2rem;
+  color: var(--giz);
+}
+
+.hero__unidade { color: var(--bruma); }
+
+.hero__classificacao {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-stretch: 125%;
+  font-size: 0.95rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--giz);
+}
+
+/* Nivel de perigo: cor de DADO, vinda de theme/palette por `style`. E a
+   unica cor de dado nesta faixa — o resto e cromo. */
+.hero__nivel {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-stretch: 125%;
+  font-size: 1.9rem;
+  letter-spacing: 0.06em;
+  color: var(--nivel-cor, var(--giz));
+}
+
+.hero__skel {
+  height: 4rem;
+  width: 100%;
+}
+
+/* --- numeros de topo --- */
+.numeros {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(180px, 100%), 1fr));
+  gap: var(--space-3);
+}
+
+.numero-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-4);
+  border: 1px solid var(--linha);
+  border-radius: var(--radius-lg);
+  background: var(--carta-grad);
+  text-decoration: none;
+  transition: border-color 120ms ease, transform 120ms ease;
+}
+
+/* `.app-main a[href]` pinta e sublinha links de TEXTO. Estes sao cartoes: a
+   area inteira e o alvo, e o sublinhado nao ajuda ninguem a perceber isso —
+   so suja o numero.
+   O seletor precisa incluir [href] para vencer por especificidade: sem ele,
+   `.app-main a[href]` (0,2,1) ganha de `.app-main .numero-card` (0,2,0) e o
+   sublinhado volta. */
+.app-main a[href].numero-card,
+.app-main a[href].camada-card,
+.app-main a[href].acao-home {
+  color: inherit;
+  text-decoration: none;
+}
+
+.numero-card:hover,
+.camada-card:hover,
+.acao-home:hover {
+  border-color: rgba(79, 227, 193, 0.35);
+  transform: translateY(-1px);
+}
+
+.numero-card__n { color: var(--giz); }
+.numero-card .t-small { color: var(--bruma); }
+
+.numero-card[data-tom='alerta'] .numero-card__n { color: #c24356; }
+.numero-card[data-tom='acento'] .numero-card__n { color: var(--acento-forte); }
+
+/* --- acao em destaque na home --- */
+.acao-home {
+  display: grid;
+  grid-template-columns: 4.5rem 1fr;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--linha);
+  border-left: 3px solid var(--acento);
+  border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
+  background: var(--carta-grad);
+  transition: border-color 120ms ease, transform 120ms ease;
+}
+
+.acao-home__n {
+  color: var(--giz);
+  text-align: right;
+  font-size: 1.9rem;
+}
+
+.acao-home__texto {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.acao-home__titulo {
+  font-size: var(--t-body-size);
+  color: var(--giz);
+}
+
+/* --- cartoes de camada --- */
+.camada-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  border: 1px solid var(--linha);
+  border-radius: var(--radius-lg);
+  background: var(--carta-grad);
+  transition: border-color 120ms ease, transform 120ms ease;
+}
+
+.camada-card__titulo {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-stretch: 125%;
+  font-size: 0.9rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--giz);
+}
+
+.camada-card .t-small { color: var(--bruma); }
