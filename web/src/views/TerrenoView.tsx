@@ -161,7 +161,7 @@ export function TerrenoView() {
       title="Terreno"
       intro="No que a chuva cai. Solo, cobertura e relevo decidem quanto de uma chuva infiltra e quanto vira enxurrada — e quanto de solo ela leva junto."
     >
-      <QueryState query={terreno}>
+      <QueryState isLoading={terreno.isLoading} isError={terreno.isError}>
         {terreno.data && (
           <Stack gap={4}>
             <Row>
