@@ -525,6 +525,17 @@ export interface PapelRecurso {
   municipios_alem_do_limiar: number | null;
 }
 
+/** Municipio onde risco alto encontra recurso critico distante. */
+export interface VazioCobertura {
+  cod_mun: number;
+  municipio: string;
+  score: number | null;
+  level: NivelRisco | null;
+  populacao: number | null;
+  faltas: { papel: string; label: string; km: number | null; completude: CompletudeFonte }[];
+  pior_km: number;
+}
+
 export interface RecursosResponse {
   as_of: string;
   provenance: Provenance;
@@ -536,15 +547,26 @@ export interface RecursosResponse {
     subtipos_moveis: Record<string, number>;
     ressalvas: string[];
   };
+  /**
+   * A lista de vazios vem ENVELOPADA, e nao como array solto.
+   *
+   * O cadastro de recursos e medido — cada ponto foi observado. A ORDEM desta
+   * lista nao e: ela cruza o indice de prioridade (modelado) com a distancia
+   * ao recurso mais proximo (medida). Selar as duas coisas com o mesmo
+   * `provenance` do topo afirmaria medicao onde ha composicao, entao a lista
+   * carrega selo e nota proprios.
+   *
+   * Isto ja quebrou a demo uma vez: a API passou a envelopar, este tipo
+   * continuou dizendo `[]`, o TypeScript concordou com a mentira e a tela
+   * so morreu em producao, com `s.map is not a function`. Tipo escrito a mao
+   * contra o contrato nao e verificacao — por isso existe
+   * `RecursosView.test.tsx`, que renderiza contra o snapshot real.
+   */
   vazios: {
-    cod_mun: number;
-    municipio: string;
-    score: number | null;
-    level: NivelRisco | null;
-    populacao: number | null;
-    faltas: { papel: string; label: string; km: number | null; completude: CompletudeFonte }[];
-    pior_km: number;
-  }[];
+    provenance: Provenance;
+    nota: string;
+    itens: VazioCobertura[];
+  };
   pontos: { id: string; papel: string; nome: string | null; subtipo: string | null; lat: number; lon: number; fonte: string }[];
   por_municipio: Record<string, Record<string, { n_no_municipio: number; km_mais_proximo: number | null; completude: CompletudeFonte }>>;
 }

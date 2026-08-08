@@ -5,6 +5,7 @@ import { ProvenanceBadge } from '../components/ProvenanceBadge';
 import { QueryState } from '../components/QueryState';
 import { DataTable, Empty, Grid, Panel, Row, Section, Stack, View } from '../components/ui';
 import type { Column } from '../components/ui';
+import type { VazioCobertura } from '../api/types';
 import { CATEGORICO, ESTADO } from '../theme/palette';
 import './RecursosView.css';
 
@@ -92,7 +93,7 @@ export function RecursosView() {
       return n;
     });
 
-  const colunasVazio: Column<NonNullable<typeof recursos.data>['vazios'][number]>[] = [
+  const colunasVazio: Column<VazioCobertura>[] = [
     {
       key: 'municipio',
       header: 'Municipio',
@@ -202,12 +203,17 @@ export function RecursosView() {
               title="Onde realocar primeiro"
               note={`Cruzamento de risco com vazio de cobertura. Vazio = recurso critico a ${recursos.data.resumo.limiar_vazio_km} km ou mais.`}
             >
-              {recursos.data.vazios.length === 0 ? (
+              {/* Selo proprio: o cadastro e medido, a ordem desta lista nao. */}
+              <Row>
+                <ProvenanceBadge basis={recursos.data.vazios.provenance.basis} />
+                <span className="footnote">{recursos.data.vazios.nota}</span>
+              </Row>
+              {recursos.data.vazios.itens.length === 0 ? (
                 <Empty>Nenhum municipio avaliado combina risco e vazio critico.</Empty>
               ) : (
                 <DataTable
                   columns={colunasVazio}
-                  rows={recursos.data.vazios}
+                  rows={recursos.data.vazios.itens}
                   rowKey={(v) => v.cod_mun}
                 />
               )}
