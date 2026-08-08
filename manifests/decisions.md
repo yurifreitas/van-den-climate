@@ -189,6 +189,56 @@ dimensionamento), não é priorização por custo-benefício, e não substitui o
 Plano Municipal de Redução de Riscos nem o plano de contingência da Defesa
 Civil — aponta a ausência deles.
 
+## Geometria do sistema — atrator, recorrência, fractal
+
+Camada de **representação**, autorizada pelo README ("matemática sofisticada é
+permitida onde não toca o alvo") e submetida ao mesmo critério da ADR-008: não
+"isso é sofisticado?", mas **"eu consigo falsificar isso com o n que tenho?"**.
+
+| # | Data | Decisão | Razão | Estado |
+|---|------|---------|-------|--------|
+| 065 | 2026-08-08 | Todo método declara o **n que exigiria** e o n disponível; quem não passa é recusado por escrito | Recusa sem número é preconceito. `RECUSADOS` nomeia o que faltou em cada caso | ativa |
+| 066 | 2026-08-08 | Surrogate **IAAFT**, não de fase simples, e n ≥ 200 | O de fase impõe amplitude gaussiana e faz o teste rejeitar a hipótese errada. E com 20 surrogates o menor p possível é 0,048 — reportar isso era reportar o piso de resolução, não a evidência | ativa |
+| 067 | 2026-08-08 | **Dimensão de correlação do ENSO é inestimável**, definitivamente | D = 3,08 exige 100.284 pontos mensais por Smith = 8.357 anos. O registro instrumental (ERSSTv5, 1854) dá ~2.060. Déficit de 49×. Não é limitação da ingestão — é do registro, e não muda em horizonte humano | ativa |
+| 068 | 2026-08-08 | Resultado de não linearidade sempre reportado sobre série **não suavizada** | A média móvel de 3 meses do ONI quase dobra o z: 3,21 → 5,78 na mesma série. O achado sobrevive na bruta (z=3,21, p=0,010), mas a magnitude do ONI é artefato do filtro | ativa |
+| 069 | 2026-08-08 | Espectro multifractal reportado **só pelo lado de q positivo** | Com 61% de dias secos, o lado negativo mede o descarte de segmentos, não a dinâmica. Dava largura 3,0 onde a resposta é 0,14 | ativa |
+| 070 | 2026-08-08 | DFA com escala máxima em **n/10**, nunca n/4 | Com n/4 sobram 4 segmentos na maior escala e a média instável enviesa a reta inteira: em ruído branco devolvia H = 0,44 onde a resposta é 0,5. Travado por teste sobre 6 sementes | ativa |
+| 071 | 2026-08-08 | Teste de geometria **detecta o próprio recorte inválido** antes de refutar | Mascarar água pela malha municipal remove 84% dela (Patos e Mirim ficam fora), justamente o corpo compacto procurado. Sem a checagem, o teste "refutaria" a classificação de regime por artefato | ativa |
+
+### Os três regimes de amostra do projeto
+
+| n | camada | o que sobrevive |
+|---|---|---|
+| 36 | temporadas de avaliação | nada sofisticado — é a razão da ADR-003 e da ADR-008 |
+| 918 | ONI / Niño 3.4 mensal | recorrência sim; dimensão só com ressalva; Lyapunov não |
+| 942.831 | chuva diária, 67 estações | multifractal, DFA e Wasserstein são confortáveis |
+
+### O que se sustenta
+
+- **Não linearidade no ENSO**: DET = 0,815 na série bruta contra p95 de 0,793
+  em 200 surrogates IAAFT, z = 3,21, p = 0,010. Estrutura além de espectro
+  **e** distribuição.
+- **Horizonte de previsibilidade = 8,98 meses**, medido na recorrência. A
+  ADR-026 afirmava "~9 meses" como citação de literatura; agora é medida
+  independente, sem modelo e sem ajuste.
+- **Persistência na chuva**: H mediana 0,560 (IQR 0,545–0,569), **66 de 66
+  estações com H > 0,5**. Sem uma exceção.
+- **Multifractalidade fraca**: largura mediana 0,139 (IQR 0,119–0,156).
+
+### O que NÃO se sustenta, e foi retratado
+
+- **El Niño vs Neutro em Wasserstein**: W = 97,8 contra p95 nulo de 98,3 —
+  **não separa** (p = 0,053). Só El Niño vs La Niña sobrevive (p < 0,0001). O
+  contraste que a engine sustenta é El Niño contra La Niña, não contra Neutro.
+- **Barreira da primavera**: previ o mínimo em março–junho; caiu em fevereiro.
+  A checagem pré-declarada retornou falso, e não foi movida para acomodar.
+- **Classificação de regime**: segue **NÃO TESTADA**. O teste geométrico é
+  inválido por recorte, não refutação.
+
+**Fronteira**: nada aqui seleciona preditor nem entra em `feature_blocks.yaml`,
+congelado desde a ADR-042. É descrição de geometria; uso preditivo teria de
+passar pela ADR-007.
+
 ## História longa — e o CONTATO COM O ALVO
 
 | # | Data | Decisão | Razão | Estado |
