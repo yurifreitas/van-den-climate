@@ -113,3 +113,24 @@ sources:
       montanhoso — trocar a classe por declividade medida e a melhoria de maior
       retorno das camadas de terreno. Tiles de 1 grau, ~5,8 MB cada, ~63 para o
       estado, sem chave de acesso.
+  osm_recursos:
+    provider: OpenStreetMap
+    domain: overpass-api.de
+    access: "Overpass QL, area ISO3166-2=BR-RS"
+    status: core
+    licenca: "ODbL — exige atribuicao visivel em obra derivada publicada"
+    classes:
+      abrigo: "escola, centro comunitario, ginasio, templo — POTENCIAL, nunca cadastro"
+      acesso: "heliponto, aerodromo"
+      infraestrutura: "subestacao de energia, tratamento e reservatorio de agua"
+      suprimento: "posto de combustivel, supermercado"
+    hazards:
+      - "colaborativa: ausencia no mapa nao prova ausencia no territorio, e a
+         cobertura e pior no interior — que e tambem onde ha menos recurso real,
+         entao o vies empurra na direcao errada"
+      - "abrigo nao tem capacidade, banheiro, cozinha nem gerador declarados; a
+         lista real e da Defesa Civil municipal e nao existe em base publica"
+      - "storage_tank cobre tanque de combustivel e de efluente — filtrar por
+         `content` antes de contar como reserva de agua"
+      - "Overpass e instancia publica compartilhada: recuo generoso entre
+         tentativas, e o header Content-Type e obrigatorio (406 sem ele)"

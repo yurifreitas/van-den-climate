@@ -521,8 +521,38 @@ export interface PapelRecurso {
   label: string;
   fonte: string;
   completude: CompletudeFonte;
+  /** Papeis nao se somam entre familias — ver o comentario em recursos.py. */
+  familia: string;
   n: number;
   municipios_alem_do_limiar: number | null;
+  n_expostos_a_agua: number | null;
+}
+
+/**
+ * Cruzamento de cada recurso com a memoria hidrica do JRC (1984-2021).
+ *
+ * Um mapa de recursos responde "onde estao"; isto responde a pergunta que
+ * 2024 fez no RS: quais deles saem de operacao junto com o evento. Hospital
+ * que alaga nao e capacidade — vira demanda, no pior momento possivel.
+ */
+export interface ExposicaoHidrica {
+  limiar_frac_celula: number;
+  n_expostos: number;
+  n_avaliados: number;
+  taxa_por_familia: Record<
+    string,
+    { label: string; n: number; n_expostos: number; taxa: number | null }
+  >;
+  criticos_expostos: {
+    id: string;
+    papel: string;
+    label: string;
+    nome: string | null;
+    cod_mun_proximo: number;
+    memoria_hidrica_frac: number;
+    fonte: string;
+  }[];
+  nota: string;
 }
 
 /** Municipio onde risco alto encontra recurso critico distante. */
@@ -545,6 +575,9 @@ export interface RecursosResponse {
     por_papel: Record<string, PapelRecurso>;
     limiar_vazio_km: number;
     subtipos_moveis: Record<string, number>;
+    familias: Record<string, string>;
+    exposicao_hidrica: ExposicaoHidrica;
+    municipios_sem_abrigo_mapeado: number;
     ressalvas: string[];
   };
   /**

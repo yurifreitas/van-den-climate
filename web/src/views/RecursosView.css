@@ -109,3 +109,39 @@
   border-radius: 50%;
   flex: none;
 }
+
+/* Familia de recursos: agrupa a legenda do mapa. O titulo e um botao que liga
+   e desliga a familia inteira — dezessete camadas acesas de uma vez viram
+   mancha, e a leitura util e uma familia por vez. */
+.recursos-familia {
+  margin-bottom: 0.6rem;
+}
+
+.recursos-familia__titulo {
+  align-items: center;
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  display: flex;
+  font: inherit;
+  font-size: 0.8rem;
+  gap: 0.4rem;
+  letter-spacing: 0.04em;
+  opacity: 0.75;
+  padding: 0.2rem 0;
+  text-transform: uppercase;
+}
+
+.recursos-familia__titulo[aria-pressed='true'] {
+  opacity: 1;
+}
+
+.recursos-expostos {
+  margin: 0;
+  padding-left: 1.1rem;
+}
+
+.recursos-expostos li {
+  margin-bottom: 0.35rem;
+}

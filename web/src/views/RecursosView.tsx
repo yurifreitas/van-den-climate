@@ -6,7 +6,7 @@ import { QueryState } from '../components/QueryState';
 import { DataTable, Empty, Grid, Panel, Row, Section, Stack, View } from '../components/ui';
 import type { Column } from '../components/ui';
 import type { VazioCobertura } from '../api/types';
-import { CATEGORICO, ESTADO } from '../theme/palette';
+import { CATEGORICO } from '../theme/palette';
 import './RecursosView.css';
 
 /**
@@ -23,26 +23,57 @@ import './RecursosView.css';
  * comunica precisao logistica que este dado nao tem.
  */
 
-/** Cor por papel. Categorico = identidade, nao magnitude (DESIGN.md §1). */
-const CORES: Record<string, string> = {
-  fixo_hospitalar: CATEGORICO[0],
-  fixo_urgencia: CATEGORICO[1],
-  psicossocial: CATEGORICO[3],
-  bombeiro: CATEGORICO[2],
-  policia: CATEGORICO[5],
-  movel: CATEGORICO[4],
-  regulacao: ESTADO.ok,
+/**
+ * Cor por FAMILIA, nao por papel — e a mudanca veio de uma restricao dura da
+ * paleta, nao de gosto.
+ *
+ * O categorico do projeto tem seis cores, validadas duas a duas sob
+ * deuteranopia, e a regra e explicita: nunca cicla, a setima categoria vira
+ * "Outros" (DESIGN.md §1). Com dezessete papeis no mapa, colorir por papel
+ * exigiria reciclar cor — o que faria escola e subestacao dividirem o mesmo
+ * tom e destruiria a unica coisa que a cor categorica deve garantir, que e
+ * identidade.
+ *
+ * Cinco familias cabem nas seis cores com folga. Dentro da familia a
+ * distincao fica no rotulo e no filtro, que e onde ela e de fato usada: quem
+ * olha o mapa quer ver "onde esta o socorro", nao distinguir CAPS de
+ * pronto-socorro a olho nu.
+ */
+const CORES_FAMILIA: Record<string, string> = {
+  socorro: CATEGORICO[0],
+  abrigo: CATEGORICO[1],
+  acesso: CATEGORICO[2],
+  infraestrutura: CATEGORICO[3],
+  suprimento: CATEGORICO[4],
 };
 
-const ORDEM_PAPEL = [
-  'fixo_hospitalar',
-  'fixo_urgencia',
-  'regulacao',
-  'movel',
-  'psicossocial',
-  'bombeiro',
-  'policia',
-];
+/**
+ * Ordem dentro de cada familia. As familias existem porque os papeis NAO se
+ * somam: hospital e supermercado respondem perguntas diferentes, e um "total
+ * de recursos" misturando os dois nao significaria nada. O mapa comeca com
+ * socorro ligado e o resto desligado — dezessete camadas acesas de uma vez
+ * viram mancha, e a leitura util e uma familia por vez.
+ */
+const ORDEM_POR_FAMILIA: Record<string, string[]> = {
+  socorro: [
+    'fixo_hospitalar',
+    'fixo_urgencia',
+    'regulacao',
+    'movel',
+    'psicossocial',
+    'bombeiro',
+    'policia',
+  ],
+  abrigo: ['abrigo_escola', 'abrigo_comunitario', 'abrigo_religioso'],
+  acesso: ['heliponto', 'aerodromo'],
+  infraestrutura: ['energia_subestacao', 'agua_tratamento', 'agua_reservatorio'],
+  suprimento: ['combustivel', 'alimento'],
+};
+
+const ORDEM_PAPEL = Object.values(ORDEM_POR_FAMILIA).flat();
+
+/** Ligadas no primeiro render. Ver o comentario acima. */
+const FAMILIA_INICIAL = 'socorro';
 
 /** Cartao de numero. Duplicado de PlanoView de proposito? Nao — extraido aqui
  *  porque as duas telas ja o usavam; se aparecer uma terceira, vira primitiva. */
@@ -78,12 +109,36 @@ export function RecursosView() {
   const pessoal = usePessoal();
   const malha = useMalhaMunicipal();
   const risco = useMunicipalRisk('atual');
-  const [visiveis, setVisiveis] = useState<Set<string>>(new Set(ORDEM_PAPEL));
+  const [visiveis, setVisiveis] = useState<Set<string>>(
+    new Set(ORDEM_POR_FAMILIA[FAMILIA_INICIAL]),
+  );
+
+  /** papel -> cor, resolvido pela familia que o payload declara. */
+  const CORES = useMemo(() => {
+    const mapa: Record<string, string> = {};
+    for (const [papel, info] of Object.entries(recursos.data?.resumo.por_papel ?? {})) {
+      mapa[papel] = CORES_FAMILIA[info.familia] ?? CATEGORICO[5];
+    }
+    return mapa;
+  }, [recursos.data]);
 
   const pontosFiltrados = useMemo(
     () => (recursos.data?.pontos ?? []).filter((p) => visiveis.has(p.papel)),
     [recursos.data, visiveis],
   );
+
+  /** Liga/desliga uma familia inteira — o modo em que o mapa e legivel. */
+  const alternarFamilia = (familia: string) =>
+    setVisiveis((s) => {
+      const papeis = ORDEM_POR_FAMILIA[familia] ?? [];
+      const todosLigados = papeis.every((p) => s.has(p));
+      const n = new Set(s);
+      for (const p of papeis) {
+        if (todosLigados) n.delete(p);
+        else n.add(p);
+      }
+      return n;
+    });
 
   const alternar = (papel: string) =>
     setVisiveis((s) => {
@@ -162,31 +217,50 @@ export function RecursosView() {
               note="Clique nos rotulos para ligar e desligar camadas. Distancias sao linha reta sobre o centroide municipal — piso da dificuldade de acesso, nunca tempo de rota."
             >
               <Panel pad="tight">
-                <div className="recursos-legenda">
-                  {ORDEM_PAPEL.map((papel) => {
-                    const info = recursos.data.resumo.por_papel[papel];
-                    if (!info) return null;
-                    const ligado = visiveis.has(papel);
-                    return (
-                      <button
-                        key={papel}
-                        type="button"
-                        className={`recursos-legenda__item${ligado ? '' : ' recursos-legenda__item--off'}`}
-                        onClick={() => alternar(papel)}
-                        aria-pressed={ligado}
-                      >
-                        <span className="recursos-legenda__marca" style={{ background: CORES[papel] }} />
-                        {info.label}
-                        <strong>{info.n}</strong>
-                        {info.completude !== 'cadastro' && (
-                          <span className="t-note">
-                            {info.completude === 'colaborativa' ? 'OSM' : 'parcial'}
-                          </span>
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
+                {Object.entries(ORDEM_POR_FAMILIA).map(([familia, papeis]) => (
+                  <div key={familia} className="recursos-familia">
+                    <button
+                      type="button"
+                      className="recursos-familia__titulo"
+                      onClick={() => alternarFamilia(familia)}
+                      aria-pressed={papeis.every((p) => visiveis.has(p))}
+                    >
+                      <span
+                        className="recursos-legenda__marca"
+                        style={{ background: CORES_FAMILIA[familia] }}
+                      />
+                      {recursos.data.resumo.familias?.[familia] ?? familia}
+                    </button>
+                    <div className="recursos-legenda">
+                      {papeis.map((papel) => {
+                        const info = recursos.data.resumo.por_papel[papel];
+                        if (!info) return null;
+                        const ligado = visiveis.has(papel);
+                        return (
+                          <button
+                            key={papel}
+                            type="button"
+                            className={`recursos-legenda__item${ligado ? '' : ' recursos-legenda__item--off'}`}
+                            onClick={() => alternar(papel)}
+                            aria-pressed={ligado}
+                          >
+                            <span
+                              className="recursos-legenda__marca"
+                              style={{ background: CORES[papel] }}
+                            />
+                            {info.label}
+                            <strong>{info.n}</strong>
+                            {info.completude !== 'cadastro' && (
+                              <span className="t-note">
+                                {info.completude === 'colaborativa' ? 'OSM' : 'parcial'}
+                              </span>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
                 <MapaMunicipal
                   malha={malha.data}
                   municipios={risco.data?.municipios ?? []}
@@ -218,6 +292,57 @@ export function RecursosView() {
                 />
               )}
             </Section>
+
+            {recursos.data.resumo.exposicao_hidrica && (
+              <Section
+                title="O recurso que alaga junto"
+                note={recursos.data.resumo.exposicao_hidrica.nota}
+              >
+                <Grid min={220}>
+                  {Object.entries(recursos.data.resumo.exposicao_hidrica.taxa_por_familia).map(
+                    ([familia, t]) => (
+                      <Panel key={familia} title={t.label}>
+                        <Row>
+                          <span className="t-hero">
+                            {t.taxa === null ? '—' : `${(t.taxa * 100).toFixed(1)}%`}
+                          </span>
+                          <span
+                            className="recursos-legenda__marca"
+                            style={{ background: CORES_FAMILIA[familia] }}
+                          />
+                        </Row>
+                        <p className="t-small">
+                          {t.n_expostos} de {t.n} pontos sobre area que ja foi agua
+                        </p>
+                      </Panel>
+                    ),
+                  )}
+                </Grid>
+                <p className="footnote">
+                  A diferenca entre as familias nao e acaso, e projeto: captacao de agua
+                  precisa ficar junto do rio, e subestacao procura terreno plano e barato —
+                  que na planicie e a varzea. O que mantem a cidade funcionando foi
+                  construido onde a agua passa.
+                </p>
+                {recursos.data.resumo.exposicao_hidrica.criticos_expostos.length > 0 && (
+                  <Panel title="Criticos sobre memoria hidrica — fila de inspecao, nao laudo">
+                    <ul className="recursos-expostos">
+                      {recursos.data.resumo.exposicao_hidrica.criticos_expostos
+                        .slice(0, 12)
+                        .map((c) => (
+                          <li key={c.id}>
+                            <strong>{c.nome ?? `${c.label} sem nome`}</strong>{' '}
+                            <span className="t-note">
+                              {c.label} · {(c.memoria_hidrica_frac * 100).toFixed(0)}% da celula
+                              ja foi agua
+                            </span>
+                          </li>
+                        ))}
+                    </ul>
+                  </Panel>
+                )}
+              </Section>
+            )}
 
             <Section title="Cobertura por papel">
               <Grid min={250}>
