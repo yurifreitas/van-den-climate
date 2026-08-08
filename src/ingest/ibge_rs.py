@@ -202,6 +202,27 @@ def _stamp_rows(raw_dir: Path, rows: int) -> None:
 # MUNIC 2024 — aba "Evento climático RS"
 # ---------------------------------------------------------------------------
 SHEET_EVENTO = "Evento climático RS"
+SHEET_RH = "Recursos humanos"
+
+# Quadro de pessoal da administracao direta, por vinculo. E a base para a
+# pergunta "quem executa o plano?": um plano de contingencia sem gente para
+# executa-lo e papel, e o MUNIC 2024 registra que 11 municipios declararam
+# nao ter executado o plano por FALTA DE RECURSO HUMANO.
+#
+# `sem_vinculo` e `estagiarios` importam separados do total: sao o pessoal que
+# nao tem estabilidade nem, em geral, treinamento de defesa civil — contam
+# como capacidade instalada de forma bem mais fraca que o estatutario.
+RH_COLS: dict[str, str] = {
+    "CodMun": "cod_mun",
+    "MREH011": "rh_estatutarios",
+    "MREH012": "rh_celetistas",
+    "MREH013": "rh_comissionados",
+    "MREH014": "rh_estagiarios",
+    "MREH015": "rh_sem_vinculo",
+    "MREH016": "rh_total",
+    "MREH05": "rh_concurso_24m",     # capacidade de repor quadro
+    "MREH07": "rh_contratou_24m",
+}
 
 # Mapa codigo MUNIC -> nome estavel de coluna. Escrito por extenso de
 # proposito: `Mers099` nao diz nada seis meses depois, e o custo de errar a
@@ -365,7 +386,51 @@ def parse_munic(raw: bytes) -> pd.DataFrame:
         raise IngestError(
             f"{MUNIC.source_id}: esperado 497 municipios do RS, obtido {len(out)}"
         )
+
+    out = out.merge(_parse_rh(wb), on="cod_mun", how="left")
     return out.sort_values("cod_mun").reset_index(drop=True)
+
+
+def _parse_rh(wb) -> pd.DataFrame:
+    """Aba 'Recursos humanos' — quadro de pessoal da administracao direta.
+
+    Fica no MESMO parquet do evento porque a chave e a mesma (cod_mun) e as
+    duas respondem a mesma pergunta por lados opostos: uma diz o que faltou,
+    a outra diz com quanta gente o municipio conta para nao faltar de novo.
+
+    A aba cobre o Brasil inteiro em algumas edicoes; aqui filtramos por UF e,
+    quando a coluna nao existe, confiamos no recorte que o proprio arquivo do
+    RS ja traz.
+    """
+    if SHEET_RH not in wb.sheetnames:
+        raise IngestError(
+            f"{MUNIC.source_id}: aba '{SHEET_RH}' ausente — o IBGE mudou a estrutura"
+        )
+    ws = wb[SHEET_RH]
+    rows = ws.iter_rows(values_only=True)
+    header = [str(h) if h is not None else "" for h in next(rows)]
+    df = pd.DataFrame(list(rows), columns=header)
+    if "UF" in df.columns:
+        df = df[df["UF"] == "RS"]
+
+    faltando = [c for c in RH_COLS if c not in df.columns]
+    if faltando:
+        raise IngestError(f"{MUNIC.source_id}: colunas ausentes na aba '{SHEET_RH}': {faltando}")
+
+    out = df[list(RH_COLS)].rename(columns=RH_COLS).copy()
+    out["cod_mun"] = out["cod_mun"].astype(int)
+
+    # As contagens vem como texto e podem trazer '-' e 'Recusa'. `to_numeric`
+    # com coerce transforma essas em NaN, que e o correto: recusa nao e zero
+    # servidor, e tratar como zero produziria "prefeitura sem funcionarios".
+    for col in ("rh_estatutarios", "rh_celetistas", "rh_comissionados",
+                "rh_estagiarios", "rh_sem_vinculo", "rh_total"):
+        out[col] = pd.to_numeric(out[col], errors="coerce").astype("Int64")
+
+    for col in ("rh_concurso_24m", "rh_contratou_24m"):
+        out[col] = out[col].map(_tri).astype("boolean")
+
+    return out
 
 
 # ---------------------------------------------------------------------------

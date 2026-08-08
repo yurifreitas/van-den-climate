@@ -1,5 +1,5 @@
 {
-  "capturado_em": "2026-08-07T23:39:55Z",
+  "capturado_em": "2026-08-08T15:39:34Z",
   "aviso": "Demo estatica: os dados sao uma fotografia tirada na data acima e NAO se atualizam sozinhos. Para dados vivos, rode a API local (.\\run.ps1).",
   "rotas": [
     {
@@ -190,6 +190,11 @@
       "path": "/recursos",
       "params": null,
       "arquivo": "recursos.json"
+    },
+    {
+      "path": "/pessoal",
+      "params": null,
+      "arquivo": "pessoal.json"
     },
     {
       "path": "/geo/aguas.png",

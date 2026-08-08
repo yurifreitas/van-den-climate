@@ -49,7 +49,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Callable
 
-from src.risk import municipal, recursos, resposta
+from src.risk import municipal, pessoal, recursos, resposta
 
 VERSION = "plano-v1"
 
@@ -97,14 +97,14 @@ def _det(linha: dict, caminho: str) -> Any:
 # ---------------------------------------------------------------------------
 # Catalogo de acoes
 # ---------------------------------------------------------------------------
-def _sem_plano(m: dict, _r: dict | None, _cob: dict | None = None) -> str | None:
+def _sem_plano(m: dict, _r: dict | None, _cob: dict | None = None, _pes: dict | None = None) -> str | None:
     d = _det(m, "deficit_prevencao")
     if d.get("plano_contingencia") is False:
         return "MUNIC 2024: municipio declarou NAO possuir plano de contingencia"
     return None
 
 
-def _plano_nao_executado(m: dict, _r: dict | None, _cob: dict | None = None) -> str | None:
+def _plano_nao_executado(m: dict, _r: dict | None, _cob: dict | None = None, _pes: dict | None = None) -> str | None:
     d = _det(m, "deficit_prevencao")
     if d.get("plano_contingencia") is True and d.get("plano_executado") is False:
         motivos = [l for l in (d.get("lacunas") or []) if l.startswith("falta")]
@@ -113,14 +113,14 @@ def _plano_nao_executado(m: dict, _r: dict | None, _cob: dict | None = None) -> 
     return None
 
 
-def _sem_alerta(m: dict, _r: dict | None, _cob: dict | None = None) -> str | None:
+def _sem_alerta(m: dict, _r: dict | None, _cob: dict | None = None, _pes: dict | None = None) -> str | None:
     d = _det(m, "deficit_prevencao")
     if d.get("alerta_emitido") is False:
         return "MUNIC 2024: nenhum alerta foi emitido a populacao durante o evento"
     return None
 
 
-def _alerta_sem_alcance(m: dict, _r: dict | None, _cob: dict | None = None) -> str | None:
+def _alerta_sem_alcance(m: dict, _r: dict | None, _cob: dict | None = None, _pes: dict | None = None) -> str | None:
     d = _det(m, "deficit_prevencao")
     for l in d.get("lacunas") or []:
         if "alcancou apenas" in l or "canal automatico" in l:
@@ -128,13 +128,13 @@ def _alerta_sem_alcance(m: dict, _r: dict | None, _cob: dict | None = None) -> s
     return None
 
 
-def _sem_psicologico(_m: dict, r: dict | None, _cob: dict | None = None) -> str | None:
+def _sem_psicologico(_m: dict, r: dict | None, _cob: dict | None = None, _pes: dict | None = None) -> str | None:
     if r and r["resposta"]["apoio_psicologico"] is False:
         return "MUNIC 2024: municipio declarou NAO ter oferecido apoio psicologico as vitimas"
     return None
 
 
-def _sem_referencia_saude(_m: dict, r: dict | None, _cob: dict | None = None) -> str | None:
+def _sem_referencia_saude(_m: dict, r: dict | None, _cob: dict | None = None, _pes: dict | None = None) -> str | None:
     if not r:
         return None
     cap = r["capacidade"]
@@ -144,7 +144,7 @@ def _sem_referencia_saude(_m: dict, r: dict | None, _cob: dict | None = None) ->
     return None
 
 
-def _saude_vulneravel(_m: dict, r: dict | None, _cob: dict | None = None) -> str | None:
+def _saude_vulneravel(_m: dict, r: dict | None, _cob: dict | None = None, _pes: dict | None = None) -> str | None:
     if not r:
         return None
     impactos = r["saude"]["impactos"]
@@ -154,7 +154,7 @@ def _saude_vulneravel(_m: dict, r: dict | None, _cob: dict | None = None) -> str
     return None
 
 
-def _autonomia_baixa(_m: dict, r: dict | None, _cob: dict | None = None) -> str | None:
+def _autonomia_baixa(_m: dict, r: dict | None, _cob: dict | None = None, _pes: dict | None = None) -> str | None:
     if not r:
         return None
     a = r["autonomia_logistica"]
@@ -165,7 +165,7 @@ def _autonomia_baixa(_m: dict, r: dict | None, _cob: dict | None = None) -> str 
     return None
 
 
-def _mapear_planicie(m: dict, _r: dict | None, _cob: dict | None = None) -> str | None:
+def _mapear_planicie(m: dict, _r: dict | None, _cob: dict | None = None, _pes: dict | None = None) -> str | None:
     ag = m.get("aguas")
     if not ag or ag.get("memoria_hidrica_frac") is None:
         return None
@@ -178,7 +178,7 @@ def _mapear_planicie(m: dict, _r: dict | None, _cob: dict | None = None) -> str 
     return None
 
 
-def _grupos_expostos(_m: dict, r: dict | None, _cob: dict | None = None) -> str | None:
+def _grupos_expostos(_m: dict, r: dict | None, _cob: dict | None = None, _pes: dict | None = None) -> str | None:
     if not r:
         return None
     grupos = r["vulneraveis"]["grupos"]
@@ -191,7 +191,7 @@ def _grupos_expostos(_m: dict, r: dict | None, _cob: dict | None = None) -> str 
     return None
 
 
-def _vazio_urgencia(_m: dict, _r: dict | None, cob: dict | None = None) -> str | None:
+def _vazio_urgencia(_m: dict, _r: dict | None, cob: dict | None = None, _pes: dict | None = None) -> str | None:
     if not cob:
         return None
     km = cob.get("fixo_urgencia", {}).get("km_mais_proximo")
@@ -200,7 +200,7 @@ def _vazio_urgencia(_m: dict, _r: dict | None, cob: dict | None = None) -> str |
     return None
 
 
-def _vazio_bombeiro(_m: dict, _r: dict | None, cob: dict | None = None) -> str | None:
+def _vazio_bombeiro(_m: dict, _r: dict | None, cob: dict | None = None, _pes: dict | None = None) -> str | None:
     if not cob:
         return None
     km = cob.get("bombeiro", {}).get("km_mais_proximo")
@@ -212,7 +212,7 @@ def _vazio_bombeiro(_m: dict, _r: dict | None, cob: dict | None = None) -> str |
     return None
 
 
-def _vazio_psicossocial(_m: dict, r: dict | None, cob: dict | None = None) -> str | None:
+def _vazio_psicossocial(_m: dict, r: dict | None, cob: dict | None = None, _pes: dict | None = None) -> str | None:
     if not cob:
         return None
     km = cob.get("psicossocial", {}).get("km_mais_proximo")
@@ -227,6 +227,52 @@ def _vazio_psicossocial(_m: dict, r: dict | None, cob: dict | None = None) -> st
             "apoio psicologico no evento"
         )
     return None
+
+
+def _quadro_fragil(_m: dict, _r: dict | None, _cob: dict | None = None,
+                   pes: dict | None = None) -> str | None:
+    if not pes:
+        return None
+    q = pes["quadro"]
+    if q["quadro_fragil"] is True:
+        return (
+            f"MUNIC 2024: {(q['frac_sem_estabilidade'] or 0) * 100:.0f}% do quadro da administracao "
+            f"direta sem vinculo permanente ({q['total']} servidores no total)"
+        )
+    return None
+
+
+def _faltou_pessoal(_m: dict, _r: dict | None, _cob: dict | None = None,
+                    pes: dict | None = None) -> str | None:
+    if pes and pes["faltou_pessoal_em_2024"] is True:
+        return (
+            "MUNIC 2024: falta de recurso humano foi motivo declarado de NAO execucao do "
+            "plano de contingencia no evento"
+        )
+    return None
+
+
+def _sem_voluntariado(_m: dict, _r: dict | None, _cob: dict | None = None,
+                      pes: dict | None = None) -> str | None:
+    """So dispara onde o quadro TAMBEM e fragil.
+
+    Distancia a brigada voluntaria sozinha nao justifica acao: 235 municipios
+    estao a mais de 60 km de uma, e a maioria nao precisa. O que justifica e a
+    combinacao — pouco servidor estavel E nenhuma retaguarda voluntaria perto.
+    """
+    if not pes:
+        return None
+    km = pes["voluntariado"]["km_brigada_mais_proxima"]
+    q = pes["quadro"]
+    if km is None or km <= 60:
+        return None
+    fragil = q["quadro_fragil"] is True or pes["faltou_pessoal_em_2024"] is True
+    if not fragil:
+        return None
+    return (
+        f"CNES + OpenStreetMap: brigada voluntaria mais proxima a {km:.0f} km, e o quadro "
+        "proprio ja se mostrou insuficiente"
+    )
 
 
 ACOES: list[Acao] = [
@@ -314,6 +360,37 @@ ACOES: list[Acao] = [
         detalhe="Atendimento suspenso ou paciente remanejado em 2024 indica ponto unico de falha.",
     ),
     Acao(
+        id="reforcar_quadro",
+        titulo="Reforcar quadro permanente da defesa civil",
+        horizonte="estrutural",
+        esforco="alto",
+        fonte="ibge_munic_rs",
+        gatilho=_quadro_fragil,
+        detalhe="Quadro sem estabilidade rotaciona, e treinamento de defesa civil vai embora "
+                "com quem sai. Exige concurso ou realocacao interna — ciclo orcamentario.",
+    ),
+    Acao(
+        id="destravar_pessoal",
+        titulo="Resolver o gargalo de pessoal que travou o plano em 2024",
+        horizonte="imediato",
+        esforco="medio",
+        fonte="ibge_munic_rs",
+        gatilho=_faltou_pessoal,
+        detalhe="O proprio municipio declarou que faltou gente. Convenio, cessao ou acordo de "
+                "auxilio mutuo resolvem sem concurso — ver /pessoal para os vizinhos com folga.",
+    ),
+    Acao(
+        id="voluntariado",
+        titulo="Avaliar corpo de bombeiros voluntarios ou nucleo de defesa civil comunitario",
+        horizonte="estrutural",
+        esforco="medio",
+        fonte="osm_emergencia",
+        gatilho=_sem_voluntariado,
+        detalhe="O RS ja tem o modelo pronto: brigadas voluntarias constituidas como associacao, "
+                "concentradas na Serra, com estatuto e relacao com o CBMRS resolvidos. Replicar "
+                "arranjo existente custa menos que criar do zero.",
+    ),
+    Acao(
         id="realocar_urgencia",
         titulo="Pactuar retaguarda de urgencia e pre-posicionar ambulancia na temporada",
         horizonte="imediato",
@@ -382,13 +459,19 @@ def build(cenario: str = "atual", oni: float | None = None) -> dict[str, Any]:
     except FileNotFoundError:
         cobertura = {}
 
+    try:
+        quadro = {p["cod_mun"]: p for p in pessoal.build().rows}
+    except FileNotFoundError:
+        quadro = {}
+
     planos: list[PlanoMunicipio] = []
     for linha in tabela.rows:
         r = resp.get(linha["cod_mun"])
         cob = cobertura.get(linha["cod_mun"])
+        pes = quadro.get(linha["cod_mun"])
         acoes = []
         for acao in ACOES:
-            evidencia = acao.gatilho(linha, r, cob)
+            evidencia = acao.gatilho(linha, r, cob, pes)
             if evidencia is None:
                 continue
             acoes.append({

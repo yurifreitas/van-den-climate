@@ -43,7 +43,7 @@ from src.ingest import cpc_enso_advisory as advisory
 from src.risk import aguas
 from src.risk import historico
 from src.risk import municipal as model
-from src.risk import plano, recursos, resposta
+from src.risk import pessoal, plano, recursos, resposta
 
 router = APIRouter(tags=["risco municipal"])
 
@@ -325,6 +325,45 @@ def get_resposta(
         # capacidade precisa topar com "isto nao e leito" no mesmo payload.
         "lacunas": tabela.lacunas,
         "municipios": linhas,
+    }
+
+
+@router.get("/pessoal")
+def get_pessoal() -> dict:
+    """Quadro de pessoal, voluntariado instalado e pares de auxilio mutuo.
+
+    Responde "com quem" o plano se executa. O achado que organiza a estrategia
+    de voluntariado esta em `resumo.voluntariado.modelo_existente`: o RS ja tem
+    corpos de bombeiros voluntarios constituidos, concentrados na Serra — nao
+    e preciso importar modelo de fora.
+
+    `auxilio_mutuo` sugere COM QUEM CONVERSAR, nunca afirma que o vizinho tem
+    gente sobrando: "folga" aqui e ausencia dos sinais de fragilidade que o
+    proprio dado registra, nao capacidade ociosa medida.
+    """
+    try:
+        p = pessoal.build()
+    except FileNotFoundError as exc:
+        raise HTTPException(
+            status_code=503,
+            detail=f"Base municipal ausente. Rode `python -m src.ingest.ibge_rs`. ({exc})",
+        ) from exc
+
+    headline, is_synth, _ = deps.state_headline()
+    oni = None if is_synth else headline.get("oni")
+    indice = model.build_table(oni).rows
+
+    return {
+        "as_of": deps.now_iso()[:10],
+        "provenance": {
+            "basis": "measured",
+            "horizon": "seasonal",
+            "source_ids": ["ibge_munic_rs", "cnes_rs", "osm_emergencia"],
+            "as_of": deps.now_iso()[:10],
+        },
+        "resumo": p.resumo,
+        "auxilio_mutuo": pessoal.auxilio_mutuo(indice, limite=30),
+        "municipios": p.rows,
     }
 
 

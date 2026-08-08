@@ -47,6 +47,41 @@
   flex: none;
 }
 
+/* Numero que mede FALTA nao pode ter o mesmo peso de um que mede presenca.
+   Usa a cor de estado 'falha' — e situacao, nao decoracao. */
+.t-hero[data-tom='falta'] { color: #c24356; }
+
+/* O achado do voluntariado: prosa com peso de corpo, nao de nota. E a razao
+   de a recomendacao ser "replicar" e nao "criar do zero". */
+.destaque-modelo {
+  margin: 0;
+  max-width: 88ch;
+  color: var(--giz);
+  border-left: 3px solid var(--acento);
+  background: var(--acento-fraco);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  padding: var(--space-3) var(--space-4);
+}
+
+/* --- par de auxilio mutuo --- */
+.par-auxilio {
+  padding: var(--space-3) var(--space-4);
+  background: var(--carta-grad);
+  border: 1px solid var(--linha);
+  border-left: 3px solid var(--acento);
+  border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.par-auxilio__nome {
+  font-size: var(--t-body-size);
+  color: var(--giz);
+}
+
+.par-auxilio p { margin: 0; }
+
 /* --- tabela de vazios --- */
 .faltas {
   display: flex;

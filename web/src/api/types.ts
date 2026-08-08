@@ -342,6 +342,58 @@ export interface AguasMeta {
   };
 }
 
+// ---- /pessoal --------------------------------------------------------
+
+export interface PessoalResponse {
+  as_of: string;
+  provenance: Provenance;
+  resumo: {
+    version: string;
+    n_municipios: number;
+    n_com_quadro: number;
+    servidores_por_mil: { mediana: number | null; min: number | null; max: number | null; nota: string };
+    quadro_fragil: { n: number; limiar: number; definicao: string };
+    sem_concurso_24m: number;
+    faltou_pessoal_em_2024: number;
+    voluntariado: {
+      n_brigadas_identificadas: number;
+      municipios_a_mais_de_60km: number;
+      /** O achado que organiza a estrategia: o modelo ja existe no RS. */
+      modelo_existente: string;
+      municipios_com_brigada: string[];
+    };
+    limites: string[];
+  };
+  /** Sugere COM QUEM CONVERSAR — nunca afirma que o vizinho tem gente sobrando. */
+  auxilio_mutuo: {
+    cod_mun: number;
+    municipio: string;
+    score: number | null;
+    level: NivelRisco | null;
+    motivos: string[];
+    vizinhos_com_folga: { cod_mun: number; municipio: string; km: number; servidores_por_mil: number | null }[];
+  }[];
+  municipios: {
+    cod_mun: number;
+    municipio: string;
+    populacao: number | null;
+    quadro: {
+      total: number | null;
+      estatutarios: number | null;
+      sem_vinculo: number | null;
+      estagiarios: number | null;
+      por_mil_hab: number | null;
+      percentil_por_mil: number | null;
+      frac_sem_estabilidade: number | null;
+      quadro_fragil: boolean | null;
+      concurso_24m: boolean | null;
+      basis: Basis | null;
+    };
+    voluntariado: { km_brigada_mais_proxima: number | null; tem_no_municipio: boolean; basis: Basis | null };
+    faltou_pessoal_em_2024: boolean | null;
+  }[];
+}
+
 // ---- /recursos -------------------------------------------------------
 
 /**

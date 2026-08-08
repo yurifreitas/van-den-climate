@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { useMalhaMunicipal, useMunicipalRisk, useRecursos } from '../api/hooks';
+import { useMalhaMunicipal, useMunicipalRisk, usePessoal, useRecursos } from '../api/hooks';
 import { MapaMunicipal } from '../components/MapaMunicipal';
 import { ProvenanceBadge } from '../components/ProvenanceBadge';
 import { QueryState } from '../components/QueryState';
@@ -43,8 +43,38 @@ const ORDEM_PAPEL = [
   'policia',
 ];
 
+/** Cartao de numero. Duplicado de PlanoView de proposito? Nao — extraido aqui
+ *  porque as duas telas ja o usavam; se aparecer uma terceira, vira primitiva. */
+function Numero({
+  n,
+  de,
+  label,
+  nota,
+  tom,
+}: {
+  n: number;
+  de?: number;
+  label: string;
+  nota?: string;
+  tom?: 'falta';
+}) {
+  return (
+    <Panel>
+      <Row>
+        <span className="t-hero" data-tom={tom}>
+          {n.toLocaleString('pt-BR')}
+        </span>
+        {de !== undefined && <span className="t-note">de {de}</span>}
+      </Row>
+      <p className="t-small">{label}</p>
+      {nota && <p className="t-note">{nota}</p>}
+    </Panel>
+  );
+}
+
 export function RecursosView() {
   const recursos = useRecursos();
+  const pessoal = usePessoal();
   const malha = useMalhaMunicipal();
   const risco = useMunicipalRisk('atual');
   const [visiveis, setVisiveis] = useState<Set<string>>(new Set(ORDEM_PAPEL));
@@ -221,6 +251,94 @@ export function RecursosView() {
               </Grid>
             </Section>
 
+            {pessoal.data && (
+              <>
+                <Section
+                  title="Deficit de pessoal — quem executa o plano"
+                  note={pessoal.data.resumo.servidores_por_mil.nota}
+                >
+                  <Grid min={230}>
+                    <Numero
+                      n={pessoal.data.resumo.quadro_fragil.n}
+                      de={pessoal.data.resumo.n_com_quadro}
+                      label="municipios com quadro fragil"
+                      nota={`${(pessoal.data.resumo.quadro_fragil.limiar * 100).toFixed(0)}% ou mais do quadro sem vinculo permanente`}
+                      tom="falta"
+                    />
+                    <Numero
+                      n={pessoal.data.resumo.sem_concurso_24m}
+                      de={pessoal.data.resumo.n_municipios}
+                      label="sem concurso nos ultimos 24 meses"
+                      nota="capacidade de repor quadro"
+                    />
+                    <Numero
+                      n={pessoal.data.resumo.faltou_pessoal_em_2024}
+                      label="declararam falta de pessoal como motivo de nao execucao do plano"
+                      nota="motivo declarado ao IBGE no evento de 2024"
+                      tom="falta"
+                    />
+                    <Numero
+                      n={pessoal.data.resumo.servidores_por_mil.mediana ?? 0}
+                      label="servidores por mil habitantes (mediana)"
+                      nota={`varia de ${pessoal.data.resumo.servidores_por_mil.min} a ${pessoal.data.resumo.servidores_por_mil.max}`}
+                    />
+                  </Grid>
+                </Section>
+
+                {/* O achado que muda a estrategia de voluntariado. Fica em
+                    painel proprio porque nao e um numero — e a razao de a
+                    recomendacao ser "replicar" e nao "criar". */}
+                <Section title="Voluntariado — o modelo ja existe no RS">
+                  <Panel>
+                    <p className="t-body destaque-modelo">
+                      {pessoal.data.resumo.voluntariado.modelo_existente}
+                    </p>
+                    <Row>
+                      <span className="t-small">
+                        <strong>{pessoal.data.resumo.voluntariado.n_brigadas_identificadas}</strong>{' '}
+                        brigadas voluntarias identificadas
+                      </span>
+                      <span className="t-small">
+                        <strong>{pessoal.data.resumo.voluntariado.municipios_a_mais_de_60km}</strong>{' '}
+                        municipios a mais de 60 km da mais proxima
+                      </span>
+                    </Row>
+                    <p className="t-note">
+                      {pessoal.data.resumo.voluntariado.municipios_com_brigada.slice(0, 12).join(' · ')}
+                    </p>
+                    <ProvenanceBadge basis="measured" />
+                  </Panel>
+                </Section>
+
+                <Section
+                  title="Auxilio mutuo — com quem conversar"
+                  note="Sugere parceiro plausivel dentro de 60 km. 'Folga' e ausencia dos sinais de fragilidade que o dado registra, NAO capacidade ociosa medida."
+                >
+                  {pessoal.data.auxilio_mutuo.length === 0 ? (
+                    <Empty>Nenhum par sugerido com os criterios atuais.</Empty>
+                  ) : (
+                    <Stack gap={2}>
+                      {pessoal.data.auxilio_mutuo.slice(0, 12).map((a) => (
+                        <div key={a.cod_mun} className="par-auxilio">
+                          <Row>
+                            <span className="par-auxilio__nome">{a.municipio}</span>
+                            <span className="t-data">{a.score?.toFixed(1) ?? '—'}</span>
+                          </Row>
+                          <p className="t-note">{a.motivos.join(' · ')}</p>
+                          <p className="t-small">
+                            vizinhos:{' '}
+                            {a.vizinhos_com_folga
+                              .map((v) => `${v.municipio} (${v.km.toFixed(0)} km)`)
+                              .join(', ')}
+                          </p>
+                        </div>
+                      ))}
+                    </Stack>
+                  )}
+                </Section>
+              </>
+            )}
+
             <Section title="O que este mapa nao mostra">
               <Panel tone="verdict">
                 <ul className="lista-marcas" data-tom="alerta">
@@ -228,6 +346,11 @@ export function RecursosView() {
                     <li key={r}>{r}</li>
                   ))}
                 </ul>
+                {pessoal.data?.resumo.limites.map((l) => (
+                  <p key={l} className="t-note">
+                    {l}
+                  </p>
+                ))}
                 {Object.keys(recursos.data.resumo.subtipos_moveis).length > 0 && (
                   <p className="t-note">
                     Composicao declarada das unidades moveis do CNES:{' '}
