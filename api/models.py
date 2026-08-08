@@ -305,6 +305,26 @@ class ReferenceAdversarial(BaseModel):
     consequence: str    # o que muda no projeto se proceder
 
 
+class ReferenceConstrutiva(BaseModel):
+    """Obra ou pratica real que ataca um mecanismo do catalogo de contencao
+    por um caminho fora do repertorio padrao (dique, muro, galeria, piscinao).
+
+    `limite` NAO e opcional por decisao de projeto: precedente sem limite e
+    propaganda, e obra importada sem o limite dela e como o RS herdou a
+    confianca no dique continuo — funciona ate o dia em que nao funciona.
+    """
+
+    id: str
+    titulo: str
+    onde: str
+    quando: str
+    mecanismo: str
+    aplicavel_a: list[str]      # ids de Estrategia em src/risk/contencao.py
+    por_que_atipica: str
+    limite: str
+    fonte: str
+
+
 class ReferencesResponse(BaseModel):
     version: int
     updated: str
@@ -312,6 +332,7 @@ class ReferencesResponse(BaseModel):
     schools: list[ReferenceSchool]
     precedents: list[ReferencePrecedent]
     adversarial: list[ReferenceAdversarial] = []
+    construtivos: list[ReferenceConstrutiva] = []
 
 
 # ---------------------------------------------------------------------------

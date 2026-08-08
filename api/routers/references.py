@@ -16,6 +16,7 @@ from fastapi import APIRouter
 
 from api.models import (
     ReferenceAdversarial,
+    ReferenceConstrutiva,
     ReferencePerson,
     ReferencePrecedent,
     ReferenceSchool,
@@ -86,6 +87,21 @@ def _build_catalog() -> ReferencesResponse:
         for a in raw.get("adversarial", []) or []
     ]
 
+    construtivos = [
+        ReferenceConstrutiva(
+            id=c["id"],
+            titulo=c.get("titulo", ""),
+            onde=c.get("onde", ""),
+            quando=c.get("quando", ""),
+            mecanismo=c.get("mecanismo", ""),
+            aplicavel_a=list(c.get("aplicavel_a") or []),
+            por_que_atipica=(c.get("por_que_atipica") or "").strip(),
+            limite=(c.get("limite") or "").strip(),
+            fonte=(c.get("fonte") or "").strip(),
+        )
+        for c in raw.get("construtivos", []) or []
+    ]
+
     return ReferencesResponse(
         version=raw.get("version", 1),
         updated=str(raw.get("updated", "")),
@@ -93,6 +109,7 @@ def _build_catalog() -> ReferencesResponse:
         schools=schools,
         precedents=precedents,
         adversarial=adversarial,
+        construtivos=construtivos,
     )
 
 

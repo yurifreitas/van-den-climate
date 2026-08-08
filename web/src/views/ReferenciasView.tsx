@@ -115,6 +115,7 @@ export function ReferenciasView() {
   }, [visibleSchools, statusFilter, query]);
 
   const adversarial = data?.adversarial ?? [];
+  const construtivos = data?.construtivos ?? [];
 
   return (
     <View
@@ -240,6 +241,48 @@ export function ReferenciasView() {
                 </table>
               </div>
             </section>
+
+            {construtivos.length > 0 && (
+              <section className="ref-construtivos">
+                <h3 className="tick-rule">Precedentes construtivos atipicos</h3>
+                <p className="muted">
+                  O repertorio que chega a uma prefeitura e curto e quase sempre o mesmo: dique,
+                  muro, galeria maior, piscinao. Nao porque alguem provou que e o melhor, mas
+                  porque e o que o edital sabe descrever. Abaixo, obras e praticas reais que
+                  atacam o mesmo mecanismo fisico por outro caminho — cada uma pareada com a
+                  estrategia do catalogo de contencao que ela serve, e cada uma com o proprio
+                  limite. Precedente sem limite e propaganda.
+                </p>
+                <div className="ref-construtivos__grid">
+                  {construtivos.map((c) => (
+                    <article key={c.id} className="ref-construtivo">
+                      <header>
+                        <h4 className="ref-construtivo__titulo">{c.titulo}</h4>
+                        <p className="footnote">
+                          {c.onde} · {c.quando}
+                        </p>
+                      </header>
+                      <p className="ref-construtivo__mecanismo footnote">{c.mecanismo}</p>
+                      <p className="ref-construtivo__corpo">{c.por_que_atipica}</p>
+                      <p className="ref-construtivo__limite">
+                        <span className="ref-adversarial__label">onde nao resolve</span>
+                        {c.limite}
+                      </p>
+                      <footer className="footnote">
+                        <span className="ref-construtivo__tags">
+                          {c.aplicavel_a.map((id) => (
+                            <span key={id} className="ref-construtivo__tag">
+                              {id.replace(/_/g, ' ')}
+                            </span>
+                          ))}
+                        </span>
+                        {c.fonte}
+                      </footer>
+                    </article>
+                  ))}
+                </div>
+              </section>
+            )}
 
             {adversarial.length > 0 && (
               <section className="ref-adversarial">

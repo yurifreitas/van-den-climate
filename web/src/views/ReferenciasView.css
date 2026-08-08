@@ -298,3 +298,67 @@
   padding-top: var(--space-2);
   border-top: 1px solid var(--grid);
 }
+
+/* --- precedentes construtivos atipicos --- */
+.ref-construtivos__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(340px, 100%), 1fr));
+  gap: var(--space-4);
+  margin-top: var(--space-4);
+}
+
+.ref-construtivo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  border: 1px solid var(--linha);
+  border-radius: var(--radius-lg);
+  background: var(--carta-grad);
+}
+
+.ref-construtivo p { margin: 0; }
+
+.ref-construtivo__titulo {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  letter-spacing: 0.02em;
+  color: var(--giz);
+}
+
+.ref-construtivo__mecanismo {
+  font-family: var(--font-mono);
+  border-left: 2px solid var(--acento);
+  padding-left: var(--space-2);
+}
+
+.ref-construtivo__corpo { line-height: 1.55; }
+
+/* O limite tem borda tracejada pelo mesmo motivo do painel `verdict`: e
+   ressalva de metodo, nao descricao da obra, e some da leitura se parecer
+   com o resto do texto. */
+.ref-construtivo__limite {
+  border: 1px dashed var(--linha);
+  border-radius: var(--radius);
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--t-small-size);
+  line-height: 1.5;
+}
+
+.ref-construtivo__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  margin-bottom: var(--space-2);
+}
+
+.ref-construtivo__tag {
+  font-family: var(--font-mono);
+  font-size: var(--t-note-size);
+  letter-spacing: 0.04em;
+  padding: 1px var(--space-2);
+  border: 1px solid var(--linha);
+  border-radius: var(--radius-pill);
+  color: var(--bruma);
+}

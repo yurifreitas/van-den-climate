@@ -3,16 +3,67 @@
 # =====================================================================
 # Cada entrada existe porque resolve um buraco ESPECIFICO da engine.
 # "Grande mente" so e util aqui se o trabalho fecha uma lacuna nomeada.
-# O campo `resolve` e obrigatorio: se nao der para preenche-lo, a entrada
-# nao entra.
 #
-# `status`:
-#   core       — leitura obrigatoria antes de escrever a camada
-#   supporting — consultar quando a camada estiver em construcao
-#   context    — enquadramento; nao bloqueia codigo
+# Este arquivo e servido em /referencias (api/routers/references.py) e
+# renderizado na tela de Referencias. Nao e bibliografia decorativa: e a
+# unica pagina do produto que declara de onde vem o metodo, e por isso
+# esta sujeita as mesmas regras de proveniencia que os numeros.
+#
+# ---------------------------------------------------------------------
+# AS QUATRO SECOES, E POR QUE SAO QUATRO
+# ---------------------------------------------------------------------
+#
+#   schools      quem pensou o problema, agrupado por escola e por camada
+#                da engine que a escola destrava.
+#   precedents   onde uma ideia que o projeto derivou sozinho JA existia
+#                na literatura. Reinventar nao e problema; reinventar sem
+#                saber e — a entrada existe para converter coincidencia
+#                em heranca, com o nome estabelecido do metodo.
+#   adversarial  trabalho que, se estiver certo, ENFRAQUECE uma premissa
+#                nossa. Um projeto com n=36 se convence de coisas falsas
+#                lendo so quem concorda; esta secao e a defesa.
+#   construtivos obra ou pratica real de contencao fora do repertorio
+#                padrao (dique, muro, galeria, piscinao), pareada com a
+#                estrategia de src/risk/contencao.py que ela ataca.
+#
+# ---------------------------------------------------------------------
+# CONTRATO DE CAMPO — o que e obrigatorio, e o que a obrigacao evita
+# ---------------------------------------------------------------------
+#
+# Em `schools[].people[]`:
+#
+#   resolve  (obrigatorio) — a lacuna NOMEADA que esta pessoa fecha. Se
+#            nao der para escrever a lacuna, a entrada nao entra. E o que
+#            separa catalogo de lista de admiracao.
+#   work     (obrigatorio desde 2026-08-08) — a peca por onde entrar.
+#            Antes disto, 83 das 86 pessoas eram so nome e afiliacao: o
+#            leitor sabia que devia ler Runge e nao sabia O QUE ler, o que
+#            na pratica e o mesmo que nao ter a entrada. Uma referencia
+#            que nao se consegue abrir nao e referencia, e reputacao.
+#
+#            Quando a contribuicao esta dispersa e nao ha peca unica que a
+#            represente (servico operacional, corpo institucional, base
+#            colaborativa), o campo DIZ isso com todas as letras — comeca
+#            por "Corpo de trabalho". Inventar uma citacao redonda para
+#            preencher o campo seria pior que deixa-lo vazio: passaria a
+#            afirmar uma fonte verificavel que nao existe, que e
+#            exatamente o modo de falha que este projeto persegue nos
+#            numeros. Vale a mesma regra da ADR-002: sem selo, e bug.
+#   status   core       — leitura obrigatoria antes de escrever a camada
+#            supporting — consultar quando a camada estiver em construcao
+#            context    — enquadramento; nao bloqueia codigo
+#
+# Em `construtivos[]`, `limite` e obrigatorio pelo mesmo motivo em outra
+# escala: precedente sem limite e propaganda, e foi assim que o dique
+# continuo virou resposta padrao no RS — o precedente holandes chegou, o
+# modo de falha nao.
+#
+# `tests/test_referencias.py` amarra estas obrigacoes. Elas nao sao
+# convencao de estilo: cada uma corresponde a uma forma ja observada de o
+# catalogo apodrecer sem ninguem notar.
 # =====================================================================
 version: 1
-updated: 2026-08-07
+updated: 2026-08-08
 
 # Ordem de leitura por retorno imediato ao projeto.
 #
@@ -63,6 +114,9 @@ schools:
           em quanto dela e real. Util como calibragem de expectativa: o teto de
           RPSS 0.15-0.25 assumido no projeto precisa ser confrontado com o que
           sistemas operacionais de fato atingem no Hemisferio Sul.
+        work: >
+          Barnston, Tippett, L'Heureux, Li & DeWitt, "Skill of real-time
+          seasonal ENSO model predictions" (BAMS, 2012)
 
   # -------------------------------------------------------------------
   - id: modal
@@ -82,6 +136,9 @@ schools:
           aleatorios (atratores pullback) que da base formal a nocao de
           "regime" quando o forcante e nao-estacionario — exatamente o caso do
           clima sob tendencia.
+        work: >
+          Ghil et al., "Advanced spectral methods for climatic time series"
+          (Reviews of Geophysics, 2002)
 
       - id: vautard
         name: Robert Vautard
@@ -91,6 +148,9 @@ schools:
           Regimes de tempo como estados recorrentes de circulacao. E o
           precedente metodologico para extrair regime de campos ERA5 em vez de
           impor categoria manual.
+        work: >
+          Vautard, "Multiple weather regimes over the North Atlantic" (Monthly
+          Weather Review, 1990)
 
       - id: robertson
         name: Andrew Robertson
@@ -101,6 +161,10 @@ schools:
           metodologia publicada que a Camada 4 implementa. Ajustar HMM em 75
           pontos anuais e impossivel; ajustar em campos diarios de circulacao e
           pratica estabelecida. Essa distincao e o caminho viavel.
+        work: >
+          Robertson, Kirshner & Smyth, "Downscaling of daily rainfall
+          occurrence over northeast Brazil using a hidden Markov model"
+          (Journal of Climate, 2004)
 
   # -------------------------------------------------------------------
   - id: dinamica
@@ -120,6 +184,9 @@ schools:
           surpresa do projeto, com base ergodica e ja validada em reanalise —
           substitui bem o que se pretendia com recorrencia e TDA (cortados na
           ADR-008).
+        work: >
+          Faranda, Messori & Yiou, "Dynamical proxies of North Atlantic
+          predictability and extremes" (Scientific Reports, 2017)
 
       - id: ditlevsen_p
         name: Peter Ditlevsen
@@ -129,6 +196,9 @@ schools:
           Transicoes abruptas de regime climatico, sistemas dinamicos
           estocasticos e sinais de alerta precoce — a Camada 4 com a fisica
           climatica ja embutida.
+        work: >
+          Ditlevsen & Johnsen, "Tipping points: early warning and wishful
+          thinking" (Geophysical Research Letters, 2010)
 
       - id: ditlevsen_s
         name: Susanne Ditlevsen
@@ -137,6 +207,10 @@ schools:
         resolve: >
           Inferencia estatistica para processos estocasticos; o lado formal do
           problema de estimar transicao a partir de serie curta e ruidosa.
+        work: >
+          Ditlevsen & Ditlevsen, "Warning of a forthcoming collapse of the
+          Atlantic meridional overturning circulation" (Nature Communications,
+          2023)
 
       - id: scheffer
         name: Marten Scheffer
@@ -147,6 +221,9 @@ schools:
           complexos. A mesma matematica do regime, desenvolvida antes em
           ecologia — e com mais experiencia acumulada sobre seus falsos
           positivos.
+        work: >
+          Scheffer et al., "Early-warning signals for critical transitions"
+          (Nature, 2009)
 
   # -------------------------------------------------------------------
   - id: avaliacao
@@ -165,6 +242,9 @@ schools:
           calibracao" — o criterio de avaliacao correto para previsao
           probabilistica, e a base de por que o projeto usa RPSS/CRPS com
           diagrama de confiabilidade em vez de acuracia.
+        work: >
+          Gneiting, Balabdaoui & Raftery, "Probabilistic forecasts, calibration
+          and sharpness" (JRSS-B, 2007)
 
       - id: lerch
         name: Sebastian Lerch
@@ -174,12 +254,19 @@ schools:
           Pos-processamento estatistico de previsoes de ensemble com metodos de
           rede neural aplicados de forma disciplinada — referencia de como usar
           ML sem violar o orcamento de graus de liberdade.
+        work: >
+          Rasp & Lerch, "Neural networks for postprocessing ensemble weather
+          forecasts" (Monthly Weather Review, 2018)
 
       - id: kruger
         name: Fabian Krüger
         affiliation: Universidade de Heidelberg
         status: supporting
         resolve: "Avaliacao de previsao probabilistica; complementa Gneiting."
+        work: >
+          Krueger, Lerch, Thorarinsdottir & Gneiting, "Predictive inference
+          based on Markov chain Monte Carlo output" (International Statistical
+          Review, 2021)
 
       - id: tippett
         name: Michael Tippett
@@ -189,6 +276,10 @@ schools:
           Trata o problema estatistico de skill sazonal com rigor incomum,
           incluindo quanto de um RPSS observado e atribuivel a acaso — a
           pergunta central do null de permutacao do projeto.
+        work: >
+          Tippett, Ranganathan, L'Heureux, Barnston & DelSole, "Assessing
+          probabilistic predictions of ENSO phase and intensity" (Climate
+          Dynamics, 2019)
 
       - id: doblas_reyes
         name: Francisco Doblas-Reyes
@@ -197,6 +288,10 @@ schools:
         resolve: >
           Avaliacao de previsao sazonal e o problema de skill aparente em
           sistemas operacionais.
+        work: >
+          Doblas-Reyes, Garcia-Serrano, Lienert, Biescas & Rodrigues, "Seasonal
+          climate predictability and forecasting: status and prospects" (WIREs
+          Climate Change, 2013)
 
   # -------------------------------------------------------------------
   - id: enso
@@ -216,6 +311,9 @@ schools:
           entender por que ONI_JAS prediz ONI_OND e de onde vem a barreira de
           previsibilidade da primavera. Sem ele, `oni_innovation_jas` mede
           surpresa contra um baseline sem conteudo fisico.
+        work: >
+          Jin, "An equatorial ocean recharge paradigm for ENSO. Part I:
+          conceptual model" (Journal of the Atmospheric Sciences, 1997)
 
       - id: yamagata
         name: Toshio Yamagata
@@ -225,12 +323,19 @@ schools:
           Formalizou o El Nino Modoki e o Dipolo do Oceano Indico. O bloco
           `enso_state` inclui o EMI justamente para capturar essa geometria sem
           impor categoria manual.
+        work: >
+          Ashok, Behera, Rao, Weng & Yamagata, "El Nino Modoki and its possible
+          teleconnection" (JGR-Oceans, 2007)
 
       - id: behera
         name: Swadhin Behera
         affiliation: JAMSTEC
         status: supporting
         resolve: "Modoki, IOD e teleconexoes do Hemisferio Sul."
+        work: >
+          Behera & Yamagata, "Influence of the Indian Ocean Dipole on the
+          Southern Oscillation" (Journal of the Meteorological Society of
+          Japan, 2003)
 
       - id: timmermann
         name: Axel Timmermann
@@ -240,18 +345,27 @@ schools:
           ENSO por sistemas dinamicos e teoria de bifurcacao, com trabalho sobre
           aplicacao de ML a previsao de ENSO atento ao problema de amostra
           pequena — a combinacao rara de que este projeto precisa.
+        work: >
+          Timmermann et al., "El Nino-Southern Oscillation complexity" (Nature,
+          2018)
 
       - id: kug
         name: Jong-Seong Kug
         affiliation: POSTECH / Seoul National University
         status: supporting
         resolve: "Tipos de ENSO e teleconexoes distintas por tipo."
+        work: >
+          Kug, Jin & An, "Two types of El Nino events: cold tongue El Nino and
+          warm pool El Nino" (Journal of Climate, 2009)
 
       - id: an
         name: Soon-Il An
         affiliation: Yonsei University
         status: supporting
         resolve: "Dinamica de ENSO e sua modulacao de baixa frequencia."
+        work: >
+          An & Wang, "Interdecadal change of the structure of the ENSO mode and
+          its impact on the ENSO frequency" (Journal of Climate, 2000)
 
       - id: hu
         name: Zeng-Zhen Hu
@@ -260,6 +374,9 @@ schools:
         resolve: >
           Diagnostico operacional de ENSO; util para interpretar o RONI e a
           escolha de base movel da ADR-005.
+        work: >
+          Corpo de trabalho de diagnostico operacional de ENSO no NOAA CPC
+          (boletins mensais e notas sobre o Relative ONI) — nao ha peca unica
 
   # -------------------------------------------------------------------
   - id: nordica
@@ -280,21 +397,39 @@ schools:
           Estabeleceu o acoplamento oceano-atmosfera que fundamenta todo ENSO.
           O SOI muito baixo com ONI muito alto observado hoje e a assinatura
           desse acoplamento.
+        work: >
+          Bjerknes, "Atmospheric teleconnections from the equatorial Pacific"
+          (Monthly Weather Review, 1969)
       - id: keenlyside
         name: Noel Keenlyside
         affiliation: Universidade de Bergen / Bjerknes Centre
         status: supporting
         resolve: "Previsibilidade decadal e inicializacao de modelos acoplados."
+        work: >
+          Keenlyside, Latif, Jungclaus, Kornblueh & Roeckner, "Advancing
+          decadal-scale climate prediction in the North Atlantic sector"
+          (Nature, 2008)
       - id: eldevik
         name: Tor Eldevik
         affiliation: Universidade de Bergen
         status: context
         resolve: "Variabilidade oceanica e mecanismo de teleconexao."
+        work: >
+          Eldevik et al., "Observed sources and variability of Nordic Seas
+          overflow" (Nature Geoscience, 2009)
       - id: sorteberg
         name: Asgeir Sorteberg
         affiliation: Universidade de Bergen
         status: supporting
-        resolve: "Estatistica de extremos climaticos."
+        resolve: >
+          Estatistica de extremos e de ciclones em alta latitude, feita sobre
+          rede curta e sinal fraco. Serve de contraprova de metodo: e a mesma
+          pergunta do alvo p95 deste projeto, respondida numa regiao onde a
+          serie e melhor — se o intervalo la ja e largo, o daqui nao sera
+          estreito.
+        work: >
+          Corpo de trabalho do Bjerknes Centre sobre estatistica de extremos e
+          ciclones em alta latitude — nao ha peca unica
 
   # -------------------------------------------------------------------
   - id: extremos
@@ -311,21 +446,33 @@ schools:
         resolve: >
           Estatistica de extremos climaticos com foco em inferencia quando ha
           poucos eventos — o gargalo declarado do projeto.
+        work: >
+          Naveau, Huser, Ribereau & Hannart, "Modeling jointly low, moderate,
+          and heavy rainfall intensities without a threshold selection" (Water
+          Resources Research, 2016)
       - id: davison
         name: Anthony Davison
         affiliation: EPFL
         status: supporting
         resolve: "Teoria de valores extremos multivariada."
+        work: >
+          Davison & Smith, "Models for exceedances over high thresholds"
+          (JRSS-B, 1990)
       - id: tawn
         name: Jonathan Tawn
         affiliation: Lancaster University
         status: supporting
         resolve: "Dependencia em extremos; relevante para cheia multi-estacao."
+        work: >
+          Heffernan & Tawn, "A conditional approach for multivariate extreme
+          values" (JRSS-B, 2004)
       - id: engelke
         name: Sebastian Engelke
         affiliation: Universidade de Genebra
         status: supporting
         resolve: "Grafos e extremos — estrutura de dependencia entre eventos raros."
+        work: >
+          Engelke & Hitz, "Graphical models for extremes" (JRSS-B, 2020)
 
   # -------------------------------------------------------------------
   - id: sudamerica
@@ -343,6 +490,9 @@ schools:
         resolve: >
           Autoridade em variabilidade climatica do sudeste da America do Sul —
           a regiao homogenea a qual o RS pertence climatologicamente.
+        work: >
+          Vera et al., "Toward a unified view of the American monsoon systems"
+          (Journal of Climate, 2006)
 
       - id: ambrizzi
         name: Tércio Ambrizzi
@@ -352,12 +502,19 @@ schools:
           Propagacao de ondas de Rossby e o padrao PSA — o mecanismo fisico
           pelo qual o sinal do Pacifico efetivamente chega ao RS. E o que
           justifica os sinais `psa1_son` e `psa2_son` no bloco `sam`.
+        work: >
+          Ambrizzi, Hoskins & Hsu, "Rossby wave propagation and teleconnection
+          patterns in the austral winter" (Journal of the Atmospheric Sciences,
+          1995)
 
       - id: cavalcanti
         name: Iracema Cavalcanti
         affiliation: INPE
         status: core
         resolve: "Teleconexao ENSO-Brasil e sistemas causadores de precipitacao."
+        work: >
+          Cavalcanti, Ferreira, Silva Dias & Justi da Silva (orgs.), "Tempo e
+          Clima no Brasil" (Oficina de Textos, 2009)
 
       - id: marengo
         name: José Marengo
@@ -366,6 +523,10 @@ schools:
         resolve: >
           Eventos extremos e desastres no Brasil — a ponte entre previsao
           climatica e central de risco, incluindo os limites dessa ponte.
+        work: >
+          Marengo & Espinoza, "Extreme seasonal droughts and floods in
+          Amazonia: causes, trends and impacts" (International Journal of
+          Climatology, 2016)
 
       - id: grimm
         name: Alice Grimm
@@ -375,12 +536,20 @@ schools:
           Relacao ENSO-precipitacao no Brasil com resolucao sazonal e regional,
           incluindo por que o sinal OND no Sul e mais forte e mais confiavel que
           em outras estacoes.
+        work: >
+          Grimm, Barros & Doyle, "Climate variability in southern South America
+          associated with El Nino and La Nina events" (Journal of Climate,
+          2000)
 
       - id: rocha
         name: Rosmeri Porfírio da Rocha
         affiliation: IAG / USP
         status: supporting
         resolve: "Downscaling regional e modelagem climatica sobre o Brasil."
+        work: >
+          Reboita, Gan, da Rocha & Ambrizzi, "Regimes de precipitacao na
+          America do Sul: uma revisao bibliografica" (Revista Brasileira de
+          Meteorologia, 2010)
 
       - id: bidegain
         name: Mario Bidegain
@@ -389,6 +558,9 @@ schools:
         resolve: >
           ENSO aplicado a agricultura num dominio geografico quase identico ao
           do RS.
+        work: >
+          Corpo de trabalho sobre ENSO aplicado a agricultura no Uruguai
+          (UdelaR e INIA) — nao ha peca unica de referencia
 
       - id: cpmet
         name: CPMet / UFPel e Meteorologia / UFSM
@@ -398,6 +570,10 @@ schools:
           Literatura mais granular sobre chuva no estado e sobre as
           idiossincrasias das estacoes — o conhecimento que a Camada 2 precisa
           e que nao esta em base internacional.
+        work: >
+          Corpo de trabalho institucional do CPMet/UFPel e da
+          Meteorologia/UFSM: dissertacoes, boletins e notas sobre estacoes do
+          estado. O valor esta na dispersao, e por isso nao ha peca unica
 
   # -------------------------------------------------------------------
   - id: assimilacao
@@ -410,11 +586,18 @@ schools:
         affiliation: École des Ponts ParisTech
         status: context
         resolve: "Assimilacao de dados e aprendizado de modelo a partir de observacao."
+        work: >
+          Bocquet, Brajard, Carrassi & Bertino, "Data assimilation as a
+          learning tool to infer ordinary differential equation representations
+          of dynamical models" (Nonlinear Processes in Geophysics, 2019)
       - id: carrassi
         name: Alberto Carrassi
         affiliation: Universidade de Bolonha
         status: context
         resolve: "Assimilacao em sistemas caoticos com observacao esparsa."
+        work: >
+          Carrassi, Bocquet, Bertino & Evensen, "Data assimilation in the
+          geosciences: an overview" (WIREs Climate Change, 2018)
 
   # -------------------------------------------------------------------
   - id: impacto
@@ -428,17 +611,38 @@ schools:
         name: Timothy Lenton
         affiliation: University of Exeter
         status: context
-        resolve: "Pontos de inflexao climaticos."
+        resolve: >
+          Pontos de inflexao do sistema climatico: onde a resposta deixa de ser
+          proporcional ao forcante. Enquadra o limite superior da Camada 4 — o
+          regime que a central detecta e estatistico e pressupoe que o passado
+          ainda descreve o futuro, premissa que um elemento de inflexao quebra
+          por definicao. Esta aqui para que a central saiba dizer onde ela para
+          de valer, nao para virar codigo.
+        work: >
+          Lenton et al., "Tipping elements in the Earth's climate system"
+          (PNAS, 2008)
       - id: folke
         name: Carl Folke
         affiliation: Stockholm Resilience Centre
         status: context
         resolve: "Resiliencia socioecologica — enquadramento de uma central de risco."
+        work: >
+          Folke, "Resilience: the emergence of a perspective for
+          social-ecological systems analyses" (Global Environmental Change,
+          2006)
       - id: rockstrom
         name: Johan Rockström
         affiliation: Potsdam Institute (PIK)
         status: context
-        resolve: "Limites planetarios."
+        resolve: >
+          Limites planetarios — o arcabouco que define espaco seguro de
+          operacao por variavel de sistema, e nao por evento. Relevante como
+          contraste deliberado: a central opera na escala oposta (um municipio,
+          uma estacao, uma decisao de obra), e ter o outro extremo mapeado
+          impede confundir enquadramento global com base para acao local.
+        work: >
+          Rockstrom et al., "A safe operating space for humanity" (Nature,
+          2009)
       - id: lobell
         name: David Lobell
         affiliation: Stanford University
@@ -447,16 +651,25 @@ schools:
           Impacto climatico sobre produtividade agricola com metodologia
           estatistica seria — a rota pela qual o ENSO no RS vira decisao
           economica.
+        work: >
+          Lobell, Schlenker & Costa-Roberts, "Climate trends and global crop
+          production since 1980" (Science, 2011)
       - id: asseng
         name: Senthold Asseng
         affiliation: Technical University of Munich
         status: supporting
         resolve: "Modelagem de cultura sob variabilidade climatica."
+        work: >
+          Asseng et al., "Uncertainty in simulating wheat yields under climate
+          change" (Nature Climate Change, 2013)
       - id: parmesan
         name: Camille Parmesan
         affiliation: CNRS / Plymouth
         status: context
         resolve: "Resposta ecologica a variabilidade climatica."
+        work: >
+          Parmesan & Yohe, "A globally coherent fingerprint of climate change
+          impacts across natural systems" (Nature, 2003)
 
   # -------------------------------------------------------------------
   - id: estatistica_climatica
@@ -486,6 +699,9 @@ schools:
           Graus de liberdade efetivos e teste de significancia sob dependencia
           serial — exatamente por que o bootstrap do projeto e em blocos de 3
           anos e nao i.i.d.
+        work: >
+          Zwiers & von Storch, "Taking serial correlation into account in tests
+          of the mean" (Journal of Climate, 1995)
 
       - id: delsole
         name: Timothy DelSole
@@ -496,6 +712,9 @@ schools:
           quanto de um skill medido vem de selecao sobre ruido. E a
           justificativa quantitativa da ADR-004 (regra de reducao pre-registrada)
           e do criterio da ADR-007.
+        work: >
+          DelSole & Shukla, "Artificial skill due to predictor screening"
+          (Journal of Climate, 2009)
 
       - id: shukla
         name: Jagadish Shukla
@@ -504,6 +723,9 @@ schools:
         resolve: >
           Fundou a nocao de previsibilidade sazonal a partir de condicoes de
           contorno lentas (TSM) — a premissa que torna este projeto possivel.
+        work: >
+          Shukla, "Predictability in the midst of chaos: a scientific basis for
+          climate forecasting" (Science, 1998)
 
       - id: koutsoyiannis
         name: Demetris Koutsoyiannis
@@ -515,6 +737,9 @@ schools:
           muito do que se chama tendencia e flutuacao de longo alcance. Se
           estiver certo, o bloco `trend` do projeto esta parcialmente
           confundido — vale enfrentar o argumento antes de reportar atribuicao.
+        work: >
+          Koutsoyiannis, "Climate change, the Hurst phenomenon, and
+          hydrological statistics" (Hydrological Sciences Journal, 2003)
 
       - id: franzke
         name: Christian Franzke
@@ -523,6 +748,9 @@ schools:
         resolve: >
           Nao-estacionariedade e deteccao de tendencia em series climaticas
           curtas; teste direto contra a hipotese nula certa.
+        work: >
+          Franzke, "Nonlinear trends, long-range dependence, and climate noise
+          properties of surface temperature" (Journal of Climate, 2012)
 
   # -------------------------------------------------------------------
   - id: causalidade
@@ -543,6 +771,9 @@ schools:
           desenhada para autocorrelacao alta, alta dimensao e amostra limitada —
           as tres patologias deste projeto. E o caminho honesto para a
           atribuicao por bloco.
+        work: >
+          Runge et al., "Detecting and quantifying causal associations in large
+          nonlinear time series datasets" (Science Advances, 2019)
 
       - id: kretschmer
         name: Marlene Kretschmer
@@ -553,6 +784,10 @@ schools:
           influencia entre modos (ENSO -> circulacao -> precipitacao regional)
           separando efeito direto de mediado. E precisamente o contrafactual
           "removendo ENSO" feito direito.
+        work: >
+          Kretschmer, Coumou, Donges & Runge, "Using causal effect networks to
+          analyze different Arctic drivers of midlatitude winter circulation"
+          (Journal of Climate, 2016)
 
       - id: ebert_uphoff
         name: Imme Ebert-Uphoff
@@ -562,6 +797,9 @@ schools:
           Grafos causais em ciencia atmosferica e interpretabilidade de ML
           aplicado a clima — util para que a atribuicao mostrada na interface
           seja auditavel, nao uma saida opaca.
+        work: >
+          Ebert-Uphoff & Deng, "Causal discovery for climate research using
+          graphical models" (Journal of Climate, 2012)
 
   # -------------------------------------------------------------------
   - id: homogeneizacao
@@ -581,6 +819,9 @@ schools:
           mediu quais metodos de fato corrigem e quais introduzem erro. Impede
           escolher metodo por elegancia — e sustenta a decisao do projeto de
           mascarar em vez de corrigir quando a referencia e fraca.
+        work: >
+          Venema et al., "Benchmarking homogenization algorithms for monthly
+          data" (Climate of the Past, 2012)
 
       - id: aguilar
         name: Enric Aguilar
@@ -590,12 +831,19 @@ schools:
           Diretrizes da OMM para controle de qualidade e homogeneizacao de dado
           climatico, e os indices ETCCDI de extremos — que sao praticamente o
           trio de alvos do projeto (frequencia, intensidade, percentil).
+        work: >
+          Aguilar, Auer, Brunet, Peterson & Wieringa, "Guidelines on climate
+          metadata and homogenization" (WMO/TD-1186, 2003)
 
       - id: brunet
         name: Manola Brunet
         affiliation: Universitat Rovira i Virgili / OMM
         status: supporting
         resolve: "Recuperacao e homogeneizacao de series longas; metadado de estacao."
+        work: >
+          Brunet et al., "The development of a new dataset of Spanish daily
+          adjusted temperature series (SDATS), 1850-2003" (International
+          Journal of Climatology, 2006)
 
       - id: trewin
         name: Blair Trewin
@@ -605,6 +853,9 @@ schools:
           Tratamento de quebra por mudanca de instrumento e de pratica de
           observacao em rede nacional — o caso do INMET tem a mesma anatomia,
           e ja foi resolvido publicamente uma vez.
+        work: >
+          Trewin, "A daily homogenized temperature data set for Australia"
+          (International Journal of Climatology, 2013)
 
       - id: peterson
         name: Thomas Peterson
@@ -614,6 +865,10 @@ schools:
           Deteccao de descontinuidade contra serie de referencia regional — o
           metodo que a Camada 2 usa, e a razao de nunca aplicar o teste a serie
           bruta.
+        work: >
+          Peterson & Easterling, "Creation of homogeneous composite
+          climatological reference series" (International Journal of
+          Climatology, 1994)
 
   # -------------------------------------------------------------------
   - id: hidrologia
@@ -632,6 +887,9 @@ schools:
           estacoes: mostra que tendencia em cheia nao segue tendencia em chuva
           media. E o alerta direto contra extrapolar do alvo sazonal para risco
           hidrologico.
+        work: >
+          Bloschl et al., "Changing climate both increases and decreases
+          European river floods" (Nature, 2019)
 
       - id: lall
         name: Upmanu Lall
@@ -642,6 +900,9 @@ schools:
           metodos nao-parametricos e reamostragem — a extensao natural desta
           engine para o Jacui/Uruguai, com o ferramental estatistico adequado a
           amostra curta.
+        work: >
+          Lall & Sharma, "A nearest neighbor bootstrap for resampling
+          hydrologic time series" (Water Resources Research, 1996)
 
       - id: sivapalan
         name: Murugesu Sivapalan
@@ -651,12 +912,18 @@ schools:
           Socio-hidrologia: como a resposta humana ao risco altera o proprio
           risco. Relevante para uma central que emite alerta e assim muda o
           comportamento que o alerta previa.
+        work: >
+          Sivapalan, Savenije & Bloschl, "Socio-hydrology: a new science of
+          people and water" (Hydrological Processes, 2012)
 
       - id: montanari
         name: Alberto Montanari
         affiliation: Universidade de Bolonha
         status: supporting
         resolve: "Incerteza em previsao hidrologica; predicao sob nao-estacionariedade."
+        work: >
+          Montanari & Koutsoyiannis, "A blueprint for process-based modeling of
+          uncertain hydrological systems" (Water Resources Research, 2012)
 
   # -------------------------------------------------------------------
   - id: verificacao_operacional
@@ -681,6 +948,9 @@ schools:
         affiliation: University of Exeter
         status: supporting
         resolve: "Verificacao probabilistica e decomposicao de scores."
+        work: >
+          Stephenson, Coelho & Jolliffe, "Two extra components in the Brier
+          score decomposition" (Weather and Forecasting, 2008)
 
       - id: ebert
         name: Elizabeth Ebert
@@ -689,6 +959,9 @@ schools:
         resolve: >
           Verificacao orientada a objeto e a usuario — como reportar
           desempenho para quem decide, nao so para quem modela.
+        work: >
+          Ebert, "Fuzzy verification of high-resolution gridded forecasts: a
+          review and proposed framework" (Meteorological Applications, 2008)
 
       - id: murphy
         name: Allan Murphy
@@ -699,6 +972,9 @@ schools:
           consistencia e valor da previsao. E o enquadramento que impede a
           central de risco confundir skill estatistico com utilidade para
           decisao.
+        work: >
+          Murphy, "What is a good forecast? An essay on the nature of goodness
+          in weather forecasting" (Weather and Forecasting, 1993)
 
   # -------------------------------------------------------------------
   - id: modos_indices
@@ -717,6 +993,9 @@ schools:
           — construido justamente porque a versao de reanalise tem tendencia
           espuria no periodo pre-satelite. Saber disso e o que justifica manter
           as duas versoes do SAM no bloco.
+        work: >
+          Marshall, "Trends in the Southern Annular Mode from observations and
+          reanalyses" (Journal of Climate, 2003)
 
       - id: thompson
         name: David W. J. Thompson
@@ -725,6 +1004,9 @@ schools:
         resolve: >
           Definiu os modos anulares. Fundamenta por que o SAM e um preditor
           fisicamente distinto do ENSO, e nao um proxy redundante.
+        work: >
+          Thompson & Wallace, "Annular modes in the extratropical circulation.
+          Part I: month-to-month variability" (Journal of Climate, 2000)
 
       - id: wheeler
         name: Matthew Wheeler
@@ -733,6 +1015,9 @@ schools:
         resolve: >
           Com Harry Hendon, o indice RMM de MJO que o projeto ingere na Fase 5.
           A base da unica camada sub-sazonal viavel.
+        work: >
+          Wheeler & Hendon, "An all-season real-time multivariate MJO index"
+          (Monthly Weather Review, 2004)
 
       - id: funk
         name: Chris Funk
@@ -742,6 +1027,9 @@ schools:
           CHIRPS — o produto que a Camada 2 usa como serie de referencia
           regional. A documentacao de como estacoes entram no produto e o que
           determina o grau de contaminacao ao validar contra estacoes.
+        work: >
+          Funk et al., "The climate hazards infrared precipitation with
+          stations (CHIRPS)" (Scientific Data, 2015)
 
       - id: hersbach
         name: Hans Hersbach
@@ -751,12 +1039,18 @@ schools:
           ERA5 — insumo do HMM de regime e dos EOFs de PSA. Conhecer as
           descontinuidades do sistema de assimilacao evita ler mudanca de
           reanalise como mudanca de clima.
+        work: >
+          Hersbach et al., "The ERA5 global reanalysis" (QJRMS, 2020)
 
       - id: becker
         name: Andreas Becker
         affiliation: DWD / GPCC
         status: context
         resolve: "GPCC — a grade de estacoes mais longa disponivel (1891-)."
+        work: >
+          Becker et al., "A description of the global land-surface
+          precipitation data products of the GPCC" (Earth System Science Data,
+          2013)
 
       # -----------------------------------------------------------------
       # As entradas acima descrevem produtos PLANEJADOS (CHIRPS, ERA5, GPCC,
@@ -776,6 +1070,9 @@ schools:
           agua permanente, sazonal, PERDIDA ou nova. Licenca CC BY 4.0, exige
           citacao. E a unica fonte que responde "onde ja foi agua e deixou de
           ser", que e a pergunta por tras de "areas que voltaram a encher".
+        work: >
+          Pekel, Cottam, Gorelick & Belward, "High-resolution mapping of global
+          surface water and its long-term changes" (Nature 540, 418-422, 2016)
 
       - id: menne
         name: Matthew J. Menne
@@ -786,6 +1083,10 @@ schools:
           (66 estacoes, 1934-1999). E sobre ela que a ADR-042 registra o
           contato com o alvo. Conhecer os controles de qualidade do GHCN e o
           que justifica descartar o dia com qualquer flag em vez de corrigi-lo.
+        work: >
+          Menne, Durre, Vose, Gleason & Houston, "An overview of the Global
+          Historical Climatology Network-Daily database" (Journal of
+          Atmospheric and Oceanic Technology, 2012)
 
       - id: ibge_munic
         name: IBGE — Pesquisa de Informacoes Basicas Municipais (MUNIC)
@@ -797,6 +1098,9 @@ schools:
           prefeitura ao IBGE — saber disso e o que sustenta o limite declarado
           de incentivo assimetrico entre relatar dano e relatar falha de
           prevencao.
+        work: >
+          IBGE, MUNIC 2024 — suplemento "Evento Climatico Rio Grande do Sul":
+          notas tecnicas, questionario e microdados municipais
 
       - id: osm
         name: Colaboradores do OpenStreetMap
@@ -808,6 +1112,10 @@ schools:
           legal, nao cortesia. E base colaborativa: ausencia no mapa nao prova
           ausencia no territorio, e todo vazio derivado dela carrega essa
           ressalva.
+        work: >
+          Base colaborativa OpenStreetMap sob ODbL 1.0; a peca a ler e a
+          documentacao das tags amenity=fire_station e amenity=police, que
+          define o que entra e o que fica de fora
 
       - id: cnes
         name: CNES / DATASUS
@@ -818,6 +1126,9 @@ schools:
           `codigo_tipo_unidade` e o que impediu um erro grave: o tipo 43, cujo
           rotulo diz "Unidade Movel de Nivel Pre-Hospitalar", devolve farmacias
           — quase quatro mil delas entrariam no mapa como ambulancia.
+        work: >
+          CNES/DATASUS — arquivos publicos de estabelecimentos e a tabela de
+          codigo_tipo_unidade, que e onde o rotulo engana
 
   # -------------------------------------------------------------------
   - id: sesa_extremos
@@ -836,6 +1147,9 @@ schools:
           Indices de extremos de temperatura e precipitacao no sul da America do
           Sul, com atencao a qualidade da serie observada — junta as duas
           camadas mais criticas do projeto num so corpo de trabalho.
+        work: >
+          Rusticucci & Barrucand, "Observed trends and changes in temperature
+          extremes over Argentina" (Journal of Climate, 2004)
 
       - id: penalba
         name: Olga Penalba
@@ -844,12 +1158,19 @@ schools:
         resolve: >
           Estrutura temporal da precipitacao no sudeste da America do Sul:
           sequencias secas e umidas — diretamente o alvo `wetday_freq`.
+        work: >
+          Penalba & Robledo, "Spatial and temporal variability of the frequency
+          of extreme daily rainfall regime in the La Plata Basin" (Climatic
+          Change, 2010)
 
       - id: solman
         name: Silvina Solman
         affiliation: CIMA / UBA
         status: supporting
         resolve: "Modelagem climatica regional sobre o Cone Sul."
+        work: >
+          Solman et al., "Evaluation of an ensemble of regional climate model
+          simulations over South America (CLARIS-LPB)" (Climate Dynamics, 2013)
 
       - id: reboita
         name: Michelle Reboita
@@ -859,6 +1180,10 @@ schools:
           Ciclones extratropicais e sistemas sinoticos sobre o sul do Brasil —
           o mecanismo que efetivamente produz a chuva que o projeto preve, e a
           fronteira exata onde a camada sazonal para de valer.
+        work: >
+          Reboita, da Rocha, Ambrizzi & Sugahara, "South Atlantic Ocean
+          cyclogenesis climatology simulated by regional climate model"
+          (Climate Dynamics, 2010)
 
       - id: nascimento
         name: Ernani Nascimento
@@ -868,12 +1193,19 @@ schools:
           Tempo severo e ambientes convectivos no RS. E a referencia que sustenta
           o aviso da central: eventos como maio/2024 sao sinoticos e estao fora
           do que qualquer engine sazonal alcanca.
+        work: >
+          Nascimento, "Previsao de tempestades severas utilizando-se parametros
+          convectivos e modelos de mesoescala" (Revista Brasileira de
+          Meteorologia, 2005)
 
       - id: teixeira
         name: Mateus Teixeira
         affiliation: UFRGS
         status: supporting
         resolve: "Precipitacao intensa e sistemas convectivos de mesoescala no RS."
+        work: >
+          Corpo de trabalho na UFRGS sobre sistemas convectivos de mesoescala e
+          chuva intensa no RS — nao ha peca unica
 
   # -------------------------------------------------------------------
   - id: atribuicao_evento
@@ -892,6 +1224,9 @@ schools:
           Metodo de atribuicao rapida de evento extremo (World Weather
           Attribution) e o KNMI Climate Explorer. Estabelece o que pode e o que
           nao pode ser afirmado logo apos um evento.
+        work: >
+          Philip, Kew, van Oldenborgh et al., "A protocol for probabilistic
+          extreme event attribution analyses" (ASCMO, 2020)
 
       - id: otto
         name: Friederike Otto
@@ -900,6 +1235,9 @@ schools:
         resolve: >
           Atribuicao probabilistica de evento e sua comunicacao publica — a
           parte que uma central de risco erra com mais facilidade.
+        work: >
+          Otto, "Attribution of weather and climate events" (Annual Review of
+          Environment and Resources, 2017)
 
 # ---------------------------------------------------------------------
 # Precedentes de metodo: onde uma ideia do projeto ja existe na literatura.
@@ -1011,3 +1349,258 @@ adversarial:
     consequence: >
       A central precisa demonstrar valor por decisao (limiar de acao), nao so
       RPSS. Sugere uma metrica de valor economico no Ledger, alem do skill.
+
+# ---------------------------------------------------------------------------
+# Precedentes construtivos ATIPICOS
+# ---------------------------------------------------------------------------
+#
+# Por que esta secao existe, e por que "atipico" e o criterio.
+#
+# O repertorio de contencao que chega a uma prefeitura brasileira e curto e
+# quase sempre o mesmo: dique, muro, galeria maior, piscinao. Nao porque
+# alguem provou que e o melhor, mas porque e o que o mercado de projeto
+# oferece e o que o edital sabe descrever.
+#
+# As entradas abaixo sao obras e praticas REAIS, executadas e documentadas,
+# que resolvem o mesmo mecanismo fisico por um caminho que o repertorio padrao
+# nao contem. Algumas sao caras e monumentais; outras custam quase nada.
+# Varias sao anteriores a engenharia moderna. Nenhuma esta aqui por ser
+# exotica: cada uma esta pareada com o mecanismo do catalogo de estrategias
+# (src/risk/contencao.py) que ela ataca.
+#
+# Toda entrada carrega `limite`. Precedente sem limite e propaganda, e
+# importar obra estrangeira sem o limite dela e como o RS herdou a confianca
+# no dique continuo: funciona ate o dia em que nao funciona.
+#
+# `aplicavel_a` referencia os ids de estrategia. Se um id mudar la, esta
+# lista fica orfa — e por isso ha teste cobrindo a correspondencia.
+
+construtivos:
+  - id: ruimte_voor_de_rivier
+    titulo: "Ruimte voor de Rivier — devolver a planicie ao rio"
+    onde: "Paises Baixos, 34 sitios nos rios Reno, Waal, IJssel e Mosa"
+    quando: "2007-2019, ~2,3 bilhoes de euros"
+    mecanismo: "cheia fluvial com remanso — reducao de nivel por area, nao por altura de muro"
+    aplicavel_a: [reconexao_varzea, restaurar_planicie]
+    por_que_atipica: >
+      Inverte a resposta reflexa. Depois de seculos erguendo diques, o pais
+      que mais depende deles decidiu, em varios trechos, RECUAR o dique,
+      rebaixar varzea, escavar canais secundarios e remover obstrucao — em
+      alguns casos realocando propriedades inteiras. A protecao local diminui
+      de proposito para que o nivel do sistema caia. E a decisao politica que
+      raramente se toma: aceitar perda localizada declarada em vez de risco
+      difuso nao declarado.
+    limite: >
+      Exige terra e poder de desapropriacao, e o ganho e de NIVEL, nao de
+      vazao — em bacia lagunar governada por vento, abrir varzea nao resolve
+      empilhamento. Alem disso boa parte do custo foi arranjo fundiario e
+      indenizacao, nao obra: transplantar o numero sem o arranjo nao
+      transplanta o resultado.
+    fonte: "Rijkswaterstaat, programa Ruimte voor de Rivier (encerrado em 2019)."
+
+  - id: kasumi_tei
+    titulo: "Kasumi-tei — dique descontinuo que deixa a agua entrar e sair"
+    onde: "Japao, bacias do Kiso, Fuji e Shinano"
+    quando: "periodo Edo, a partir de 1600; trechos ainda em operacao"
+    mecanismo: "cheia fluvial rapida — armazenamento temporario em bolsao designado"
+    aplicavel_a: [reconexao_varzea, retencao_alagamento]
+    por_que_atipica: >
+      O dique nao e continuo: e uma serie de segmentos sobrepostos com
+      aberturas. Na cheia, a agua entra pela abertura e alaga uma area
+      previamente escolhida; quando o rio baixa, a mesma abertura a devolve
+      por gravidade. Seculos antes do conceito moderno de bacia de detencao,
+      e sem nenhuma peca movel para falhar. O dique continuo, por contraste,
+      so tem dois estados: segura, ou rompe.
+    limite: >
+      Exige que a area de inundacao seja escolhida ANTES e mantida com uso
+      compativel — no Japao ela e arrozal. Sobre area urbanizada e apenas
+      inundacao com outro nome, e o arranjo depende de compensacao explicita
+      a quem alaga: sem isso, e transferir dano para o mais fraco.
+    fonte: "Historia da engenharia fluvial japonesa; o MLIT documenta trechos em uso."
+
+  - id: cloudburst_copenhague
+    titulo: "Skybrudsplan — a rua como canal de cheia"
+    onde: "Copenhague, Dinamarca"
+    quando: "plano de 2012, apos a chuva de 2 de julho de 2011"
+    mecanismo: "chuva sobre superficie impermeavel — conducao superficial dirigida"
+    aplicavel_a: [drenagem_urbana, retencao_alagamento]
+    por_que_atipica: >
+      Em vez de ampliar a rede enterrada, a cidade reconheceu que em chuva
+      extrema a agua ja corre pela rua de qualquer jeito, e passou a projetar
+      a rua para isso: leito rebaixado no eixo, meio-fio alto, praca-bacia nos
+      pontos baixos, tudo escoando para o porto. A conducao acontece na
+      superficie, onde e visivel, barata de inspecionar e impossivel de
+      entupir sem que alguem veja.
+    limite: >
+      Depende de topografia com exutorio proximo — Copenhague tem o mar ao
+      lado. Numa cidade de bacia lagunar cujo exutorio esta represado por
+      vento, conduzir mais rapido para o exutorio nao adianta: a agua chega e
+      nao sai. E rua-canal exige protocolo de interdicao; superficie que
+      conduz cheia atropela pedestre.
+    fonte: "Kobenhavns Kommune, Skybrudsplan 2012."
+
+  - id: esponja_e_seu_contraexemplo
+    titulo: "Cidade-esponja, e Zhengzhou como contraexemplo dela"
+    onde: "China, cidades-piloto; contraexemplo em Zhengzhou (Henan)"
+    quando: "programa desde 2015; enchente de Zhengzhou em julho de 2021"
+    mecanismo: "chuva sobre superficie impermeavel — infiltracao distribuida na origem"
+    aplicavel_a: [drenagem_urbana]
+    por_que_atipica: >
+      E o maior experimento de infraestrutura verde ja feito, com meta
+      numerica obrigatoria de reter na origem a maior parte da chuva anual — e
+      esta aqui tanto pelo que entregou quanto pelo que nao entregou.
+      Zhengzhou era cidade-esponja piloto e recebeu cerca de 200 mm em UMA
+      hora em 20/07/2021, com centenas de mortes. A leitura correta nao e
+      "esponja nao funciona": e que solucao distribuida trata a chuva
+      FREQUENTE, que e a que mais custa no acumulado, e satura no extremo —
+      exatamente o limite que o catalogo desta central ja declara.
+    limite: >
+      Satura. Qualquer volume de infiltracao e finito, e acima do evento de
+      projeto a resposta volta a ser conducao e reservacao. Publicar meta de
+      retencao anual sem publicar o comportamento no extremo produz a mesma
+      falsa seguranca que o RS ja teve com o dique.
+    fonte: "Diretriz chinesa de cidade-esponja (MOHURD); relatorio oficial sobre a enchente de Zhengzhou."
+
+  - id: bda_castor
+    titulo: "Beaver dam analogue — barragem de galho, feita a mao, em cabeceira"
+    onde: "oeste dos EUA (Bridge Creek, Oregon) e ensaio de Devon, Inglaterra"
+    quando: "monitoramento desde cerca de 2009; ensaio britanico 2011-2020"
+    mecanismo: "cheia rapida de cabeceira — retardo e armazenamento difuso a montante"
+    aplicavel_a: [reconexao_varzea, restaurar_planicie]
+    por_que_atipica: >
+      A estrutura e literalmente estaca e galho fincados no leito, imitando
+      barragem de castor, a um custo por unidade de centenas e nao de milhoes.
+      Sao construidas as dezenas na cabeceira. Nao protegem nada sozinhas: o
+      efeito e somado por muitas, e o mecanismo e retardo, nao barreira. O
+      ensaio de Devon mediu reducao de pico e melhora de qualidade da agua a
+      jusante.
+    limite: >
+      Efeito real limitado a cabeceira e a eventos pequenos e medios. Nao
+      altera o pico do curso principal numa cheia regional como a de 2024, e
+      no RS nao ha castor: seria estrutura mantida por gente, com custo
+      recorrente e sem o animal que a reconstroi de graca.
+    fonte: "Pollock et al. sobre Bridge Creek; relatorio final do River Otter Beaver Trial (2020)."
+
+  - id: camellones_waru_waru
+    titulo: "Camellones e waru-waru — plantar dentro da planicie de inundacao"
+    onde: "Llanos de Moxos (Beni, Bolivia) e altiplano do Titicaca (Peru)"
+    quando: "pre-colombiano (a partir de cerca de 1000 a.C.); reconstrucoes desde os anos 1980"
+    mecanismo: "planicie que enche todo ano — conviver com a lamina, nao exclui-la"
+    aplicavel_a: [restaurar_planicie, reconexao_varzea]
+    por_que_atipica: >
+      Nao ha obra de contencao: o campo e elevado em cordoes com canais entre
+      eles, e a agua permanece no sistema o ano inteiro. Os canais amortecem,
+      irrigam na seca, moderam geada pela inercia termica da agua e produzem
+      peixe. A premissa e oposta a de toda a engenharia de drenagem: a agua
+      nao e o problema a remover, e o recurso a reter. Sao milhares de
+      hectares ainda visiveis por sensoriamento remoto.
+    limite: >
+      E sistema agricola, nao protecao de cidade — nao defende area
+      construida e nao tem evento de projeto. A reconstrucao moderna so se
+      manteve onde houve trabalho comunitario continuo; onde virou projeto com
+      prazo, foi abandonada. Trazer isto sem a organizacao social que o
+      sustenta e trazer a forma sem a funcao.
+    fonte: "Erickson sobre campos elevados no Titicaca e em Moxos, e avaliacoes criticas posteriores."
+
+  - id: baira_horta_flutuante
+    titulo: "Baira — horta flutuante sobre a propria cheia"
+    onde: "Bangladesh, distritos de Gopalganj, Barisal e Pirojpur"
+    quando: "pratica com mais de 100 anos; reconhecida pela FAO como GIAHS em 2015"
+    mecanismo: "inundacao prolongada — producao que sobe junto com a agua"
+    aplicavel_a: [restaurar_planicie]
+    por_que_atipica: >
+      A base e um estrado de aguape e restos vegetais que flutua e apodrece
+      virando substrato. Nao ha cota de projeto porque nao ha cota: a
+      estrutura acompanha o nivel. Resolve, sem nenhuma obra, o problema que
+      aqui se resolveria com aterro — e o aterro e justamente o que transfere
+      a cheia para o vizinho.
+    limite: >
+      Serve a seguranca alimentar durante a cheia, nao a protecao de vidas nem
+      de estrutura. Depende de material vegetal abundante e de agua parada; em
+      corrente forte nao se sustenta. E nao substitui renda: e complemento de
+      subsistencia num contexto de pobreza rural.
+    fonte: "FAO, GIAHS — Floating Garden Agricultural Practices, Bangladesh."
+
+  - id: wildbachverbauung
+    titulo: "Wildbachverbauung — controle de torrente comecando pela floresta"
+    onde: "Austria e Suica, bacias alpinas"
+    quando: "servico estatal continuo desde 1884"
+    mecanismo: "talude saturado e corrida de massa — retencao de sedimento na origem"
+    aplicavel_a: [estabilizar_encosta]
+    por_que_atipica: >
+      A obra de concreto na torrente e a ultima etapa, nao a primeira. O
+      arranjo comeca com a floresta de protecao (Schutzwald), legalmente
+      vinculada e com corte proibido, e so entao vem as barragens de retencao
+      de sedimento escalonadas. E um servico permanente com orcamento anual e
+      cadastro por bacia, nao uma obra com inauguracao — o oposto do ciclo de
+      reconstruir depois do desastre.
+    limite: >
+      Custa manutencao para sempre e pressupoe instituicao estavel por
+      decadas. Barragem de retencao cheia de sedimento vira passivo: sem
+      limpeza programada, falha de uma vez e entrega tudo junto a jusante.
+    fonte: "Die Wildbach- und Lawinenverbauung (servico federal austriaco); legislacao de Schutzwald."
+
+  - id: gcans
+    titulo: "G-Cans — a resposta cara, nomeada de proposito"
+    onde: "Kasukabe, area metropolitana de Toquio"
+    quando: "1993-2006, da ordem de bilhoes de dolares"
+    mecanismo: "drenagem urbana saturada — armazenamento e bombeamento em escala extrema"
+    aplicavel_a: [retencao_alagamento, drenagem_urbana]
+    por_que_atipica: >
+      Cinco silos de 65 m ligados por 6,3 km de tunel a um tanque com bombas
+      de centenas de metros cubicos por segundo. Esta no catalogo justamente
+      por ser o extremo oposto das outras entradas: quando nao ha area em cota
+      util e o dano evitado e metropolitano, a resposta e enterrar volume e
+      bombear, e nenhuma solucao baseada na natureza chega perto. Ter isto
+      escrito impede que a secao inteira seja lida como preferencia estetica
+      por vegetacao.
+    limite: >
+      Custo e prazo fora de escala para qualquer municipio do RS isolado, e
+      depende de energia: bomba sem eletricidade e tunel sem funcao — o mesmo
+      modo de falha das casas de bomba de Porto Alegre em 2024. Comparar o
+      valor sem comparar o dano evitado e comparar nada.
+    fonte: "MLIT (Japao), Metropolitan Area Outer Underground Discharge Channel."
+
+  - id: servidao_de_inundacao
+    titulo: "Servidao de inundacao remunerada — pagar para alagar"
+    onde: "Estados Unidos (Floodplain Easement do NRCS) e Reino Unido"
+    quando: "programa federal norte-americano desde os anos 1990"
+    mecanismo: "qualquer — o instrumento e fundiario, nao estrutural"
+    aplicavel_a: [reconexao_varzea, restaurar_planicie, retencao_alagamento]
+    por_que_atipica: >
+      Nao e obra: e contrato. O poder publico compra o DIREITO de inundar uma
+      area privada, permanentemente, pagando ao proprietario, que mantem a
+      terra sob uso compativel. Resolve o obstaculo que trava quase toda
+      solucao de varzea — a area existe, mas tem dono — sem desapropriar e sem
+      litigio. Entra aqui porque esta central mede muita planicie com memoria
+      hidrica cujo destino depende disto, e nao de engenharia.
+    limite: >
+      Exige cadastro fundiario confiavel, orcamento plurianual e fiscalizacao
+      do uso combinado por decadas. Onde a posse e informal, o pagamento tende
+      a chegar a quem tem titulo e nao a quem ocupa — e no RS isso recairia
+      sobre areas de varzea ocupadas justamente por quem tem menos acesso a
+      Estado.
+    fonte: "USDA NRCS, Emergency Watershed Protection — Floodplain Easement."
+
+  - id: terracos_de_marisma
+    titulo: "Terracos de marisma — cortar a pista do vento em vez de erguer muro"
+    onde: "costa da Luisiana, Estados Unidos"
+    quando: "programa CWPPRA, projetos desde os anos 1990"
+    mecanismo: "empilhamento por vento em laguna rasa — reducao de pista (fetch)"
+    aplicavel_a: [controle_lagunar]
+    por_que_atipica: >
+      Ataca a variavel que ninguem ataca. Empilhamento por vento e altura de
+      onda crescem com a PISTA — a distancia livre que o vento sopra sobre
+      agua rasa. Em vez de enfrentar a agua na margem com muro, o projeto
+      constroi cordoes baixos de terra dentro do proprio corpo raso, em
+      padrao de grade, quebrando a pista em trechos curtos e plantando
+      marisma sobre eles. A onda chega menor porque nunca teve espaco para
+      crescer. Custa uma fracao de estrutura de margem, e o cordao vira
+      habitat em vez de barreira.
+    limite: >
+      Reduz onda e ajuda a reter sedimento; NAO reduz o nivel. Contra vento de
+      sul sustentado numa laguna que sobe por dias, o volume continua entrando
+      e so bombeamento tira agua — a mesma fronteira que o catalogo ja declara
+      para banhado marginal. E exige agua rasa e sedimento disponivel:
+      em corpo profundo o cordao nao para em pe.
+    fonte: "Coastal Wetlands Planning, Protection and Restoration Act (CWPPRA), projetos de marsh terracing."
