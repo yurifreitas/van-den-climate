@@ -52,16 +52,29 @@ CACHE_HORAS = 24 * 30
 # valido quanto o mapeado como ponto, e pegar so `node` perderia a maioria dos
 # grandes. `out center` devolve o centroide de way/relation.
 CONSULTA = """
-[out:json][timeout:180];
+[out:json][timeout:240];
 area["ISO3166-2"="BR-RS"]->.rs;
 (
   nwr["amenity"="fire_station"](area.rs);
   nwr["amenity"="police"](area.rs);
+  way["bridge"]["highway"~"^(motorway|trunk|primary|secondary)$"](area.rs);
 );
-out center;
+out center tags;
 """
 
 PAPEL = {"fire_station": "bombeiro", "police": "policia"}
+
+# Pontes SO na malha principal (motorway, trunk, primary, secondary). A malha
+# completa do RS tem dezenas de milhares de travessias, a maioria bueiro de
+# estrada vicinal. O recorte responde a pergunta que importa numa cheia:
+# quais travessias, se caem, ISOLAM um municipio — e essas estao na malha
+# estruturante, nao na vicinal.
+#
+# ATENCAO ao que este dado NAO e: nao ha estado de conservacao, ano de
+# construcao, vao, carga nem laudo. O OSM registra que existe uma ponte ali,
+# nao se ela aguenta. "Manutencao de pontoes" nesta central so pode significar
+# ONDE INSPECIONAR, nunca "esta ponte precisa de reparo".
+HIGHWAY_PRINCIPAL = {"motorway", "trunk", "primary", "secondary"}
 
 
 class IngestError(RuntimeError):
@@ -107,8 +120,16 @@ def parse(raw: bytes) -> pd.DataFrame:
     for e in payload.get("elements", []):
         tags = e.get("tags", {})
         amenity = tags.get("amenity")
-        if amenity not in PAPEL:
+        via = tags.get("highway")
+        ehponte = bool(tags.get("bridge")) and via in HIGHWAY_PRINCIPAL
+
+        if amenity in PAPEL:
+            papel = PAPEL[amenity]
+        elif ehponte:
+            papel = "ponte"
+        else:
             continue
+
         # node traz lat/lon direto; way e relation trazem `center`.
         lat = e.get("lat") or (e.get("center") or {}).get("lat")
         lon = e.get("lon") or (e.get("center") or {}).get("lon")
@@ -116,9 +137,14 @@ def parse(raw: bytes) -> pd.DataFrame:
             continue
         linhas.append({
             "osm_id": f"{e.get('type')}/{e.get('id')}",
-            "papel": PAPEL[amenity],
+            "papel": papel,
             "nome": tags.get("name"),
             "operador": tags.get("operator"),
+            # `via` e `ref` so fazem sentido para ponte: dizem QUAL rodovia cai
+            # junto com ela. BR-116 e BR-290 nao sao equivalentes a uma
+            # secundaria sem nome.
+            "via": via if ehponte else None,
+            "ref": tags.get("ref") if ehponte else None,
             "lat": float(lat),
             "lon": float(lon),
         })
@@ -154,9 +180,10 @@ def run() -> pd.DataFrame:
                     "ingestor_version": INGESTOR_VERSION,
                     "rows": None,
                     "notes": (
-                        "Quarteis de bombeiro e unidades policiais do RS. Base COLABORATIVA, "
-                        "nao cadastro oficial: ausencia no mapa nao prova ausencia no territorio. "
-                        "E BASE, nunca viatura — nao ha dado publico de frota."
+                        "Quarteis de bombeiro, unidades policiais e pontes da malha principal "
+                        "do RS. Base COLABORATIVA, nao cadastro oficial: ausencia no mapa nao "
+                        "prova ausencia no territorio. E BASE, nunca viatura, e para pontes e "
+                        "EXISTENCIA, nunca estado de conservacao."
                     ),
                     "consulta": CONSULTA.strip(),
                     "licenca": "ODbL — OpenStreetMap contributors",

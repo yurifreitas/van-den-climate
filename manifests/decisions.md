@@ -121,6 +121,30 @@ em nota de rodapé: contagem de leitos, dias letivos perdidos, recuperação
 financeira, alcance do apoio psicológico e prazo/custo de reconstrução. Cada
 uma nomeia a fonte que a resolveria.
 
+## Geotécnico, acesso e travessias
+
+| # | Data | Decisão | Razão | Estado |
+|---|------|---------|-------|--------|
+| 059 | 2026-08-08 | Perigo geotécnico ganha **camada própria**, e continua fora do índice hídrico | A exclusão da ADR original estava certa (talude e planície têm física, mapa de risco e obra de mitigação diferentes) mas deixava 5 variáveis ingeridas sem uso. Contenção e realocação nunca são dique nem drenagem. Travado por teste | ativa |
+| 060 | 2026-08-08 | Ponte é **existência, nunca conservação** | Há 2.159 travessias mapeadas na malha principal e **zero laudo público**: nenhum dado de estado, vão, carga ou ano. Um painel que liste pontes ao lado de um índice de risco convida a leitura "estas pontes estão ruins", que seria invenção. Mesma disciplina de ADR-036 e ADR-053 | ativa |
+| 061 | 2026-08-08 | "Manutenção de pontões" vira ação de **vistoria**, nunca de reparo | Sem laudo, o que o dado sustenta é "onde procurar": muitas travessias servindo município que já declarou dano viário e ilhamento. Apontar uma ponte específica seria fabricação | ativa |
+| 062 | 2026-08-08 | Recorte de pontes só na **malha principal** (motorway, trunk, primary, secondary) | A malha completa tem dezenas de milhares de travessias, a maioria bueiro vicinal. A pergunta numa cheia é qual travessia isola um município, e essas estão na malha estruturante | ativa |
+| 063 | 2026-08-08 | `queda_barreira` conta em **geotécnico E acesso** | Única sobreposição legítima: é talude (geotécnico) e corta estrada (acesso). Não é duplicação — são duas leituras do mesmo fato, com mitigações distintas | ativa |
+| 064 | 2026-08-08 | Barragem entra com **dano declarado**, não inventário, e com o efeito a jusante dito | O SNISB/ANA tem o cadastro e a categoria de risco; não está ingerido. E a falha atinge a jusante: o município que sofre pode não ser o que tem a obra | ativa |
+
+**A camada que estava dormindo**: 230 municípios com deslizamento, 250 com
+queda de barreira, 179 com corrida de massa, 116 com desabamento de edificação
+— todos já ingeridos desde a primeira versão da camada municipal, e nenhum
+usado. **397 com dano viário e 205 com áreas ilhadas.**
+
+Os primeiros em perigo geotécnico são Alto Feliz, Arvorezinha, Canela e Bento
+Gonçalves — toda a Serra, que é onde deslizamento acontece no RS. Coerência
+geográfica que serve de teste de sanidade, não de descoberta.
+
+**obrasgov.gestao.gov.br foi avaliado e descartado**: o filtro `uf=RS` devolve
+3 registros e a API responde 429 com facilidade. Não sustenta a camada de
+"grandes obras" que o pedido original supunha.
+
 ## Mapa de recursos e realocação
 
 | # | Data | Decisão | Razão | Estado |

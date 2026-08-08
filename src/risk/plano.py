@@ -49,7 +49,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Callable
 
-from src.risk import municipal, pessoal, recursos, resposta
+from src.risk import geotecnico, municipal, pessoal, recursos, resposta
 
 VERSION = "plano-v1"
 
@@ -97,14 +97,14 @@ def _det(linha: dict, caminho: str) -> Any:
 # ---------------------------------------------------------------------------
 # Catalogo de acoes
 # ---------------------------------------------------------------------------
-def _sem_plano(m: dict, _r: dict | None, _cob: dict | None = None, _pes: dict | None = None) -> str | None:
+def _sem_plano(m: dict, _r: dict | None, _cob: dict | None = None, _pes: dict | None = None, _geo: dict | None = None) -> str | None:
     d = _det(m, "deficit_prevencao")
     if d.get("plano_contingencia") is False:
         return "MUNIC 2024: municipio declarou NAO possuir plano de contingencia"
     return None
 
 
-def _plano_nao_executado(m: dict, _r: dict | None, _cob: dict | None = None, _pes: dict | None = None) -> str | None:
+def _plano_nao_executado(m: dict, _r: dict | None, _cob: dict | None = None, _pes: dict | None = None, _geo: dict | None = None) -> str | None:
     d = _det(m, "deficit_prevencao")
     if d.get("plano_contingencia") is True and d.get("plano_executado") is False:
         motivos = [l for l in (d.get("lacunas") or []) if l.startswith("falta")]
@@ -113,14 +113,14 @@ def _plano_nao_executado(m: dict, _r: dict | None, _cob: dict | None = None, _pe
     return None
 
 
-def _sem_alerta(m: dict, _r: dict | None, _cob: dict | None = None, _pes: dict | None = None) -> str | None:
+def _sem_alerta(m: dict, _r: dict | None, _cob: dict | None = None, _pes: dict | None = None, _geo: dict | None = None) -> str | None:
     d = _det(m, "deficit_prevencao")
     if d.get("alerta_emitido") is False:
         return "MUNIC 2024: nenhum alerta foi emitido a populacao durante o evento"
     return None
 
 
-def _alerta_sem_alcance(m: dict, _r: dict | None, _cob: dict | None = None, _pes: dict | None = None) -> str | None:
+def _alerta_sem_alcance(m: dict, _r: dict | None, _cob: dict | None = None, _pes: dict | None = None, _geo: dict | None = None) -> str | None:
     d = _det(m, "deficit_prevencao")
     for l in d.get("lacunas") or []:
         if "alcancou apenas" in l or "canal automatico" in l:
@@ -128,13 +128,13 @@ def _alerta_sem_alcance(m: dict, _r: dict | None, _cob: dict | None = None, _pes
     return None
 
 
-def _sem_psicologico(_m: dict, r: dict | None, _cob: dict | None = None, _pes: dict | None = None) -> str | None:
+def _sem_psicologico(_m: dict, r: dict | None, _cob: dict | None = None, _pes: dict | None = None, _geo: dict | None = None) -> str | None:
     if r and r["resposta"]["apoio_psicologico"] is False:
         return "MUNIC 2024: municipio declarou NAO ter oferecido apoio psicologico as vitimas"
     return None
 
 
-def _sem_referencia_saude(_m: dict, r: dict | None, _cob: dict | None = None, _pes: dict | None = None) -> str | None:
+def _sem_referencia_saude(_m: dict, r: dict | None, _cob: dict | None = None, _pes: dict | None = None, _geo: dict | None = None) -> str | None:
     if not r:
         return None
     cap = r["capacidade"]
@@ -144,7 +144,7 @@ def _sem_referencia_saude(_m: dict, r: dict | None, _cob: dict | None = None, _p
     return None
 
 
-def _saude_vulneravel(_m: dict, r: dict | None, _cob: dict | None = None, _pes: dict | None = None) -> str | None:
+def _saude_vulneravel(_m: dict, r: dict | None, _cob: dict | None = None, _pes: dict | None = None, _geo: dict | None = None) -> str | None:
     if not r:
         return None
     impactos = r["saude"]["impactos"]
@@ -154,7 +154,7 @@ def _saude_vulneravel(_m: dict, r: dict | None, _cob: dict | None = None, _pes: 
     return None
 
 
-def _autonomia_baixa(_m: dict, r: dict | None, _cob: dict | None = None, _pes: dict | None = None) -> str | None:
+def _autonomia_baixa(_m: dict, r: dict | None, _cob: dict | None = None, _pes: dict | None = None, _geo: dict | None = None) -> str | None:
     if not r:
         return None
     a = r["autonomia_logistica"]
@@ -165,7 +165,7 @@ def _autonomia_baixa(_m: dict, r: dict | None, _cob: dict | None = None, _pes: d
     return None
 
 
-def _mapear_planicie(m: dict, _r: dict | None, _cob: dict | None = None, _pes: dict | None = None) -> str | None:
+def _mapear_planicie(m: dict, _r: dict | None, _cob: dict | None = None, _pes: dict | None = None, _geo: dict | None = None) -> str | None:
     ag = m.get("aguas")
     if not ag or ag.get("memoria_hidrica_frac") is None:
         return None
@@ -178,7 +178,7 @@ def _mapear_planicie(m: dict, _r: dict | None, _cob: dict | None = None, _pes: d
     return None
 
 
-def _grupos_expostos(_m: dict, r: dict | None, _cob: dict | None = None, _pes: dict | None = None) -> str | None:
+def _grupos_expostos(_m: dict, r: dict | None, _cob: dict | None = None, _pes: dict | None = None, _geo: dict | None = None) -> str | None:
     if not r:
         return None
     grupos = r["vulneraveis"]["grupos"]
@@ -191,7 +191,7 @@ def _grupos_expostos(_m: dict, r: dict | None, _cob: dict | None = None, _pes: d
     return None
 
 
-def _vazio_urgencia(_m: dict, _r: dict | None, cob: dict | None = None, _pes: dict | None = None) -> str | None:
+def _vazio_urgencia(_m: dict, _r: dict | None, cob: dict | None = None, _pes: dict | None = None, _geo: dict | None = None) -> str | None:
     if not cob:
         return None
     km = cob.get("fixo_urgencia", {}).get("km_mais_proximo")
@@ -200,7 +200,7 @@ def _vazio_urgencia(_m: dict, _r: dict | None, cob: dict | None = None, _pes: di
     return None
 
 
-def _vazio_bombeiro(_m: dict, _r: dict | None, cob: dict | None = None, _pes: dict | None = None) -> str | None:
+def _vazio_bombeiro(_m: dict, _r: dict | None, cob: dict | None = None, _pes: dict | None = None, _geo: dict | None = None) -> str | None:
     if not cob:
         return None
     km = cob.get("bombeiro", {}).get("km_mais_proximo")
@@ -212,7 +212,7 @@ def _vazio_bombeiro(_m: dict, _r: dict | None, cob: dict | None = None, _pes: di
     return None
 
 
-def _vazio_psicossocial(_m: dict, r: dict | None, cob: dict | None = None, _pes: dict | None = None) -> str | None:
+def _vazio_psicossocial(_m: dict, r: dict | None, cob: dict | None = None, _pes: dict | None = None, _geo: dict | None = None) -> str | None:
     if not cob:
         return None
     km = cob.get("psicossocial", {}).get("km_mais_proximo")
@@ -230,7 +230,7 @@ def _vazio_psicossocial(_m: dict, r: dict | None, cob: dict | None = None, _pes:
 
 
 def _quadro_fragil(_m: dict, _r: dict | None, _cob: dict | None = None,
-                   pes: dict | None = None) -> str | None:
+                   pes: dict | None = None, _geo: dict | None = None) -> str | None:
     if not pes:
         return None
     q = pes["quadro"]
@@ -243,7 +243,7 @@ def _quadro_fragil(_m: dict, _r: dict | None, _cob: dict | None = None,
 
 
 def _faltou_pessoal(_m: dict, _r: dict | None, _cob: dict | None = None,
-                    pes: dict | None = None) -> str | None:
+                    pes: dict | None = None, _geo: dict | None = None) -> str | None:
     if pes and pes["faltou_pessoal_em_2024"] is True:
         return (
             "MUNIC 2024: falta de recurso humano foi motivo declarado de NAO execucao do "
@@ -253,7 +253,7 @@ def _faltou_pessoal(_m: dict, _r: dict | None, _cob: dict | None = None,
 
 
 def _sem_voluntariado(_m: dict, _r: dict | None, _cob: dict | None = None,
-                      pes: dict | None = None) -> str | None:
+                      pes: dict | None = None, _geo: dict | None = None) -> str | None:
     """So dispara onde o quadro TAMBEM e fragil.
 
     Distancia a brigada voluntaria sozinha nao justifica acao: 235 municipios
@@ -273,6 +273,55 @@ def _sem_voluntariado(_m: dict, _r: dict | None, _cob: dict | None = None,
         f"CNES + OpenStreetMap: brigada voluntaria mais proxima a {km:.0f} km, e o quadro "
         "proprio ja se mostrou insuficiente"
     )
+
+
+def _encosta(_m: dict, _r: dict | None, _cob: dict | None = None,
+             _pes: dict | None = None, geo: dict | None = None) -> str | None:
+    if not geo:
+        return None
+    g = geo["geotecnico"]
+    graves = [o for o in (g["ocorrencias"] or []) if "deslizamento" in o or "corrida" in o]
+    if graves:
+        return f"MUNIC 2024: {'; '.join(graves)}"
+    return None
+
+
+def _vistoria_travessia(_m: dict, _r: dict | None, _cob: dict | None = None,
+                        _pes: dict | None = None, geo: dict | None = None) -> str | None:
+    if not geo:
+        return None
+    a, p = geo["acesso"], geo["pontes"]
+    gatilho = a["dano_viario"] is True or a["ficou_ilhado"] is True
+    if gatilho and p["n_malha_principal"] >= geotecnico.MIN_PONTES_VISTORIA:
+        return (
+            f"MUNIC 2024 + OpenStreetMap: {p['n_malha_principal']} travessias na malha principal "
+            f"({p['n_estruturantes']} estruturantes) e dano viario ou area ilhada declarados"
+        )
+    return None
+
+
+def _rota_alternativa(_m: dict, _r: dict | None, _cob: dict | None = None,
+                      _pes: dict | None = None, geo: dict | None = None) -> str | None:
+    """Ilhamento com poucas travessias: o acesso depende de um fio.
+
+    Muitas pontes com dano vira VISTORIA (acima). Poucas pontes com ilhamento
+    e outro problema — nao adianta inspecionar mais, falta redundancia.
+    """
+    if not geo:
+        return None
+    if geo["acesso"]["ficou_ilhado"] is True and geo["pontes"]["n_malha_principal"] < 5:
+        return (
+            f"MUNIC 2024 + OpenStreetMap: ficou com areas ilhadas e ha apenas "
+            f"{geo['pontes']['n_malha_principal']} travessias na malha principal"
+        )
+    return None
+
+
+def _barragem(_m: dict, _r: dict | None, _cob: dict | None = None,
+              _pes: dict | None = None, geo: dict | None = None) -> str | None:
+    if geo and geo["barragem"]["dano_declarado"] is True:
+        return "MUNIC 2024: danos a barragens declarados no evento"
+    return None
 
 
 ACOES: list[Acao] = [
@@ -420,6 +469,48 @@ ACOES: list[Acao] = [
         detalhe="Distancia sozinha e geografia; distancia MAIS falha declarada em 2024 e problema.",
     ),
     Acao(
+        id="vistoria_travessias",
+        titulo="Programa de vistoria de travessias na malha principal",
+        horizonte="imediato",
+        esforco="medio",
+        fonte="osm_emergencia",
+        gatilho=_vistoria_travessia,
+        detalhe="Onde PROCURAR, nunca qual ponte tem problema — nao ha laudo publico de "
+                "nenhuma travessia. Vistoria e ato administrativo e cabe antes da primavera; "
+                "o reparo que dela decorrer, nao.",
+    ),
+    Acao(
+        id="contencao_encosta",
+        titulo="Mapear e conter encosta instavel",
+        horizonte="estrutural",
+        esforco="alto",
+        fonte="ibge_munic_rs",
+        gatilho=_encosta,
+        detalhe="Perigo de talude, nao de planicie: a mitigacao e contencao e realocacao, nunca "
+                "dique nem drenagem. Exige mapa geotecnico, que o municipio provavelmente nao tem.",
+    ),
+    Acao(
+        id="rota_alternativa",
+        titulo="Garantir rota alternativa de acesso",
+        horizonte="estrutural",
+        esforco="alto",
+        fonte="osm_emergencia",
+        gatilho=_rota_alternativa,
+        detalhe="Poucas travessias e ilhamento declarado: o problema nao e inspecionar mais, "
+                "e falta de redundancia. Exige obra ou acordo com municipio vizinho.",
+    ),
+    Acao(
+        id="barragem",
+        titulo="Verificar seguranca de barragem com o orgao fiscalizador",
+        horizonte="imediato",
+        esforco="baixo",
+        fonte="ibge_munic_rs",
+        gatilho=_barragem,
+        detalhe="A falha de barragem atinge a JUSANTE: o municipio que sofre pode nao ser o que "
+                "tem a obra. O inventario e a categoria de risco estao no SNISB/ANA, fora desta "
+                "central — aqui ha apenas o dano declarado em 2024.",
+    ),
+    Acao(
         id="mapear_planicie",
         titulo="Mapear planicie reocupavel e revisar uso do solo",
         horizonte="estrutural",
@@ -464,14 +555,20 @@ def build(cenario: str = "atual", oni: float | None = None) -> dict[str, Any]:
     except FileNotFoundError:
         quadro = {}
 
+    try:
+        geo_por_cod = {g["cod_mun"]: g for g in geotecnico.build().rows}
+    except FileNotFoundError:
+        geo_por_cod = {}
+
     planos: list[PlanoMunicipio] = []
     for linha in tabela.rows:
         r = resp.get(linha["cod_mun"])
         cob = cobertura.get(linha["cod_mun"])
         pes = quadro.get(linha["cod_mun"])
+        geo = geo_por_cod.get(linha["cod_mun"])
         acoes = []
         for acao in ACOES:
-            evidencia = acao.gatilho(linha, r, cob, pes)
+            evidencia = acao.gatilho(linha, r, cob, pes, geo)
             if evidencia is None:
                 continue
             acoes.append({

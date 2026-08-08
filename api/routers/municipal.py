@@ -43,7 +43,7 @@ from src.ingest import cpc_enso_advisory as advisory
 from src.risk import aguas
 from src.risk import historico
 from src.risk import municipal as model
-from src.risk import pessoal, plano, recursos, resposta
+from src.risk import geotecnico, pessoal, plano, recursos, resposta
 
 router = APIRouter(tags=["risco municipal"])
 
@@ -325,6 +325,55 @@ def get_resposta(
         # capacidade precisa topar com "isto nao e leito" no mesmo payload.
         "lacunas": tabela.lacunas,
         "municipios": linhas,
+    }
+
+
+@router.get("/geotecnico")
+def get_geotecnico() -> dict:
+    """Perigo de encosta, fragilidade de acesso e travessias por municipio.
+
+    Camada separada do indice hidrico de proposito: deslizamento e talude tem
+    fisica, mapa de risco e obra de mitigacao diferentes de inundacao —
+    contencao e realocacao, nunca dique nem drenagem.
+
+    `pontes` e EXISTENCIA, nunca conservacao: nao ha laudo publico de nenhuma
+    das 2.159 travessias mapeadas. `vistoria_prioritaria` diz ONDE PROCURAR,
+    nao qual ponte tem problema.
+    """
+    try:
+        g = geotecnico.build()
+    except FileNotFoundError as exc:
+        raise HTTPException(
+            status_code=503,
+            detail=f"Base municipal ausente. Rode `python -m src.ingest.ibge_rs`. ({exc})",
+        ) from exc
+
+    headline, is_synth, _ = deps.state_headline()
+    oni = None if is_synth else headline.get("oni")
+    indice = model.build_table(oni).rows
+
+    return {
+        "as_of": deps.now_iso()[:10],
+        "provenance": {
+            "basis": "measured",
+            "horizon": "seasonal",
+            "source_ids": ["ibge_munic_rs", "osm_emergencia"],
+            "as_of": deps.now_iso()[:10],
+        },
+        "resumo": g.resumo,
+        "vistoria_prioritaria": {
+            # A ORDEM cruza risco (modelado) com dano declarado (medido) — selo
+            # proprio, mesma correcao aplicada em /recursos.
+            "provenance": {
+                "basis": "synthetic" if is_synth else "modeled",
+                "horizon": "seasonal",
+                "source_ids": ["ibge_munic_rs", "osm_emergencia", "cpc_oni"],
+                "as_of": deps.now_iso()[:10],
+            },
+            "nota": "onde PROCURAR travessia com problema, nunca qual ponte tem problema",
+            "itens": geotecnico.vistoria_prioritaria(indice, limite=30),
+        },
+        "municipios": g.rows,
     }
 
 
