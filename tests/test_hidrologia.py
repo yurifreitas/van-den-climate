@@ -153,6 +153,31 @@ def test_planalto_infiltra_mais_que_encosta_de_basalto_raso(resultado):
     assert por_nome["Muitos Capões"]["cn2"] < por_nome["Nova Bréscia"]["cn2"] - 10
 
 
+def test_chuva_de_projeto_e_plausivel_para_o_rs():
+    """Guarda contra o ano de cobertura parcial entrando como maximo anual.
+
+    O maximo de um ano com 60 dias observados nao e o maximo daquele ano — e
+    o maior de uma amostra pequena, sistematicamente menor. Misturado aos anos
+    completos, ele puxa Gumbel inteiro para baixo, e o efeito e pior nas
+    estacoes urbanas recentes: Porto Alegre saia com chuva de TR 2 de 32 mm,
+    um terco do plausivel, sem erro nenhum no caminho.
+
+    A faixa abaixo e larga e vem da ordem de grandeza conhecida de chuva
+    diaria no estado — nao e calibragem, e deteccao de absurdo.
+    """
+    chuvas = h.chuvas_de_projeto()
+    assert len(chuvas) >= 40
+    p2 = [c.por_tr[2] for c in chuvas.values()]
+    p100 = [c.por_tr[100] for c in chuvas.values()]
+    assert 60 <= min(p2), f"TR2 baixo demais: {min(p2)} mm"
+    assert max(p2) <= 160
+    assert 110 <= min(p100)
+    assert max(p100) <= 400
+    for c in chuvas.values():
+        anteriores = [c.por_tr[tr] for tr in h.TR_ANOS]
+        assert anteriores == sorted(anteriores), c.estacao
+
+
 def test_regioes_agregam_por_unidade_de_relevo(resultado):
     """Bacia nao respeita divisa; a unidade geomorfologica e o mais proximo disso."""
     assert resultado.regioes

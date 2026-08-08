@@ -41,6 +41,8 @@ from api.models import (
 )
 from src.ingest import cpc_enso_advisory as advisory
 from src.risk import aguas
+from src.risk import degradacao
+from src.risk import hidrologia
 from src.risk import historico
 from src.risk import municipal as model
 from src.risk import contencao, dossie, geotecnico, pessoal, plano, recursos, resposta, territorios
@@ -681,3 +683,96 @@ def get_malha_municipal() -> dict:
             detail="Malha municipal ausente. Rode `python -m src.ingest.ibge_rs malha`.",
         )
     return geo
+
+
+@router.get("/terreno")
+def get_terreno(limite: int = Query(60, ge=1, le=497)) -> dict:
+    """No que a chuva cai: balanco hidrologico e degradacao do solo.
+
+    Uma rota so para as duas camadas porque elas leem o MESMO cruzamento de
+    solo, cobertura e relevo, e separa-las obrigaria a varre-lo duas vezes por
+    consulta — 12 mil linhas, duas vezes, para devolver as mesmas 497.
+
+    `municipios` vem ordenado por CN decrescente e cortado em `limite`: a
+    lista inteira do estado sai no snapshot estatico e no dossie de cada
+    municipio, e paginar aqui evita mandar 497 objetos com distribuicao de
+    cobertura para uma tela que mostra trinta.
+
+    O envelope e `modeled` inteiro, sem excecao. A fracao de solo e de
+    cobertura por baixo e medida (IBGE/BDiA), mas tudo o que esta na saida
+    passou por traducao: ordem do SiBCS -> grupo hidrologico, par (grupo,
+    cobertura) -> Curve Number, serie diaria -> chuva de projeto por Gumbel.
+    Selar isso como `measured` porque a origem e um mapa seria exatamente o
+    tipo de lavagem de proveniencia que a regra 2 existe para impedir.
+    """
+    try:
+        h = hidrologia.build()
+        d = degradacao.build()
+    except FileNotFoundError as exc:
+        raise HTTPException(
+            status_code=503,
+            detail=(
+                "Camada de terreno ausente. Rode `python -m src.ingest.ibge_bdia` "
+                f"e `python -m src.ingest.ghcn_rs`. ({exc})"
+            ),
+        ) from exc
+
+    degr_por_cod = {r["cod_mun"]: r for r in d.rows}
+    return {
+        "as_of": deps.now_iso()[:10],
+        "provenance": {
+            "basis": "modeled",
+            "horizon": "seasonal",
+            "source_ids": ["ibge_bdia", "ghcn_rs", "ghsl_built", "ibge_malha_rs"],
+            "as_of": deps.now_iso()[:10],
+        },
+        "hidrologia": {
+            "resumo": h.resumo,
+            "limites": h.limites,
+            "regioes": h.regioes,
+            "municipios": h.rows[:limite],
+            "n_total": len(h.rows),
+        },
+        "degradacao": {
+            "resumo": d.resumo,
+            "limites": d.limites,
+            "municipios": d.rows[:limite],
+            "n_total": len(d.rows),
+        },
+        # O cruzamento das duas: onde o terreno gera muita enxurrada E o uso
+        # a faz levar solo junto. Nao e um indice novo — e a intersecao dos
+        # decis superiores de cada camada, dita com todas as letras para que
+        # ninguem a leia como medida composta.
+        "concentracao": _concentracao_terreno(h.rows, degr_por_cod),
+    }
+
+
+def _concentracao_terreno(hidro: list[dict], degr: dict[int, dict]) -> dict:
+    """Municipios no decil superior das DUAS camadas ao mesmo tempo."""
+    if not hidro or not degr:
+        return {"criterio": "sem dado", "municipios": []}
+    import numpy as np
+
+    corte_cn = float(np.quantile([r["cn2"] for r in hidro], 0.90))
+    juntos = []
+    for r in hidro:
+        d = degr.get(r["cod_mun"])
+        if d is None or r["cn2"] < corte_cn or d["percentil_rs"] < 0.90:
+            continue
+        juntos.append({
+            "cod_mun": r["cod_mun"],
+            "municipio": r["municipio"],
+            "cn2": r["cn2"],
+            "indice_rusle_t_ha_ano": d["indice_rusle_t_ha_ano"],
+            "km2_uso_intensivo_em_declive": d["km2_uso_intensivo_em_declive"],
+            "resposta": r["resposta"],
+        })
+    return {
+        "criterio": (
+            "decil superior de Curve Number E decil superior do indice de erosao, "
+            "no proprio estado. Intersecao de duas listas, nao indice composto."
+        ),
+        "limiar_cn2": round(corte_cn, 1),
+        "n": len(juntos),
+        "municipios": sorted(juntos, key=lambda x: -x["cn2"]),
+    }

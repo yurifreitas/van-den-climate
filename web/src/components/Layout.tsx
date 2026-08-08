@@ -8,6 +8,7 @@ const ROUTES = [
   { to: '/dossie', label: 'Dossie' },
   { to: '/plano', label: 'Plano' },
   { to: '/recursos', label: 'Recursos' },
+  { to: '/terreno', label: 'Terreno' },
   { to: '/municipios', label: 'Municipios' },
   { to: '/resposta', label: 'Resposta' },
   { to: '/historico', label: 'Historico' },

@@ -100,6 +100,7 @@ ROTAS: list[tuple[str, dict[str, Any] | None]] = [
     ("/geotecnico", None),
     ("/territorios", None),
     ("/contencao", {"cenario": "atual"}),
+    ("/terreno", {"limite": "120"}),
 ]
 
 # Binarios servidos pela API que viram asset estatico.

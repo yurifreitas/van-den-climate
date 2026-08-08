@@ -100,7 +100,25 @@ def _camadas(cenario: str, oni: float | None) -> dict[str, Any]:
     except FileNotFoundError:
         construida, limiar_imperm, estrategias = {}, None, {}
 
+    # Terreno: o que a chuva encontra quando cai. As duas camadas custam a
+    # varredura do cruzamento BDiA inteiro (12 mil linhas) e por isso entram
+    # aqui, no cache por (cenario, oni), e nao por municipio consultado.
+    try:
+        from src.risk import degradacao, hidrologia
+
+        hidro = {r["cod_mun"]: r for r in hidrologia.build().rows}
+        hidro_limites = hidrologia.build().limites
+        degr_res = degradacao.build()
+        degr = {r["cod_mun"]: r for r in degr_res.rows}
+        degr_limites = degr_res.limites
+    except FileNotFoundError:
+        hidro, degr, hidro_limites, degr_limites = {}, {}, [], []
+
     return {
+        "hidrologia": hidro,
+        "hidrologia_limites": hidro_limites,
+        "degradacao": degr,
+        "degradacao_limites": degr_limites,
         "tabela": tabela,
         "por_cod": {r["cod_mun"]: r for r in tabela.rows},
         "ranking": {
@@ -137,6 +155,64 @@ def _territorios_do_municipio(cod: int, todos: list[dict[str, Any]]) -> list[dic
             for t in todos
             if t["cod_mun"] == cod
     ]
+
+
+def _bloco_terreno(h: dict[str, Any] | None) -> dict[str, Any] | None:
+    """Balanco de chuva do municipio, reduzido ao que cabe numa tela.
+
+    O payload completo de `/hidrologia` traz a distribuicao de grupos e de
+    coberturas; aqui ficam o CN, os dois eventos que decidem coisas
+    diferentes (TR 2 e a cheia que molha todo ano e dimensiona drenagem
+    urbana; TR 100 e a que aparece em projeto de obra) e o par seco/umido,
+    porque publicar so o CN de umidade media descreveria um estado que quase
+    nunca e o do desastre.
+    """
+    if not h:
+        return None
+    eventos = {e["tr_anos"]: e for e in h["eventos"]}
+    return {
+        "cn2": h["cn2"],
+        "cn3_solo_umido": h["cn3_solo_umido"],
+        "grupos_hidrologicos": h["grupos_hidrologicos"],
+        "cobertura": h["cobertura"],
+        "resposta": h["resposta"],
+        "unidade_geomorfologica": h["unidade_geomorfologica"],
+        "estacao_chuva": h["estacao_chuva"],
+        "evento_ordinario": eventos.get(2),
+        "evento_raro": eventos.get(100),
+        "basis": "modeled",
+        "nota": (
+            "Lamina escoada, nao vazao nem cota. Curve Number sobre solo, "
+            "cobertura e relevo do IBGE a 1:250.000; chuva de projeto por "
+            "Gumbel na estacao GHCN mais proxima."
+        ),
+    }
+
+
+def _bloco_degradacao(d: dict[str, Any] | None) -> dict[str, Any] | None:
+    """Erosao potencial e, ao lado, os numeros que sobrevivem a ela.
+
+    A ordem dos campos e deliberada: o indice vem depois da area medida. Quem
+    ler de cima para baixo encontra primeiro "tantos km2 de lavoura em
+    encosta", que e verificavel, e so entao o indice, que e tabela.
+    """
+    if not d:
+        return None
+    return {
+        "km2_uso_intensivo_em_declive": d["km2_uso_intensivo_em_declive"],
+        "frac_uso_intensivo_em_declive": d["frac_uso_intensivo_em_declive"],
+        "km2_solo_raso_sob_uso_intensivo": d["km2_solo_raso_sob_uso_intensivo"],
+        "indice_rusle_t_ha_ano": d["indice_rusle_t_ha_ano"],
+        "classe": d["classe"],
+        "percentil_rs": d["percentil_rs"],
+        "onde_mais_perde": d["onde_mais_perde"][:3],
+        "basis": "modeled",
+        "nota": (
+            "Indice da RUSLE com P=1 (nenhuma pratica conservacionista "
+            "suposta) e sem teto em declividade: leia a posicao no estado, "
+            "nunca a quantidade. As areas em km2 ao lado sao medidas."
+        ),
+    }
 
 
 def build(cod_mun: int, cenario: str = "atual", oni: float | None = None) -> Dossie:
@@ -177,6 +253,32 @@ def build(cod_mun: int, cenario: str = "atual", oni: float | None = None) -> Dos
         "titulo": "Manutencao de casas de bomba, diques e comportas",
         "motivo": linha["componentes"]["manutencao_ativos"]["detalhe"]["motivo"],
     })
+    if c["hidrologia"].get(cod_mun):
+        lacunas.append({
+            "camada": "terreno",
+            "id": "vazao_observada",
+            "titulo": "Vazao observada para calibrar o balanco",
+            "motivo": "Sem serie fluviometrica da ANA ingerida, o Curve Number aqui e "
+                      "tabela aplicada, nunca modelo calibrado — nenhum numero desta "
+                      "camada foi confrontado com agua medida passando.",
+        })
+        lacunas.append({
+            "camada": "terreno",
+            "id": "declividade_real",
+            "titulo": "Declividade real do terreno",
+            "motivo": "Relevo entra por classe qualitativa do IBGE ('ondulado'), nao por "
+                      "modelo digital de elevacao. Sem talvegue e sem declividade medida "
+                      "nao existe tempo de concentracao em minutos, so ordem.",
+        })
+    if c["degradacao"].get(cod_mun):
+        lacunas.append({
+            "camada": "degradacao",
+            "id": "pratica_conservacionista",
+            "titulo": "Terraceamento e plantio direto por municipio",
+            "motivo": "O indice assume P=1, ou seja, nenhuma pratica conservacionista. "
+                      "Ela e justamente a variavel que o produtor controla, e supor um "
+                      "valor por municipio seria inventar o numero que mais importa.",
+        })
     if territ:
         lacunas.append({
             "camada": "territorios",
@@ -225,6 +327,12 @@ def build(cod_mun: int, cenario: str = "atual", oni: float | None = None) -> Dos
                 "nota": "GHSL 2025. Superficie construida e proxy de impermeabilizacao, "
                         "nao medida dela: nao ve piso drenante nem compactacao de solo agricola.",
             } if frac_construida is not None or c["limiar_impermeavel"] is not None else None,
+
+            # O que a chuva encontra quando cai. Selo proprio e `modeled`
+            # inteiro: a fracao de solo e cobertura e medida, mas o grupo
+            # hidrologico, o CN e a chuva de projeto sao traducao e tabela.
+            "terreno": _bloco_terreno(c["hidrologia"].get(cod_mun)),
+            "degradacao_solo": _bloco_degradacao(c["degradacao"].get(cod_mun)),
         },
 
         # 3. quem esta exposto

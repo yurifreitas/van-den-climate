@@ -15,6 +15,7 @@ import { RespostaView } from '../RespostaView';
 import { HistoricoView } from '../HistoricoView';
 import { PlanoView } from '../PlanoView';
 import { RecursosView } from '../RecursosView';
+import { TerrenoView } from '../TerrenoView';
 import { EstadoView } from '../EstadoView';
 import { LedgerView } from '../LedgerView';
 import { SaudeView } from '../SaudeView';
@@ -75,6 +76,7 @@ const TELAS: [string, ReactElement, string][] = [
   ['Historico', <HistoricoView />, '/historico'],
   ['Plano', <PlanoView />, '/plano'],
   ['Recursos', <RecursosView />, '/recursos'],
+  ['Terreno', <TerrenoView />, '/terreno'],
   ['Estado', <EstadoView />, '/estado'],
   ['Ledger', <LedgerView />, '/ledger'],
   ['Saude', <SaudeView />, '/saude'],

@@ -71,3 +71,45 @@ sources:
   sema_rs:      {provider: SEMA-RS, domain: saladesituacao.rs.gov.br, status: out_of_scope_v1}
   ibge_pam:     {provider: IBGE, domain: sidra.ibge.gov.br, freq: annual, period: "1974-", status: out_of_scope_v1}
   conab:        {provider: CONAB, domain: conab.gov.br, status: out_of_scope_v1}
+
+  # --- 6.7 Territorio fisico: o que a chuva encontra quando cai ------------
+  # Estas nao sao fontes climaticas, e por isso quase nao aparecem em catalogo
+  # de engine de previsao. Elas decidem o que a previsao SIGNIFICA: 100 mm
+  # sobre Latossolo profundo do planalto e 100 mm sobre Neossolo Litolico de
+  # encosta sao dois eventos distintos, e ate ingerir isto a central tratava
+  # os dois como o mesmo numero.
+  ibge_bdia:
+    provider: IBGE
+    domain: geoservicos.ibge.gov.br
+    access: "WFS GetFeature, recorte por bbox do RS"
+    scale: "1:250.000"
+    status: core
+    layers:
+      pedo_area: "pedologia — ordem SiBCS, textura, relevo local, pedregosidade"
+      vege_area: "vegetacao e uso da terra — fitofisionomia, uso antropico, secundaria"
+      geom_area: "geomorfologia — unidade de relevo, forma, densidade de drenagem"
+    hazards:
+      - "propertyName SEM `geom` devolve 200 com geometry:null em toda feicao — a
+         rasterizacao pula tudo e o estado sai com zero km2, sem erro"
+      - "bbox em WFS 2.0 com CRS em URN espera LAT,LON; a ordem trocada devolve
+         zero feicoes em vez de erro"
+      - "rotulos vem quebrados por linha ('suave \nondulado'), herdados da carta
+         impressa — normalizar antes de usar como chave"
+      - "levantamento com decadas de defasagem em varias folhas: uso antropico e
+         vocacao consolidada, nao cobertura do ano corrente"
+  ghsl_built:
+    provider: JRC / Comissao Europeia
+    domain: human-settlement.emergency.copernicus.eu
+    product: "GHS-BUILT-S R2023A, epoca 2025, 30 arcsec"
+    status: core
+    note: "superficie construida — proxy de impermeabilizacao, nao medida dela"
+  copernicus_dem:
+    provider: ESA / AWS Open Data
+    domain: copernicus-dem-30m.s3.amazonaws.com
+    status: mapeado_nao_ingerido
+    note: >
+      Declividade real. Hoje o relevo entra por classe qualitativa do IBGE
+      ('ondulado'), e o fator LS da erosao cresce quarenta vezes do plano ao
+      montanhoso — trocar a classe por declividade medida e a melhoria de maior
+      retorno das camadas de terreno. Tiles de 1 grau, ~5,8 MB cada, ~63 para o
+      estado, sem chave de acesso.

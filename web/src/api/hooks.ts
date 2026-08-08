@@ -16,6 +16,7 @@ import type {
   PessoalResponse,
   PlanoResponse,
   RecursosResponse,
+  TerrenoResponse,
   RespostaResponse,
   AttributionResponse,
   BreaksResponse,
@@ -267,6 +268,20 @@ export function useMalhaMunicipal() {
   return useQuery({
     queryKey: ['geo', 'municipios'],
     queryFn: () => apiGet<MalhaResponse>('/geo/municipios'),
+    staleTime: Infinity,
+    gcTime: Infinity,
+  });
+}
+
+/**
+ * Solo, cobertura, relevo e o balanco de chuva sobre eles. `staleTime`
+ * infinito: cartografia do IBGE a 1:250.000 nao muda entre recargas, e a
+ * varredura do cruzamento e a consulta mais cara da API.
+ */
+export function useTerreno(limite = 60) {
+  return useQuery({
+    queryKey: ['terreno', limite],
+    queryFn: () => apiGet<TerrenoResponse>('/terreno', { limite: String(limite) }),
     staleTime: Infinity,
     gcTime: Infinity,
   });

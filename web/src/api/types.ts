@@ -855,3 +855,125 @@ export interface MalhaResponse {
   type: 'FeatureCollection';
   features: MalhaFeature[];
 }
+
+// ---- /terreno --------------------------------------------------------
+
+/**
+ * No que a chuva cai. As duas camadas viajam juntas porque leem o mesmo
+ * cruzamento de solo, cobertura e relevo — separa-las obrigaria a varrer o
+ * cruzamento duas vezes por consulta.
+ *
+ * O envelope inteiro e `modeled`, sem excecao. A fracao de solo e cobertura
+ * por baixo e medida (IBGE/BDiA), mas tudo que chega aqui passou por
+ * traducao: ordem do SiBCS para grupo hidrologico, par (grupo, cobertura)
+ * para Curve Number, serie diaria para chuva de projeto.
+ */
+export interface EventoChuva {
+  tr_anos: number;
+  p24h_mm: number;
+  escoamento_mm: number;
+  /** Mesma chuva com o perfil ja cheio (AMC III) — o caso do desastre. */
+  escoamento_mm_solo_umido: number;
+  coef_escoamento: number | null;
+  volume_hm3: number;
+}
+
+export interface MunicipioHidrologia {
+  cod_mun: number;
+  municipio: string;
+  area_km2: number;
+  cn2: number;
+  cn3_solo_umido: number;
+  cn_solo_sem_impermeavel: number;
+  frac_construida: number | null;
+  s_mm: number;
+  grupos_hidrologicos: Record<string, number>;
+  cobertura: Record<string, number>;
+  /** Ordinal, nunca minutos: sem talvegue nao existe tempo de concentracao. */
+  resposta: string | null;
+  resposta_escore: number | null;
+  estacao_chuva: { station_id: string; nome: string; km: number; anos: number } | null;
+  eventos: EventoChuva[];
+  unidade_geomorfologica: string | null;
+}
+
+export interface MunicipioDegradacao {
+  cod_mun: number;
+  municipio: string;
+  area_km2: number;
+  /** Indice da equacao sob P=1, nao tonelada perdida. O nome carrega isso. */
+  indice_rusle_t_ha_ano: number;
+  classe: string;
+  percentil_rs: number;
+  km2_uso_intensivo_em_declive: number;
+  frac_uso_intensivo_em_declive: number;
+  km2_solo_raso_sob_uso_intensivo: number;
+  km2_cobertura_permanente_em_declive: number;
+  erosividade_r: number | null;
+  estacao_chuva: { station_id: string; nome: string; km: number; chuva_anual_mm: number } | null;
+  onde_mais_perde: {
+    solo: string | null;
+    relevo: string | null;
+    cobertura: string;
+    km2: number;
+    indice_t_ha_ano: number;
+  }[];
+}
+
+export interface RegiaoHidrologica {
+  unidade: string;
+  n_municipios: number;
+  area_km2: number;
+  cn2_medio: number | null;
+  municipios_cn_alto: string[];
+}
+
+export interface TerrenoResponse {
+  as_of: string;
+  provenance: Provenance;
+  hidrologia: {
+    resumo: {
+      version: string;
+      n_municipios: number;
+      razao_ia: number;
+      tr_anos: number[];
+      cn2_mediano: number | null;
+      cn2_p90: number;
+      n_estacoes_chuva: number;
+      avisos: Record<string, number>;
+    };
+    limites: string[];
+    regioes: RegiaoHidrologica[];
+    municipios: MunicipioHidrologia[];
+    n_total: number;
+  };
+  degradacao: {
+    resumo: {
+      version: string;
+      n_municipios: number;
+      indice_mediano_t_ha_ano: number | null;
+      p_assumido: number;
+      comprimento_rampa_assumido_m: number;
+      km2_uso_intensivo_em_declive_rs: number;
+      km2_solo_raso_sob_uso_intensivo_rs: number;
+      nota_escala: string;
+    };
+    limites: string[];
+    municipios: MunicipioDegradacao[];
+    n_total: number;
+  };
+  /** Intersecao dos decis superiores das duas camadas — nao um indice novo. */
+  concentracao: {
+    criterio: string;
+    limiar_cn2?: number;
+    n?: number;
+    municipios: {
+      cod_mun: number;
+      municipio: string;
+      cn2: number;
+      indice_rusle_t_ha_ano: number;
+      km2_uso_intensivo_em_declive: number;
+      resposta: string | null;
+    }[];
+  };
+}

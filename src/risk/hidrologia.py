@@ -370,7 +370,14 @@ def chuvas_de_projeto(min_anos: int = 20) -> dict[str, ChuvaProjeto]:
     diario = pd.read_parquet(GHCN_DIARIO)
     estacoes = pd.read_parquet(GHCN_ESTACOES)
     diario["ano"] = pd.to_datetime(diario["data"]).dt.year
-    maximos = diario.groupby(["station_id", "ano"]).prcp_mm.max().reset_index()
+    # Ano com cobertura parcial NAO entra. O maximo de um ano com 60 dias
+    # observados nao e o maximo daquele ano — e o maior de uma amostra
+    # pequena, quase sempre menor que o verdadeiro. Misturar esses anos com
+    # os completos puxa toda a distribuicao de Gumbel para baixo, e o efeito
+    # e pior justamente nas estacoes urbanas recentes: Porto Alegre saia com
+    # chuva de TR 2 de 32 mm, um terco do plausivel, sem nenhum sinal de erro.
+    agregado = diario.groupby(["station_id", "ano"]).prcp_mm.agg(["max", "count"]).reset_index()
+    maximos = agregado[agregado["count"] >= 300].rename(columns={"max": "prcp_mm"})
 
     saida: dict[str, ChuvaProjeto] = {}
     nomes = {r.station_id: r.nome for r in estacoes.itertuples()}

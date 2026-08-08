@@ -1,5 +1,5 @@
 {
-  "capturado_em": "2026-08-08T18:46:10Z",
+  "capturado_em": "2026-08-08T19:41:58Z",
   "aviso": "Demo estatica: os dados sao uma fotografia tirada na data acima e NAO se atualizam sozinhos. Para dados vivos, rode a API local (.\\run.ps1).",
   "rotas": [
     {
@@ -212,6 +212,13 @@
         "cenario": "atual"
       },
       "arquivo": "contencao~cenario-atual.json"
+    },
+    {
+      "path": "/terreno",
+      "params": {
+        "limite": "120"
+      },
+      "arquivo": "terreno~limite-120.json"
     },
     {
       "path": "/dossie/4315503",

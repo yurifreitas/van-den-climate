@@ -8,6 +8,7 @@ import { RespostaView } from './views/RespostaView';
 import { HistoricoView } from './views/HistoricoView';
 import { PlanoView } from './views/PlanoView';
 import { RecursosView } from './views/RecursosView';
+import { TerrenoView } from './views/TerrenoView';
 import { EstadoView } from './views/EstadoView';
 import { PrevisaoView } from './views/PrevisaoView';
 import { EvidenciaView } from './views/EvidenciaView';
@@ -34,6 +35,7 @@ function App() {
             <Route path="/historico" element={<HistoricoView />} />
             <Route path="/plano" element={<PlanoView />} />
             <Route path="/recursos" element={<RecursosView />} />
+            <Route path="/terreno" element={<TerrenoView />} />
             <Route path="/estado" element={<EstadoView />} />
             <Route path="/previsao" element={<PrevisaoView />} />
             <Route path="/evidencia" element={<EvidenciaView />} />

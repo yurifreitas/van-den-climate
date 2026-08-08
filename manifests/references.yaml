@@ -1131,6 +1131,125 @@ schools:
           codigo_tipo_unidade, que e onde o rotulo engana
 
   # -------------------------------------------------------------------
+  - id: solo_e_escoamento
+    label: Solo, cobertura e balanco de chuva
+    layer: "Camadas de terreno — src/risk/hidrologia.py e src/risk/degradacao.py"
+    why: >
+      Duas camadas novas passaram a converter chuva em escoamento e em perda
+      de solo, e as duas rodam sobre metodos com meio seculo de uso — o que
+      significa meio seculo de criticas documentadas. Entrar neles sem a
+      literatura seria aplicar tabela; entrar com ela e saber onde a tabela
+      quebra. Esta escola existe sobretudo pelo segundo grupo de entradas: a
+      que ataca o proprio metodo que a central adotou.
+    people:
+      - id: mockus
+        name: Victor Mockus
+        affiliation: USDA Soil Conservation Service (historico)
+        status: core
+        resolve: >
+          Formulou o metodo do Curve Number, que e o motor da camada
+          hidrologica desta central. Ler a fonte importa por um motivo
+          especifico: o CN nasceu como ferramenta de projeto agricola para
+          bacias pequenas nos Estados Unidos, e quase tudo que se atribui a
+          ele hoje — inclusive prever cheia urbana — esta fora do que o autor
+          reivindicou.
+        work: >
+          USDA-SCS, National Engineering Handbook, secao 4: Hydrology (1954 e
+          revisoes; capitulos de escoamento atribuidos a Mockus)
+
+      - id: hawkins
+        name: Richard H. Hawkins
+        affiliation: University of Arizona
+        status: core
+        resolve: >
+          A critica interna mais util ao CN: mostrou que a relacao Ia = 0,2 S
+          nao se sustenta nos dados de onde o proprio metodo saiu, e que 0,05 S
+          ajusta melhor na maioria das bacias. E a referencia que justifica a
+          razao de perda inicial viajar como PARAMETRO no payload desta central
+          em vez de estar embutida no codigo — trocar 0,2 por 0,05 muda o
+          escoamento de forma substancial, e a decisao precisa ser visivel.
+        work: >
+          Hawkins, Ward, Woodward & Van Mullem, "Curve Number Hydrology: State
+          of the Practice" (ASCE, 2009); e Woodward et al. sobre a razao de
+          perda inicial (2003)
+
+      - id: sartori
+        name: Aloisio Sartori
+        affiliation: UNICAMP / FEC
+        status: core
+        resolve: >
+          Classificacao hidrologica dos solos BRASILEIROS para uso com o CN —
+          o passo sem o qual a camada inverteria o planalto inteiro. Na tabela
+          americana argila pesada tende ao grupo D; no Latossolo muito
+          argiloso brasileiro a estrutura granular da alta condutividade e o
+          solo e grupo A. Aplicar a tabela original ao SiBCS trocaria o sinal
+          exatamente onde o estado tem mais lavoura.
+        work: >
+          Sartori, Genovez & Lombardi Neto, "Classificacao hidrologica de solos
+          brasileiros para a estimativa da chuva excedente com o metodo do
+          Servico de Conservacao do Solo dos Estados Unidos" (RBRH, 2005)
+
+      - id: wischmeier
+        name: Walter H. Wischmeier
+        affiliation: USDA / Purdue University (historico)
+        status: core
+        resolve: >
+          Com Dwight Smith, formulou a USLE, cuja estrutura a camada de
+          degradacao usa. A leitura corrige a tentacao central: a equacao foi
+          ajustada em parcelas de 22 m sob chuva natural no meio-oeste
+          americano para estimar perda MEDIA ANUAL de longo prazo em area
+          agricola — nao evento, nao encosta ingreme, nao bacia.
+        work: >
+          Wischmeier & Smith, "Predicting Rainfall Erosion Losses: A Guide to
+          Conservation Planning" (USDA Agriculture Handbook 537, 1978)
+
+      - id: renard
+        name: Kenneth G. Renard
+        affiliation: USDA-ARS (historico)
+        status: supporting
+        resolve: >
+          Coordenou a revisao que virou RUSLE e, com Freimund, a relacao entre
+          erosividade e total anual de chuva que esta central usa por falta de
+          serie de intensidade. Conhecer a origem dessa relacao e saber o seu
+          vies: dois lugares de mesma chuva anual recebem o mesmo R, mesmo que
+          um concentre tudo em poucas tempestades — e no RS isso subestima o
+          oeste.
+        work: >
+          Renard, Foster, Weesies, McCool & Yoder, "Predicting Soil Erosion by
+          Water: RUSLE" (USDA Agriculture Handbook 703, 1997); Renard &
+          Freimund (Journal of Hydrology, 1994)
+
+      - id: bertoni_lombardi
+        name: Jose Bertoni e Francisco Lombardi Neto
+        affiliation: Instituto Agronomico de Campinas
+        status: core
+        resolve: >
+          A tradicao brasileira de conservacao do solo, incluindo erosividade
+          medida em condicoes nacionais e a pratica de terraceamento. Entra
+          como referencia porque a camada de degradacao assume P=1 — nenhuma
+          pratica conservacionista — e essa e a suposicao que mais infla o
+          resultado. Saber o que P representa e saber o tamanho do que foi
+          deixado de fora.
+        work: "Bertoni & Lombardi Neto, \"Conservacao do Solo\" (Icone, 1990 e edicoes seguintes)"
+
+      - id: beven
+        name: Keith Beven
+        affiliation: Lancaster University
+        status: core
+        resolve: >
+          A leitura adversarial obrigatoria destas duas camadas. Beven
+          formalizou a equifinalidade — modelos diferentes, e parametrizacoes
+          diferentes do mesmo modelo, reproduzem a observacao igualmente bem —
+          e passou a carreira argumentando que modelo hidrologico sem
+          incerteza declarada e conhecimento falso. Aplicado aqui: nossos CN e
+          fatores da RUSLE nao foram calibrados contra vazao nenhuma, entao
+          nem sequer chegamos ao ponto em que a equifinalidade seria o
+          problema — estamos um degrau abaixo, na tabela aplicada.
+        work: >
+          Beven, "A manifesto for the equifinality thesis" (Journal of
+          Hydrology, 2006)
+
+  # -------------------------------------------------------------------
   - id: sesa_extremos
     label: Extremos e clima regional no Cone Sul
     layer: "Camada 2 e interpretacao do alvo"
@@ -1349,6 +1468,48 @@ adversarial:
     consequence: >
       A central precisa demonstrar valor por decisao (limiar de acao), nao so
       RPSS. Sugere uma metrica de valor economico no Ledger, alem do skill.
+
+  - claim: "O balanco de chuva da camada de terreno descreve o escoamento do municipio"
+    challenge: >
+      Equifinalidade: parametrizacoes muito diferentes reproduzem a mesma
+      observacao, e sem calibracao contra vazao nao ha como saber qual esta
+      certa. Pior, o Curve Number aqui nao foi calibrado contra nada — e
+      tabela aplicada sobre cartografia de 1:250.000, e a incerteza plausivel
+      do CN composto pode ser maior que a diferenca entre municipios que o
+      payload ordena.
+    by: beven
+    consequence: >
+      Enquanto a serie fluviometrica da ANA nao for ingerida, a camada so pode
+      afirmar ORDEM entre municipios, jamais lamina. Se a calibracao mostrar
+      que a ordem tambem nao se sustenta, a camada precisa perder a tabela
+      municipio a municipio e ficar so na agregacao por unidade de relevo.
+
+  - claim: "Ia = 0,2 S e a perda inicial do metodo do Curve Number"
+    challenge: >
+      A propria base de dados que originou o metodo nao sustenta 0,2: o ajuste
+      empirico aponta algo proximo de 0,05 S na maioria das bacias, o que
+      muda o escoamento calculado de forma substancial — sobretudo em eventos
+      pequenos, que sao a maioria.
+    by: hawkins
+    consequence: >
+      A razao viaja como parametro no payload (`razao_ia`), nunca embutida.
+      Se a revisao proceder, trocar por 0,05 e uma decisao declarada e
+      auditavel, e o efeito sobre a ordem dos municipios precisa ser publicado
+      junto — nao um commit silencioso.
+
+  - claim: "O indice de erosao ordena o risco de degradacao do estado"
+    challenge: >
+      A USLE foi ajustada em parcelas de 22 m no meio-oeste americano para
+      estimar perda media anual em area agricola de relevo suave. Aplicada a
+      encosta de basalto com 45% de declividade, extrapola muito alem do
+      dominio dos dados que a geraram — e sem teto, porque o fator LS cresce
+      sem limite enquanto o perfil raso do terreno, na realidade, acaba.
+    by: wischmeier
+    consequence: >
+      Ja aplicada: o numero absoluto e publicado como indice, a classe e
+      posicao no estado, e ao lado vao as areas medidas que nao dependem da
+      equacao. Se a extrapolacao for considerada indefensavel ate para
+      ordenar, o indice sai e ficam so as areas.
 
 # ---------------------------------------------------------------------------
 # Precedentes construtivos ATIPICOS
