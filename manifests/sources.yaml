@@ -105,14 +105,24 @@ sources:
     note: "superficie construida — proxy de impermeabilizacao, nao medida dela"
   copernicus_dem:
     provider: ESA / AWS Open Data
-    domain: copernicus-dem-30m.s3.amazonaws.com
-    status: mapeado_nao_ingerido
+    domain: copernicus-dem-90m.s3.amazonaws.com
+    product: "Copernicus DEM GLO-90 (derivado do TanDEM-X)"
+    grid: "3 arcsec (~90 m)"
+    status: core
     note: >
-      Declividade real. Hoje o relevo entra por classe qualitativa do IBGE
-      ('ondulado'), e o fator LS da erosao cresce quarenta vezes do plano ao
-      montanhoso — trocar a classe por declividade medida e a melhoria de maior
-      retorno das camadas de terreno. Tiles de 1 grau, ~5,8 MB cada, ~63 para o
-      estado, sem chave de acesso.
+      Declividade MEDIDA, no lugar do adjetivo. O relevo entrava por classe
+      qualitativa do IBGE ('ondulado') e o fator LS da erosao cresce quarenta
+      vezes do plano ao montanhoso — num fator com essa alavanca, a diferenca
+      entre dois adjetivos dominava o resultado. 43 tiles cobrem o estado.
+    hazards:
+      - "e modelo de SUPERFICIE: mede topo de dossel e telhado, nao o terreno. Em
+         area florestada a declividade sai contaminada pela borda da mata"
+      - "a 90 m somem talude de corte, barranca de arroio e degrau de terraco: e a
+         declividade da ENCOSTA, nao a do talude"
+      - "grade em graus: o espacamento leste-oeste varia com a latitude, e usar
+         espacamento fixo inclinaria o estado inteiro numa direcao"
+      - "tile ausente (oceano, recorte de fronteira) devolve 404 e e resposta
+         NORMAL — tratar como erro faz a ingestao depender do formato do litoral"
   osm_recursos:
     provider: OpenStreetMap
     domain: overpass-api.de

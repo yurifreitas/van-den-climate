@@ -98,6 +98,14 @@ export function TerrenoView() {
         sortValue: (m) => m.eventos.find((x) => x.tr_anos === 10)?.escoamento_mm ?? -1,
       },
       {
+        key: 'declividade',
+        header: 'Declividade',
+        align: 'num',
+        cell: (m) =>
+          m.declividade_media_pct === null ? '—' : `${m.declividade_media_pct.toFixed(0)}%`,
+        sortValue: (m) => m.declividade_media_pct ?? -1,
+      },
+      {
         key: 'resposta',
         header: 'Resposta',
         cell: (m) => <span className="t-note">{m.resposta ?? '—'}</span>,

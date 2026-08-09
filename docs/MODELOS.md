@@ -89,8 +89,11 @@ por área, com a superfície construída medida (GHSL) entrando por cima — e n
 dentro do rótulo urbano do IBGE, para não contar o asfalto duas vezes.
 
 A chuva de projeto vem de Gumbel sobre máximos anuais do GHCN, na estação mais
-próxima do centroide. A velocidade de resposta é **ordinal** — sem talvegue nem
-declividade medida não existe tempo de concentração em minutos.
+próxima do centroide. A velocidade de resposta é **ordinal** — agora com declividade medida no lugar
+do adjetivo, mas ainda ordinal: sem talvegue e sem comprimento de rampa não
+existe tempo de concentração em minutos, e imprimir "3,4 h" seria inventar
+precisão. O que a medida mudou é que planície lagunar e encosta do Taquari
+deixaram de cair na mesma classe.
 
 **Parâmetros no payload:** `razao_ia` (0,2), tempos de retorno publicados,
 distância à estação de chuva e quantos anos ela tem.
@@ -120,10 +123,20 @@ governada por vento, onde a água chega e não sai.
 
 **Conta:** estrutura da RUSLE, `A = R · K · LS · C · P`, com **P = 1**.
 
-Cada fator é valor de tabela atribuído a classe cartográfica, não medida de
-campo: K por ordem de solo (não por ensaio), LS por classe qualitativa de relevo
-(não por modelo de elevação), C por uso mapeado a 1:250.000 (não por talhão), R
-do total anual (Renard & Freimund), não da intensidade em 30 minutos.
+K vem de literatura por ordem de solo (não de ensaio), C do uso mapeado a
+1:250.000 (não do talhão) e R do total anual (Renard & Freimund), não da
+intensidade em 30 minutos.
+
+**LS deixou de ser tabela.** Desde 2026-08-09 a declividade vem medida do
+Copernicus DEM (90 m), e o LS da carta é **reancorado** por ela — não
+substituído (ADR-095). Cada um sabe algo que o outro não: a carta diz *qual*
+parte do município é mais íngreme, informação que a média do DEM apaga, e o DEM
+diz *quanto*, que é onde o adjetivo erra. Multiplica-se todo LS qualitativo do
+município por um fator único, escolhido para que a média ponderada por área
+reproduza o LS medido: a forma vem da carta, a magnitude vem da medida.
+
+O fator é publicado, nunca aplicado em silêncio: mediana 1,06 no estado, mas
+variando de 0,14 a 2,60 entre municípios (ADR-096).
 
 **A decisão que define a camada:** a classe publicada é **posição no estado**,
 nunca corte absoluto da literatura. A RUSLE não tem teto em declividade e P = 1

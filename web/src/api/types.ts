@@ -925,6 +925,9 @@ export interface MunicipioHidrologia {
   /** Ordinal, nunca minutos: sem talvegue nao existe tempo de concentracao. */
   resposta: string | null;
   resposta_escore: number | null;
+  /** Declividade MEDIDA (Copernicus DEM 90 m), nao o adjetivo da carta. */
+  declividade_media_pct: number | null;
+  relevo_medido: boolean;
   estacao_chuva: { station_id: string; nome: string; km: number; anos: number } | null;
   eventos: EventoChuva[];
   unidade_geomorfologica: string | null;
@@ -942,6 +945,11 @@ export interface MunicipioDegradacao {
   frac_uso_intensivo_em_declive: number;
   km2_solo_raso_sob_uso_intensivo: number;
   km2_cobertura_permanente_em_declive: number;
+  /** LS calculado sobre declividade medida; `null` sem DEM ingerido. */
+  ls_medido_dem: number | null;
+  ls_reancorado: boolean;
+  /** LS medido / LS da carta. Acima de 1, a carta subestimou o relevo. */
+  fator_reancoragem: number | null;
   erosividade_r: number | null;
   estacao_chuva: { station_id: string; nome: string; km: number; chuva_anual_mm: number } | null;
   onde_mais_perde: {

@@ -34,6 +34,7 @@ pergunta sem resposta em seis meses.
 | GHCN-Daily | 1934–2022 | **congelada** |
 | JRC Global Surface Water | 1984–2021 | **congelada** |
 | IBGE BDiA (solo, vegetação, relevo) | levantamento por folha | **décadas** |
+| Copernicus DEM GLO-90 | altitude/declividade | produto estático (2019) |
 
 A linha que mais importa é a última. Quando a interface mostra fração de solo
 ou de cobertura, ela está mostrando um levantamento que pode ser mais velho que
@@ -169,11 +170,24 @@ Divisões de bacias do SNIRH. Dá o **regime de cheia** por município: fluvial,
 lagunar ou litorâneo. Regime lagunar é o que o vento governa, e onde a drenagem
 por gravidade falha justamente quando mais se precisa dela.
 
-### `copernicus_dem` — mapeada, não ingerida
-Declividade real, 30 m, aberta na AWS sem chave. Hoje o relevo entra por classe
-qualitativa do IBGE (*"ondulado"*), e o fator LS da erosão cresce **quarenta
-vezes** do plano ao montanhoso. É a melhoria de maior retorno das camadas de
-terreno.
+### `copernicus_dem` — a declividade medida
+GLO-90 (ESA, derivado do TanDEM-X), 43 tiles cobrindo o estado. Substituiu o
+adjetivo da carta no fator que mais alavanca o resultado: LS cresce **quarenta
+vezes** do plano ao montanhoso, e essa diferença estava sendo decidida por um
+rótulo que descreve o polígono inteiro pela feição predominante em área.
+
+Declividade média do estado: **12,7%**; 20,5% da área acima de 20% de
+inclinação.
+
+**O achado:** o fator de reancoragem (LS medido ÷ LS da carta) tem mediana
+**1,06** — a carta acerta na *média do estado* — mas varia de **0,14 a 2,60**
+entre municípios. Ela erra onde a decisão acontece, e isso não apareceria em
+nenhuma estatística agregada.
+
+**Onde quebra:** é modelo de **superfície**, não de terreno — mede topo de
+dossel e telhado, e em área florestada a declividade sai contaminada pela borda
+da mata. A 90 m somem talude de corte, barranca de arroio e degrau de terraço: é
+a declividade da encosta, não a do talude.
 
 ---
 

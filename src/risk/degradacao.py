@@ -224,6 +224,40 @@ def fator_ls(relevo: str | None) -> float:
     return LS_POR_RELEVO.get(" ".join(str(relevo or "").split()).lower(), LS_PADRAO)
 
 
+DEM_PARQUET = INTERIM / "copernicus_dem_rs.parquet"
+
+
+def _ls_medido() -> dict[int, float]:
+    """LS medio por municipio, calculado sobre declividade MEDIDA (DEM 90 m)."""
+    if not DEM_PARQUET.exists():
+        return {}
+    d = pd.read_parquet(DEM_PARQUET)
+    return {int(r.cod_mun): float(r.ls_medio) for r in d.itertuples()}
+
+
+def _reancorar_ls(ls_qualitativo: float, fator: float | None) -> float:
+    """Ajusta o LS da carta para bater, em media, com o LS do DEM.
+
+    A REANCORAGEM, e por que ela e melhor que trocar um pelo outro.
+
+    O DEM da UM numero por municipio; a carta pedologica da um rotulo por
+    poligono. Cada um sabe algo que o outro nao sabe: a carta diz QUAL parte do
+    municipio e mais ingreme — informacao que a media do DEM apaga — e o DEM
+    diz QUANTO, que e onde o adjetivo erra feio, porque LS cresce quarenta
+    vezes do plano ao montanhoso.
+
+    Entao a forma vem da carta e a magnitude vem da medida: multiplica-se todo
+    LS qualitativo do municipio por um fator unico, escolhido para que a media
+    ponderada por area reproduza o LS medido. A ordem interna entre poligonos e
+    preservada; so a escala muda.
+
+    Trocar um pelo outro perderia metade da informacao nas duas direcoes.
+    """
+    if fator is None:
+        return ls_qualitativo
+    return ls_qualitativo * fator
+
+
 def erosividade_r(precipitacao_anual_mm: float) -> float:
     """R anual (MJ.mm/(ha.h.ano)) a partir da chuva anual.
 
@@ -271,6 +305,7 @@ def build(centroides: dict[int, tuple[float, float]] | None = None) -> Degradaca
             f"{CRUZADO_PARQUET} ausente — rode `python -m src.ingest.ibge_bdia`"
         )
     cruzado = pd.read_parquet(CRUZADO_PARQUET)
+    ls_dem = _ls_medido()
     chuva_anual = _precipitacao_anual_por_estacao()
     estacoes = pd.read_parquet(GHCN_ESTACOES)
     estacoes = estacoes[estacoes.station_id.isin(chuva_anual)]
@@ -298,6 +333,16 @@ def build(centroides: dict[int, tuple[float, float]] | None = None) -> Degradaca
                        "chuva_anual_mm": round(chuva_anual[str(d.station_id)])}
             r_local = erosividade_r(chuva_anual[str(d.station_id)])
 
+        # Fator de reancoragem: um so por municipio, calculado para que a
+        # media ponderada do LS da carta reproduza o LS medido no DEM.
+        fator_ls_mun = None
+        if int(cod) in ls_dem:
+            num = sum(fator_ls(r.pedo_relevo) * r.km2 for r in g.itertuples())
+            den = float(g.km2.sum())
+            medio_qualitativo = num / den if den else 0.0
+            if medio_qualitativo > 0:
+                fator_ls_mun = ls_dem[int(cod)] / medio_qualitativo
+
         perda_num = 0.0
         area_valida = 0.0
         km2_intensivo_declive = 0.0
@@ -319,7 +364,7 @@ def build(centroides: dict[int, tuple[float, float]] | None = None) -> Degradaca
                 km2_solo_raso_sob_uso += row.km2
 
             k = fator_k(row.pedo_ordem, row.pedo_textura)
-            ls = fator_ls(row.pedo_relevo)
+            ls = _reancorar_ls(fator_ls(row.pedo_relevo), fator_ls_mun)
             c = C_POR_COBERTURA.get(cob, 0.15)
             if r_local is None:
                 continue
@@ -354,6 +399,15 @@ def build(centroides: dict[int, tuple[float, float]] | None = None) -> Degradaca
             "frac_uso_intensivo_em_declive": round(km2_intensivo_declive / area, 4),
             "km2_solo_raso_sob_uso_intensivo": round(km2_solo_raso_sob_uso, 1),
             "km2_cobertura_permanente_em_declive": round(km2_permanente_em_declive, 1),
+            # Declividade MEDIDA, ao lado do adjetivo da carta. Quando as
+            # duas discordam, e a carta que descreve o poligono inteiro pela
+            # feicao predominante — e vale olhar.
+            "ls_medido_dem": ls_dem.get(int(cod)),
+            "ls_reancorado": fator_ls_mun is not None,
+            # Fator > 1 significa que a carta SUBESTIMOU o relevo: o adjetivo
+            # descreve o poligono pela feicao predominante, e a encosta que
+            # governa a erosao e justamente a que nao predomina em area.
+            "fator_reancoragem": None if fator_ls_mun is None else round(fator_ls_mun, 2),
             "erosividade_r": None if r_local is None else round(r_local),
             "estacao_chuva": estacao,
             "onde_mais_perde": pior[:5],
@@ -375,6 +429,8 @@ def build(centroides: dict[int, tuple[float, float]] | None = None) -> Degradaca
         "km2_uso_intensivo_em_declive_rs": round(
             sum(r["km2_uso_intensivo_em_declive"] for r in rows), 1
         ),
+        "n_com_declividade_medida": int(sum(1 for r in rows if r["ls_reancorado"])),
+        "reancoragem": _resumo_reancoragem(rows),
         "km2_solo_raso_sob_uso_intensivo_rs": round(
             sum(r["km2_solo_raso_sob_uso_intensivo"] for r in rows), 1
         ),
@@ -410,3 +466,30 @@ def build(centroides: dict[int, tuple[float, float]] | None = None) -> Degradaca
         "solo ja perdido. Nao ha serie temporal.",
     ]
     return DegradacaoResult(rows=rows, resumo=resumo, limites=limites)
+
+
+def _resumo_reancoragem(rows: list[dict[str, Any]]) -> dict[str, Any]:
+    """Quanto o adjetivo da carta discorda da declividade medida.
+
+    Este resumo existe para que a troca de metodo seja AUDITAVEL, e nao um
+    numero novo aparecendo sem explicacao. Se a mediana do fator estivesse
+    perto de 1, a carta estaria certa em media e o DEM teria custado 420 MB
+    para confirmar o que ja se sabia. Nao esta.
+    """
+    fatores = [r["fator_reancoragem"] for r in rows if r.get("fator_reancoragem")]
+    if not fatores:
+        return {"disponivel": False}
+    arr = np.array(fatores)
+    return {
+        "disponivel": True,
+        "fator_mediano": round(float(np.median(arr)), 2),
+        "n_carta_subestimou": int((arr > 1.2).sum()),
+        "n_carta_superestimou": int((arr < 0.8).sum()),
+        "nota": (
+            "Fator = LS medido no DEM / LS medio da carta. A mediana estadual fica "
+            "perto de 1 — a carta acerta na MEDIA do estado — mas o fator varia de "
+            "0,1 a 2,6 entre municipios: ela erra onde a decisao acontece. E o "
+            "resultado que justifica o DEM, e nao seria visivel em nenhuma "
+            "estatistica agregada."
+        ),
+    }

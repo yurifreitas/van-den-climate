@@ -426,13 +426,47 @@ PESO_RELEVO = {
 }
 RESPOSTA_LABEL = ((6, "muito rapida"), (4, "rapida"), (2, "moderada"), (0, "lenta"))
 
+DEM_PARQUET = INTERIM / "copernicus_dem_rs.parquet"
 
-def _resposta_ordinal(linhas: pd.DataFrame) -> tuple[str | None, float | None]:
-    """Rotulo de velocidade de concentracao, ponderado por area."""
+# Faixas de declividade MEDIDA equivalentes aos pesos do adjetivo. Quando o DEM
+# existe, ele substitui `PESO_RELEVO` — nao por ser mais novo, mas porque o
+# adjetivo da carta descreve o poligono inteiro pela feicao predominante em
+# area, e a encosta que governa a resposta raramente e a que predomina.
+PESO_DECLIVIDADE = ((45.0, 4), (20.0, 3), (8.0, 2), (3.0, 1), (0.0, 0))
+
+
+def _relevo_medido() -> dict[int, float]:
+    """Declividade media por municipio (Copernicus DEM 90 m), se ingerida."""
+    if not DEM_PARQUET.exists():
+        return {}
+    d = pd.read_parquet(DEM_PARQUET)
+    return {int(r.cod_mun): float(r.declividade_media_pct) for r in d.itertuples()}
+
+
+def _peso_declividade(pct: float) -> int:
+    for corte, peso in PESO_DECLIVIDADE:
+        if pct >= corte:
+            return peso
+    return 0
+
+
+def _resposta_ordinal(
+    linhas: pd.DataFrame, declividade_pct: float | None = None
+) -> tuple[str | None, float | None]:
+    """Rotulo de velocidade de concentracao, ponderado por area.
+
+    Com declividade medida disponivel, ela entra no lugar do adjetivo da carta
+    — o mesmo peso, apurado da mesma faixa de porcentagem, mas a partir do que
+    o terreno tem e nao do que a legenda diz que ele predominantemente e.
+    """
+    peso_relevo_medido = (
+        _peso_declividade(declividade_pct) if declividade_pct is not None else None
+    )
     pesos, areas = [], []
     for r in linhas.itertuples():
         d = PESO_DRENAGEM.get(_sem_acento(str(r.geom_dens_dren or "")).lower())
-        v = PESO_RELEVO.get(str(r.pedo_relevo or "").strip().lower())
+        v = (peso_relevo_medido if peso_relevo_medido is not None
+             else PESO_RELEVO.get(str(r.pedo_relevo or "").strip().lower()))
         if d is None and v is None:
             continue
         pesos.append((d if d is not None else 0) + (v if v is not None else 0))
@@ -471,6 +505,7 @@ def build(centroides: dict[int, tuple[float, float]] | None = None) -> Hidrologi
         )
     cruzado = pd.read_parquet(CRUZADO_PARQUET)
     construida = _carregar_construida()
+    relevo = _relevo_medido()
     chuvas = chuvas_de_projeto()
     estacoes = pd.read_parquet(GHCN_ESTACOES)
     estacoes = estacoes[estacoes.station_id.isin(chuvas)]
@@ -550,7 +585,8 @@ def build(centroides: dict[int, tuple[float, float]] | None = None) -> Hidrologi
                     "volume_hm3": round(q2 * area_km2 / 1000.0, 2),
                 })
 
-        rotulo, escore = _resposta_ordinal(g)
+        decliv = relevo.get(cod)
+        rotulo, escore = _resposta_ordinal(g, decliv)
         linhas.append({
             "cod_mun": cod,
             "municipio": g.municipio.iloc[0],
@@ -567,6 +603,8 @@ def build(centroides: dict[int, tuple[float, float]] | None = None) -> Hidrologi
             },
             "resposta": rotulo,
             "resposta_escore": escore,
+            "declividade_media_pct": decliv,
+            "relevo_medido": decliv is not None,
             "estacao_chuva": None if est is None else {
                 "station_id": est[0],
                 "nome": chuvas[est[0]].estacao,
@@ -621,6 +659,12 @@ def build(centroides: dict[int, tuple[float, float]] | None = None) -> Hidrologi
         "cn2_mediano": round(float(np.median([r["cn2"] for r in rows])), 1) if rows else None,
         "cn2_p90": round(cn_p90, 1),
         "n_estacoes_chuva": len(chuvas),
+        "n_com_declividade_medida": int(sum(1 for r in rows if r["relevo_medido"])),
+        "declividade_media_rs_pct": (
+            round(float(np.mean([r["declividade_media_pct"] for r in rows
+                                 if r["declividade_media_pct"] is not None])), 2)
+            if relevo else None
+        ),
         "avisos": avisos,
     }
 
@@ -639,7 +683,10 @@ def build(centroides: dict[int, tuple[float, float]] | None = None) -> Hidrologi
         "A chuva de projeto vem da estacao GHCN mais proxima do centroide, por "
         "Gumbel sobre maximos anuais. Municipio grande ou distante da estacao "
         "herda uma chuva que nao e a dele; a distancia viaja no payload.",
-        "A cartografia e 1:250.000: o resultado ordena municipios, nao "
+        "A declividade vem do Copernicus DEM de 90 m, que e modelo de SUPERFICIE: "
+        "mede topo de dossel e telhado, e em area florestada sai contaminada pela "
+        "borda da mata. O comprimento de rampa continua suposto.",
+        "A cartografia de solo e cobertura e 1:250.000: o resultado ordena municipios, nao "
         "dimensiona obra. Nenhum numero daqui substitui estudo hidrologico "
         "local.",
         "Sem serie fluviometrica ingerida, nada disto foi confrontado com vazao "
