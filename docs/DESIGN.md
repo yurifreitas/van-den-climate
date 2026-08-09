@@ -46,6 +46,38 @@ do texto, nunca do texto colorido.
 
 ---
 
+### Categórico — identidade, e o teto que ele impõe
+
+Seis cores, validadas duas a duas (pior par adjacente ΔE 14,3 sob
+deuteranopia). A regra é explícita: a ordem é fixa — a série 3 é sempre a cor 3,
+mesmo que a série 2 seja filtrada — e **nunca cicla**: a sétima categoria vira
+"Outros".
+
+Esse teto tem consequência de arquitetura, e ela apareceu quando a camada de
+recursos foi de sete papéis para dezessete. Colorir por papel exigiria reciclar
+tom, e escola dividiria cor com subestação — o que destrói a única coisa que a
+cor categórica deve garantir. A saída não foi ampliar a paleta: foi **agrupar o
+dado**. Cinco famílias (socorro, abrigo, acesso, infraestrutura, suprimento)
+cabem nas seis cores com folga, e a distinção dentro da família fica no rótulo e
+no filtro, que é onde ela é de fato usada (ADR-089).
+
+Quando a paleta não cabe, a pergunta certa é o que o dado está tentando dizer —
+não quantas cores faltam.
+
+### Selo de proveniência
+
+Todo painel com número derivado exibe `basis`. A distinção
+medido / modelado / sintético é feita por **estilo de borda** — sólida para
+medido, tracejada para modelado e sintético — nunca por cor, porque cor está
+reservada à anomalia.
+
+Selos podem ser **aninhados**, e o de dentro pode ser mais forte que o de fora:
+em `/terreno` o envelope é `modeled` e o bloco `hoje` é `measured`, porque ali a
+chuva é observação e só a conversão é tabela. Um selo único no topo apagaria a
+distinção mais informativa da tela.
+
+---
+
 ## 2. Tipografia
 
 Escala modular, razão 1,2. Tudo em `rem`.

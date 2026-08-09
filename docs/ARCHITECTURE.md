@@ -171,3 +171,89 @@ Camada 2 inteira. **A precipitação, não o ENSO, é o caminho crítico do proj
 Cada uma dessas é uma coisa que parece profissional e que, aqui, só adiciona
 superfície de falha entre você e a única pergunta que importa: o limite inferior
 do IC de RPSS é maior que zero?
+
+---
+
+## 9. A segunda metade: da ingestão à tela
+
+As seções 1–8 descrevem como o dado **entra**. Depois do pivô para central de
+risco (ADR-013) existe uma segunda metade, e ela tem regras próprias.
+
+```
+  data/interim/*.parquet
+        │
+        │  src/risk/*.py   ── uma camada por pergunta, sem estado
+        │                     lê parquet, devolve dataclass com
+        │                     rows + resumo + limites
+        ▼
+  api/routers/*.py          ── envelopa com provenance, pagina, e
+        │                     traduz FileNotFoundError em 503 com
+        │                     a instrução de qual ingestor rodar
+        ▼
+  web/src/api/*.ts          ── cliente escrito à mão contra o contrato
+        │
+        ▼
+  web/public/static-api/    ── snapshot: a API congelada em arquivos,
+                              para a demo pública sem backend
+```
+
+### A regra das camadas de risco
+
+Toda camada devolve **três coisas**: as linhas, um resumo, e os **limites** —
+uma lista de frases que dizem onde aquele número deixa de valer. `limites` não é
+opcional e não é rodapé: `tests/test_hidrologia.py::test_declara_os_proprios_limites`
+falha se a lista encolher.
+
+Nenhuma camada guarda estado. As caras (`dossie.py`) usam `lru_cache` por
+`(cenário, oni)` porque a alternativa é remontar a tabela do estado inteiro para
+descartar 496 linhas — 4,2 s por dossiê, mais de meia hora nos 497 do snapshot.
+**O objeto em cache é compartilhado e somente lido**; quem precisar mutar copia
+antes, ou o dossiê de um município contamina o do próximo.
+
+### O snapshot estático, e por que ele é o árbitro
+
+O CI **não** roda ingestão: as fontes são pesadas e fora do nosso controle, e uma
+delas fora do ar derrubaria todo deploy de código. Em vez disso,
+`scripts/build_static_snapshot.py` congela cada rota num arquivo JSON, e o front
+em modo estático lê esses arquivos.
+
+Isso tem um efeito colateral que virou a defesa mais útil do projeto: **o
+snapshot é o único artefato do repositório gerado pela API**. `types.ts` é
+escrito à mão contra o contrato, e os fixtures do MSW são escritos à mão contra
+a expectativa do front — dois artefatos à mão erram **juntos, na mesma direção**,
+e nada acusa. Foi assim que `vazios` virou envelope no back, continuou array no
+tipo, e a demo subiu em branco com `s.map is not a function`, com CI verde.
+
+Por isso `web/src/views/__tests__/telas-contra-snapshot.test.tsx` renderiza as
+doze telas contra o snapshot real, e não contra fixture.
+
+### A função gêmea
+
+`slugEstatico` existe em duas linguagens — `web/src/api/client.ts` e
+`scripts/build_static_snapshot.py` — e precisa concordar caractere a caractere.
+Se divergirem, o front pede um arquivo que o build não gerou, e a demo quebra
+**só em produção**. `tests/test_static_snapshot.py` compara as duas.
+
+---
+
+## 10. Como uma camada nova entra
+
+A ordem abaixo não é burocracia: cada passo existe porque a ausência dele já
+produziu um defeito neste repositório.
+
+1. **Entrada em `manifests/sources.yaml`**, com `hazards`. Travado por
+   `tests/test_docs.py::test_todo_ingestor_tem_fonte_no_catalogo` — onze
+   ingestores viveram fora do catálogo.
+2. **Ingestor** que grava bruto + proveniência e falha alto. O modo de falha a
+   evitar não é a exceção: é o parquet íntegro afirmando um estado falso (o WFS
+   que devolve 200 com geometria nula, e o estado sai com zero km²).
+3. **Camada de risco** com `rows + resumo + limites`, e a tradução (o julgamento)
+   fora da ingestão — a ingestão grava o que a fonte afirma (ADR-080).
+4. **Rota**, com envelope de proveniência e selo aninhado quando a proporção
+   medido/traduzido mudar lá dentro (ADR-093).
+5. **Tipo, hook e tela**; verificação com `npm run build`, não com
+   `tsc --noEmit` — o build roda `tsc -b`, que checa o projeto inteiro.
+6. **Snapshot regerado e commitado.**
+7. **ADR** para cada escolha que alguém questionaria em seis meses.
+8. **Documentação**: `docs/DADOS.md` e `docs/MODELOS.md`, travados por teste.
+

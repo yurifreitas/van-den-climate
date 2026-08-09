@@ -12,12 +12,12 @@ provenance_required: [url, fetched_at, sha256, product_version, ingestor_version
 sources:
 
   # --- 6.1 ENSO e oceano -------------------------------------------------
-  cpc_oni:      {provider: NOAA CPC,    domain: cpc.ncep.noaa.gov, freq: monthly, period: "1950-",  anchor_mode: relative_30y, status: core}
-  cpc_roni:     {provider: NOAA CPC,    domain: cpc.ncep.noaa.gov, freq: monthly, period: "1950-",  anchor_mode: relative_30y, status: core}
-  psl_nino:     {provider: NOAA PSL,    domain: psl.noaa.gov,      freq: monthly, period: "1870-",  vars: [nino12, nino3, nino34, nino4], status: core}
-  ersst_v5:     {provider: NOAA NCEI,   domain: ncei.noaa.gov,     freq: monthly, period: "1854-",  grid: "2deg", status: core}
+  cpc_oni:      {provider: NOAA CPC,    domain: cpc.ncep.noaa.gov, freq: monthly, period: "1950-",  anchor_mode: relative_30y, status: core, note: "ONI e media movel de 3 meses da TSM em Nino 3.4 contra base climatologica que o CPC atualiza a cada 5 anos: comparar valor de 1997 com valor de hoje sem a mesma base compara duas reguas."}
+  cpc_roni:     {provider: NOAA CPC,    domain: cpc.ncep.noaa.gov, freq: monthly, period: "1950-",  anchor_mode: relative_30y, status: core, note: "Relative ONI — desconta o aquecimento medio dos tropicos. E a resposta do CPC ao fato de que o ONI absoluto passou a marcar El Nino com mais frequencia por tendencia, nao por evento (ADR-005)."}
+  psl_nino:     {provider: NOAA PSL,    domain: psl.noaa.gov,      freq: monthly, period: "1870-",  vars: [nino12, nino3, nino34, nino4], status: core, note: "Indices Nino 1+2, 3, 3.4 e 4 em serie longa (1870-). A escolha da regiao muda o evento: Modoki aparece em Nino 4 e some em Nino 1+2."}
+  ersst_v5:     {provider: NOAA NCEI,   domain: ncei.noaa.gov,     freq: monthly, period: "1854-",  grid: "2deg", status: core, note: "TSM reconstruida. Antes de 1950 a cobertura vem de navio mercante em rota comercial — a incerteza nao e uniforme no espaco nem no tempo."}
   hadisst:      {provider: Met Office,  domain: metoffice.gov.uk,  freq: monthly, period: "1870-",  grid: "1deg", status: backup}
-  cpc_soi:      {provider: NOAA CPC,    domain: cpc.ncep.noaa.gov, freq: monthly, period: "1866-",  status: core}
+  cpc_soi:      {provider: NOAA CPC,    domain: cpc.ncep.noaa.gov, freq: monthly, period: "1866-",  status: core, note: "Assinatura atmosferica do mesmo acoplamento que o ONI mede no oceano. SOI muito baixo com ONI muito alto e acoplamento em desacordo, e a discordancia e informacao."}
   jamstec_emi:  {provider: JAMSTEC,     domain: jamstec.go.jp,     freq: monthly, period: "1950-",  status: core, note: "Modoki; Yamagata/Behera"}
   tao_wwv:      {provider: NOAA PMEL,   domain: pmel.noaa.gov,     freq: monthly, period: "1980-",  status: optional, note: "recharge oscillator; dropar se lacunar"}
   iri_plume:    {provider: IRI Columbia,domain: iri.columbia.edu,  freq: monthly, period: "operacional", status: context_only, note: "NAO usar como feature — vazamento de modelo dinamico"}
@@ -25,12 +25,12 @@ sources:
   ecmwf_seas5:  {provider: Copernicus,  domain: cds.climate.copernicus.eu, freq: monthly, period: "1981-", status: phase3}
 
   # --- 6.2 Modos extratropicais ------------------------------------------
-  cpc_aao:      {provider: NOAA CPC,    domain: cpc.ncep.noaa.gov, freq: daily,   period: "1979-",  status: core}
-  bas_marshall: {provider: BAS,         domain: nerc-bas.ac.uk,    freq: monthly, period: "1957-",  status: core}
-  ncei_pdo:     {provider: NOAA NCEI,   domain: ncei.noaa.gov,     freq: monthly, period: "1854-",  status: core}
-  psl_amo:      {provider: NOAA PSL,    domain: psl.noaa.gov,      freq: monthly, period: "1856-",  status: core}
-  psl_tsa:      {provider: NOAA PSL,    domain: psl.noaa.gov,      freq: monthly, period: "1948-",  status: core}
-  psl_tna:      {provider: NOAA PSL,    domain: psl.noaa.gov,      freq: monthly, period: "1948-",  status: core}
+  cpc_aao:      {provider: NOAA CPC,    domain: cpc.ncep.noaa.gov, freq: daily,   period: "1979-",  status: core, note: "AAO/SAM diario. E preditor fisicamente distinto do ENSO, nao proxy redundante — Thompson e Wallace fundamentam por que."}
+  bas_marshall: {provider: BAS,         domain: nerc-bas.ac.uk,    freq: monthly, period: "1957-",  status: core, note: "SAM baseado em ESTACOES, nao em reanalise. Existe justamente porque a versao de reanalise tem tendencia espuria no periodo pre-satelite; manter as duas versoes no bloco e deliberado."}
+  ncei_pdo:     {provider: NOAA NCEI,   domain: ncei.noaa.gov,     freq: monthly, period: "1854-",  status: core, note: "Modulacao decadal do Pacifico. Com n=36 no alvo, um indice de periodo ~50 anos contribui menos de um ciclo — entra como contexto, nunca como preditor independente."}
+  psl_amo:      {provider: NOAA PSL,    domain: psl.noaa.gov,      freq: monthly, period: "1856-",  status: core, note: "Oscilacao multidecadal do Atlantico. Mesmo problema de amostra do PDO, agravado: o periodo e maior que a serie do alvo."}
+  psl_tsa:      {provider: NOAA PSL,    domain: psl.noaa.gov,      freq: monthly, period: "1948-",  status: core, note: "Atlantico Sul tropical. E o vizinho que compete com o Pacifico pela chuva do RS, e a fase concomitante muda a resposta ao ENSO."}
+  psl_tna:      {provider: NOAA PSL,    domain: psl.noaa.gov,      freq: monthly, period: "1948-",  status: core, note: "Atlantico Norte tropical. Entra pelo gradiente inter-hemisferico, nao pelo valor absoluto."}
   jamstec_dmi:  {provider: JAMSTEC,     domain: jamstec.go.jp,     freq: monthly, period: "1870-",  status: optional}
   bom_rmm:      {provider: BoM,         domain: bom.gov.au,        freq: daily,   period: "1974-",  status: phase5, note: "MJO; sub-sazonal"}
 
@@ -180,3 +180,112 @@ sources:
       o Curve Number: hoje a camada hidrologica e tabela aplicada, e nenhum
       numero dela foi confrontado com agua medida passando. Proxima ingestao de
       maior retorno depois da declividade real.
+
+  # --- 6.8 Fontes municipais e de territorio -------------------------------
+  # Estas entraram com o pivo para Central de Risco e ficaram fora do catalogo
+  # por meses: cada ingestor foi escrito com a fonte documentada no proprio
+  # modulo, e ninguem voltou aqui. O teste `test_docs.py` passa a exigir que
+  # todo ingestor tenha entrada, porque catalogo incompleto e pior que catalogo
+  # ausente — ele afirma cobertura que nao tem.
+  ibge_munic_rs:
+    provider: IBGE
+    domain: ftp.ibge.gov.br
+    product: "MUNIC 2024 — suplemento Evento Climatico Rio Grande do Sul"
+    freq: eventual
+    status: core
+    note: "497 municipios x ~100 variaveis sobre o evento de 26/04/2024"
+    hazards:
+      - "e AUTO-DECLARACAO da prefeitura ao IBGE: ha incentivo assimetrico entre
+         relatar dano (atrai recurso) e relatar falha de prevencao (expoe gestao)"
+      - "municipio que nao respondeu aparece como lacuna, nunca como zero — foi o
+         que pos Bage em 1o lugar por NAO ter respondido (ADR-019)"
+  ibge_malha_rs:
+    provider: IBGE
+    domain: servicodados.ibge.gov.br
+    product: "Malha municipal 2024, qualidade minima"
+    status: core
+    note: "base geometrica de tudo: rasterizacao, centroide e recorte por municipio"
+  ibge_pop_rs:
+    note: "Estimativa, nao censo: e projecao do IBGE para 2024 sobre a base de 2022. Municipio pequeno tem incerteza relativa maior, e e justamente onde a exposicao pesa mais no indice."
+    provider: IBGE
+    domain: servicodados.ibge.gov.br
+    product: "Estimativa populacional 2024 (agregado 6579)"
+    status: core
+  ana_bacias:
+    provider: ANA / SNIRH
+    domain: snirh.gov.br
+    product: "Divisoes de bacias hidrograficas (ArcGIS REST)"
+    status: core
+    note: >
+      Da o regime de cheia por municipio (fluvial, lagunar, litoraneo). Regime
+      lagunar e o que o vento governa: drenagem por gravidade falha justamente
+      quando mais se precisa dela.
+    hazards:
+      - "atribuicao por centroide: municipio a cavaleiro de duas bacias fica com uma"
+  cnes_rs:
+    provider: DATASUS / Ministerio da Saude
+    domain: apidadosabertos.saude.gov.br
+    product: "CNES — cadastro de estabelecimentos de saude"
+    freq: monthly
+    status: core
+    hazards:
+      - "codigo_tipo_unidade 43 tem rotulo 'Unidade Movel de Nivel Pre-Hospitalar'
+         e devolve FARMACIAS — quase quatro mil entrariam como ambulancia"
+      - "e ESTABELECIMENTO, nunca leito nem viatura (ADR-036): a frota do SAMU
+         opera sob o CNES da central de regulacao e nao aparece uma a uma"
+  osm_emergencia:
+    provider: OpenStreetMap
+    domain: overpass-api.de
+    status: core
+    licenca: "ODbL — exige atribuicao visivel em obra derivada publicada"
+    note: "quarteis de bombeiro, unidades policiais e pontes da malha principal"
+    hazards:
+      - "colaborativa: ausencia no mapa nao prova ausencia no territorio"
+      - "para ponte e EXISTENCIA, nunca estado de conservacao — nao ha laudo, vao,
+         carga nem ano de construcao"
+  ghcn_rs:
+    provider: NOAA NCEI
+    domain: ncei.noaa.gov
+    product: "GHCN-Daily — chuva diaria"
+    period: "1934-2022"
+    status: core
+    note: >
+      A serie diaria mais longa disponivel para o RS. E a base da chuva de
+      projeto (Gumbel sobre maximos anuais) da camada hidrologica.
+    hazards:
+      - "ano de cobertura parcial NAO pode entrar como maximo anual: puxa Gumbel
+         inteiro para baixo e a estacao urbana recente e a mais afetada"
+      - "termina em 2022 — para chuva atual, ver cpc_precip"
+  jrc_gsw:
+    provider: JRC / Comissao Europeia
+    domain: storage.googleapis.com/global-surface-water
+    product: "Global Surface Water v1.4 — transitions (Pekel et al., Nature 2016)"
+    period: "1984-2021"
+    status: core
+    note: >
+      Memoria hidrica: onde ja foi agua e hoje nao e. Termina em 2021 e portanto
+      NAO contem a cheia de 2024 — o que torna todo cruzamento com o evento uma
+      coincidencia entre bases independentes, nao circularidade.
+  ibge_quilombola:
+    provider: IBGE
+    domain: geoservicos.ibge.gov.br
+    product: "Censo 2022 — territorios quilombolas"
+    status: core
+    hazards:
+      - "ausencia de territorio mapeado NAO e ausencia de comunidade: o vies e
+         sistematico e numa direcao so (ADR-075)"
+  ibge_indigena:
+    provider: IBGE
+    domain: geoservicos.ibge.gov.br
+    product: "Base Cartografica 250k — terras indigenas"
+    status: core
+    hazards:
+      - "terra em estudo e terra homologada sao o mesmo poligono e realidades
+         opostas: `situacao_juridica` sempre visivel (ADR-076)"
+  cpc_enso_advisory:
+    provider: NOAA CPC
+    domain: cpc.ncep.noaa.gov
+    product: "ENSO Diagnostic Discussion (boletim mensal)"
+    freq: monthly
+    status: core
+    note: "o que a autoridade oficial esta dizendo, ao lado do que a engine calcula"

@@ -3,6 +3,11 @@
 Engine de **regimes** climáticos para o Rio Grande do Sul — não um modelo de
 previsão isolado. Documento mestre: `manifests/decisions.md` + `feature_blocks.yaml`.
 
+**Documentação**: [`docs/README.md`](docs/README.md) é o mapa — arquitetura,
+catálogo de dados em prosa, o que cada modelo afirma e como derrubá-lo, e o
+contrato de API. Toda decisão datada está em
+[`manifests/decisions.md`](manifests/decisions.md).
+
 ## A restrição que governa tudo
 
 `n_avaliação = 36` (1991–2026). `SE(RPSS) ≈ 0.10–0.15`. O erro padrão é da ordem
@@ -33,6 +38,11 @@ diz a data no topo. Números vivos exigem a API local — ver *Uso*.
 | — | Camada municipal (497 municípios) | ✅ ADRs 016–022 |
 | — | Camada prospectiva (outlook CPC) | ✅ ADRs 024–028 |
 | — | Memória hídrica (JRC 1984–2021) | ✅ ADRs 029–034 |
+| — | Recursos de resposta: 17 papéis, 5 famílias | ✅ ADRs 085–089 |
+| — | Territórios tradicionais e dossiê municipal | ✅ ADRs 072–076 |
+| — | Terreno: solo, vegetação, relevo (BDiA 1:250k) | ✅ ADRs 080–081 |
+| — | Balanço de chuva (Curve Number) e erosão (RUSLE) | ✅ ADRs 082–084 |
+| — | Chuva **atual** (NOAA CPC, até ontem) e umidade antecedente | ✅ ADRs 090–093 |
 | 2 | Qualidade + homogeneização | ⬜ |
 | 4 | Representação causal (5 operadores) | ⬜ |
 | 5 | Regime (HMM/ERA5, M-SSA, análogos) | ⬜ |
@@ -55,7 +65,13 @@ python -m src.ingest.cpc_enso_advisory    # boletim ENSO
 python -m src.ingest.jrc_gsw              # Global Surface Water
 python -m src.ingest.ghcn_rs              # chuva diária 1934–1999 (~6 MB, 67 estações)
 python -m src.ingest.cnes_rs              # estabelecimentos de saúde
-python -m src.ingest.osm_emergencia       # bombeiros e polícia (OpenStreetMap)
+python -m src.ingest.osm_emergencia       # bombeiros, polícia e pontes (OSM)
+python -m src.ingest.osm_recursos         # abrigo, energia, água, suprimento (OSM)
+python -m src.ingest.territorios          # terras indígenas e quilombolas
+python -m src.ingest.ana_bacias           # regime de cheia por município
+python -m src.ingest.ghsl_built           # superfície construída (~130 MB)
+python -m src.ingest.ibge_bdia            # solo, vegetação, relevo + cruzamento
+python -m src.ingest.cpc_precip           # chuva diária ATUAL, até ontem (NOAA)
 python -m src.risk.aguas                  # estatística zonal + overlay
 
 cd web && npm install
@@ -118,13 +134,25 @@ mostra os dois lado a lado.
 
 ## Fontes
 
+Catálogo formal em [`manifests/sources.yaml`](manifests/sources.yaml) (travado
+por teste); a versão em prosa, com o que cada fonte responde e onde deixa de
+valer, está em [`docs/DADOS.md`](docs/DADOS.md).
+
 | Fonte | O que traz | Janela |
 |---|---|---|
 | CPC/PSL | ONI, SOI, AAO, Niño 3.4 | 1950– |
+| **CPC precipitação diária** | chuva observada em grade de 0,5° | 1979–**ontem** |
 | CPC ENSO Advisory | outlook oficial (contexto) | mensal |
 | IBGE MUNIC 2024 | evento climático RS: perigos, danos, plano de contingência | evento 26/04/2024 |
 | IBGE malha + SIDRA | 497 polígonos municipais, população | 2024 |
+| IBGE BDiA | pedologia, vegetação e uso, geomorfologia (1:250.000) | levantamento por folha |
 | JRC Global Surface Water | água permanente, sazonal, **perdida**, efêmera | 1984–2021 |
+| GHSL Built-up Surface | superfície construída (proxy de impermeabilização) | época 2025 |
+| GHCN-Daily | chuva diária, 66 estações | 1934–2022 |
+| ANA/SNIRH | bacias e regime de cheia | atual |
+| CNES/DATASUS | estabelecimentos de saúde | mensal |
+| OpenStreetMap | emergência, abrigo, energia, água, suprimento (ODbL) | mapa vivo |
+| IBGE Censo/Cartográfica | territórios quilombolas e terras indígenas | 2019–2022 |
 
 Pekel, J.-F. et al. *High-resolution mapping of global surface water and its
 long-term changes.* Nature 540, 418–422 (2016).

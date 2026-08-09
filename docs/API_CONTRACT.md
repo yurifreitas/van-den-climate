@@ -254,6 +254,94 @@ lacuna declarada, não exceção silenciosa (ver ARCHITECTURE §1).
 
 ---
 
+## 6. Rotas municipais, de território e de terreno
+
+Estas nasceram depois do congelamento do v0 e **não fazem parte da fronteira
+congelada** — são endpoints auxiliares, servidos pelo mesmo prefixo e sujeitos
+às mesmas regras do §0. A distinção importa: mudar o formato de `/state` quebra
+o contrato e exige `/v2`; mudar `/terreno` exige atualizar o front junto, e é
+tudo.
+
+Elas ficaram meses sem documentação aqui, com a razão de existir escrita apenas
+na docstring do módulo. `tests/test_docs.py` passa a exigir que toda rota
+registrada apareça neste arquivo — contrato incompleto é pior que contrato
+ausente, porque afirma cobertura que não tem.
+
+### Índice e decisão
+
+```
+GET /risk/municipal?cenario=          indice de prioridade preventiva dos 497
+GET /risk/municipal/{cod_mun}         a linha de um municipio
+GET /risk/municipal/cruzamento/aguas  indice x memoria hidrica
+GET /plano?cenario=                   de lacuna declarada a acao nomeada
+GET /contencao?cenario=               estrategias com gatilho fisico no dado
+GET /dossie/{cod_mun}?cenario=        as dez camadas na ordem da decisao
+```
+
+`/dossie` **não calcula** — junta. Cada bloco carrega `basis` e `lacunas`
+próprios, e o dossiê não tem selo único no topo: um selo sobre dez camadas
+apagaria a diferença entre medido, modelado e ausente, que é a informação mais
+importante quando a decisão é cara (ADR-072). O bloco de lacunas é o **bloco 7**,
+com o mesmo peso visual dos outros, nunca rodapé (ADR-073).
+
+### Meios de resposta
+
+```
+GET /recursos?pontos=                 17 papeis em 5 familias + vazios
+GET /pessoal                          quadro municipal e auxilio mutuo
+GET /resposta/municipios              o que falhou em 2024
+GET /geotecnico                       encosta, travessia, barragem
+GET /territorios                      terras indigenas e quilombolas
+```
+
+Em `/recursos`, `vazios` vem **envelopado** com selo e nota próprios: o cadastro
+de recursos é medido, mas a *ordem* da lista cruza o índice (modelado) com a
+distância (medida). Selar as duas coisas junto afirmaria medição onde há
+composição — e ler esse envelope como array foi o que deixou a demo em branco
+uma vez.
+
+Papéis de famílias diferentes **não se somam** (ADR-085): hospital e supermercado
+respondem perguntas diferentes.
+
+### Terreno
+
+```
+GET /terreno?limite=                  balanco de chuva + degradacao + hoje
+```
+
+Uma rota só para as duas camadas porque elas leem o **mesmo** cruzamento de
+solo, cobertura e relevo; separá-las obrigaria a varrê-lo duas vezes por
+consulta.
+
+O envelope é `modeled` **inteiro**, sem exceção — a origem é um mapa do IBGE, e
+mapa parece medição, mas tudo que sai daqui passou por três traduções (ordem do
+SiBCS → grupo hidrológico, par (grupo, cobertura) → Curve Number, série diária →
+chuva de projeto por Gumbel).
+
+Dentro dele, o bloco `hoje` carrega selo **`measured`**, e o aninhamento é
+deliberado: ali a chuva de cinco dias é observação (NOAA CPC, até ontem) e só a
+conversão para classe de umidade é tabela. Esconder isso sob o selo do envelope
+perderia a única coisa nova que a camada traz (ADR-093).
+
+`concentracao` é **interseção de dois decis**, não índice composto — e o critério
+viaja escrito no próprio payload para que ninguém precise adivinhar.
+
+### Séries, catálogo e geometria
+
+```
+GET /historico/chuva                  historia longa da chuva de primavera
+GET /outlook/enso                     boletim do CPC ao lado do que a engine calcula
+GET /references                       catalogo de leitura, precedentes, adversariais
+GET /geo/municipios                   malha municipal (GeoJSON, RFC 7946)
+GET /geo/aguas.png, /geo/aguas/meta   overlay de memoria hidrica
+```
+
+`/geo/municipios` não tem `response_model`: é GeoJSON, cuja forma é definida pela
+RFC 7946 e não por este contrato. Modelar Polygon em Pydantic adicionaria
+validação redundante sobre payload que já chega validado do IBGE.
+
+---
+
 ## 5. Regras de implementação
 
 1. **DuckDB lê o Parquet direto**, sem carregar em memória. Cache por
