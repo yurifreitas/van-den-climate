@@ -41,6 +41,7 @@ from api.models import (
 )
 from src.ingest import cpc_enso_advisory as advisory
 from src.risk import aguas
+from src.risk import antecedente
 from src.risk import degradacao
 from src.risk import hidrologia
 from src.risk import historico
@@ -739,6 +740,11 @@ def get_terreno(limite: int = Query(60, ge=1, le=497)) -> dict:
             "municipios": d.rows[:limite],
             "n_total": len(d.rows),
         },
+        # A camada que torna as outras duas atuais. Sem ela a central
+        # publicava dois Curve Numbers — seco e encharcado — e deixava a
+        # escolha para quem lesse, o que na pratica significa que ninguem
+        # escolhia. Com a chuva do CPC ate ontem, a condicao vigente e medida.
+        "hoje": _bloco_hoje(h.rows),
         # O cruzamento das duas: onde o terreno gera muita enxurrada E o uso
         # a faz levar solo junto. Nao e um indice novo — e a intersecao dos
         # decis superiores de cada camada, dita com todas as letras para que
@@ -775,4 +781,35 @@ def _concentracao_terreno(hidro: list[dict], degr: dict[int, dict]) -> dict:
         "limiar_cn2": round(corte_cn, 1),
         "n": len(juntos),
         "municipios": sorted(juntos, key=lambda x: -x["cn2"]),
+    }
+
+
+def _bloco_hoje(hidro: list[dict]) -> dict:
+    """Condicao de umidade antecedente vigente, por municipio.
+
+    Selo proprio dentro de um envelope que ja e `modeled`, e por um motivo:
+    aqui a proporcao entre medido e traduzido e outra. A chuva de cinco dias e
+    OBSERVACAO (pluviometro interpolado, ate ontem); so a conversao para
+    classe de umidade e para o CN vigente e tabela. E a parte mais medida de
+    toda a camada de terreno, e esconder isso sob o selo do envelope seria
+    perder a unica coisa nova que ela traz.
+    """
+    try:
+        a = antecedente.build({r["cod_mun"]: r["cn2"] for r in hidro})
+    except FileNotFoundError as exc:
+        return {
+            "disponivel": False,
+            "motivo": f"chuva recente nao ingerida — rode `python -m src.ingest.cpc_precip`. ({exc})",
+        }
+    return {
+        "disponivel": True,
+        "provenance": {
+            "basis": "measured",
+            "horizon": "seasonal",
+            "source_ids": ["cpc_precip"],
+            "as_of": a.resumo["ate"],
+        },
+        "resumo": a.resumo,
+        "limites": a.limites,
+        "municipios": a.rows,
     }

@@ -184,3 +184,47 @@ def test_regioes_agregam_por_unidade_de_relevo(resultado):
     for r in resultado.regioes:
         assert r["n_municipios"] >= 1
         assert r["cn2_medio"] is None or 30 <= r["cn2_medio"] <= 100
+
+
+# ---------------------------------------------------------------------------
+# Condicao de umidade antecedente (src/risk/antecedente.py)
+# ---------------------------------------------------------------------------
+def test_classe_amc_usa_o_limiar_da_estacao():
+    """A estacao desloca o limiar em quase 26 mm — trocar as duas inverte dias.
+
+    A tabela original do metodo nao data a estacao de crescimento, porque quem
+    a usava sabia. No hemisferio sul a definicao precisa ser nossa, e ela e
+    outubro a abril: 30 mm em cinco dias e solo ENCHARCADO em julho e apenas
+    condicao media em janeiro.
+    """
+    from datetime import date
+
+    from src.risk import antecedente as ant
+
+    assert ant.classe_amc(30.0, date(2026, 7, 15))[0] == "III"
+    assert ant.classe_amc(30.0, date(2026, 1, 15))[0] == "I"
+    assert ant.classe_amc(30.0, date(2026, 1, 15))[1] == "crescimento"
+
+
+def test_conversoes_de_cn_ordenam_seco_media_umido():
+    from src.risk import antecedente as ant
+
+    cn2 = 74.0
+    assert ant.cn_umidade_baixa(cn2) < cn2 < ant.cn_umidade_alta(cn2)
+
+
+def test_antecedente_publica_a_data_do_ultimo_dado():
+    """Camada 'atual' sem data e a pior das duas: parece de hoje e nao e."""
+    import pytest
+
+    from src.risk import antecedente as ant
+
+    try:
+        r = ant.build()
+    except FileNotFoundError:
+        pytest.skip("chuva do CPC nao ingerida")
+    assert r.resumo["ate"]
+    assert all(m["ate"] == r.resumo["ate"] for m in r.rows)
+    junto = " ".join(r.limites).lower()
+    assert "nao e previsao" in junto or "não é previsão" in junto
+    assert "umidade de solo medida" in junto

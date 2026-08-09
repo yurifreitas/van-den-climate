@@ -174,6 +174,65 @@ export function TerrenoView() {
               </span>
             </Row>
 
+            {terreno.data.hoje.disponivel && terreno.data.hoje.resumo && (
+              <Section
+                title={`Como o solo esta hoje — chuva observada ate ${terreno.data.hoje.resumo.ate}`}
+                note="O Curve Number tem duas versoes, solo seco e solo encharcado, e a diferenca chega a dobrar o escoamento. Qual delas vale hoje deixou de ser retorica: a condicao e determinada pela chuva dos cinco dias anteriores, e essa chuva e medida."
+              >
+                <Row>
+                  <ProvenanceBadge basis={terreno.data.hoje.provenance?.basis ?? null} />
+                  <span className="footnote">
+                    Chuva observada (NOAA CPC, celula de ~55 km) ate{' '}
+                    {terreno.data.hoje.resumo.ate}. Nao e previsao: se chover hoje a noite,
+                    a condicao muda amanha.
+                  </span>
+                </Row>
+                <Grid min={210}>
+                  {(['III', 'II', 'I'] as const).map((classe) => {
+                    const n = terreno.data.hoje.resumo?.por_classe[classe] ?? 0;
+                    const rotulo =
+                      classe === 'III'
+                        ? 'encharcado — escoa mais'
+                        : classe === 'II'
+                          ? 'condicao media'
+                          : 'seco — escoa menos';
+                    return (
+                      <Panel key={classe} title={`AMC ${classe}`}>
+                        <span className="t-hero">{n}</span>
+                        <p className="footnote">
+                          municipios · {rotulo}
+                        </p>
+                      </Panel>
+                    );
+                  })}
+                  <Panel title="Chuva de 5 dias (mediana)">
+                    <span className="t-hero">
+                      {terreno.data.hoje.resumo.chuva_5d_mediana_mm ?? '—'}
+                    </span>
+                    <p className="footnote">
+                      mm. Limiar de encharcamento na estacao {terreno.data.hoje.resumo.estacao_vigente}:{' '}
+                      {terreno.data.hoje.municipios?.[0]?.limiar_amc_iii_mm ?? '—'} mm.
+                    </p>
+                  </Panel>
+                </Grid>
+                {terreno.data.hoje.municipios && terreno.data.hoje.municipios.length > 0 && (
+                  <Panel title="Onde o solo esta mais cheio agora">
+                    <ul className="terreno-limites">
+                      {terreno.data.hoje.municipios.slice(0, 6).map((m) => (
+                        <li key={m.cod_mun}>
+                          <strong>{m.municipio}</strong>{' '}
+                          <span className="t-note">
+                            {m.chuva_5d_mm.toFixed(0)} mm em 5 dias · CN {m.cn2?.toFixed(0)} passa
+                            a {m.cn_vigente?.toFixed(0)}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </Panel>
+                )}
+              </Section>
+            )}
+
             <Section
               title="O estado em quatro numeros"
               note={`Curve Number mediano ${terreno.data.hidrologia.resumo.cn2_mediano ?? '—'}; perda inicial Ia = ${terreno.data.hidrologia.resumo.razao_ia} S.`}

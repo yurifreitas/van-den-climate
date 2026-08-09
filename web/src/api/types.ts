@@ -995,6 +995,48 @@ export interface TerrenoResponse {
     municipios: MunicipioDegradacao[];
     n_total: number;
   };
+  /**
+   * Condicao de umidade antecedente vigente, com chuva observada ate ontem.
+   *
+   * Selo proprio dentro de um envelope `modeled`: a chuva de cinco dias e
+   * OBSERVACAO (pluviometro interpolado pelo NOAA CPC), e so a conversao para
+   * classe e para o CN vigente e tabela. E a parte mais medida da camada de
+   * terreno — esconde-la sob o selo do envelope perderia o que ela traz.
+   */
+  hoje: {
+    disponivel: boolean;
+    motivo?: string;
+    provenance?: Provenance;
+    resumo?: {
+      version: string;
+      ate: string;
+      n_municipios: number;
+      dias_antecedentes: number;
+      meses_crescimento: number[];
+      estacao_vigente: string | null;
+      por_classe: Record<string, number>;
+      chuva_5d_mediana_mm: number | null;
+      chuva_30d_mediana_mm: number | null;
+    };
+    limites?: string[];
+    municipios?: {
+      cod_mun: number;
+      municipio: string;
+      ate: string;
+      chuva_5d_mm: number;
+      chuva_30d_mm: number;
+      chuva_90d_mm: number;
+      dias_desde_chuva: number | null;
+      /** I seco · II media · III encharcado — tabela SCS sobre 5 dias. */
+      amc: string;
+      estacao: string;
+      limiar_amc_iii_mm: number;
+      cn2: number | null;
+      cn_vigente: number | null;
+      delta_cn: number | null;
+    }[];
+  };
+
   /** Intersecao dos decis superiores das duas camadas — nao um indice novo. */
   concentracao: {
     criterio: string;

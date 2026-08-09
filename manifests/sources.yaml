@@ -134,3 +134,49 @@ sources:
          `content` antes de contar como reserva de agua"
       - "Overpass e instancia publica compartilhada: recuo generoso entre
          tentativas, e o header Content-Type e obrigatorio (406 sem ele)"
+  cpc_precip:
+    provider: NOAA CPC / NOAA PSL
+    domain: downloads.psl.noaa.gov
+    product: "CPC Global Unified Gauge-Based Analysis of Daily Precipitation"
+    grid: "0.5deg"
+    freq: daily
+    period: "1979- (ate ontem)"
+    status: core
+    note: >
+      A unica fonte ATUAL de chuva no catalogo. Fecha o buraco entre a chuva
+      historica (GHCN, termina em 2022) e o oceano do mes corrente: sem ela a
+      central nao sabia quanto choveu na semana passada, e portanto nao sabia
+      qual dos dois Curve Numbers valia hoje.
+    hazards:
+      - "celula de ~55 km e maior que a maioria dos municipios do RS: ate 24
+         municipios dividem a MESMA celula e nao tem diferenca de chuva no dado"
+      - "media de area: tempestade convectiva de 15 km com 120 mm aparece como
+         ~20 mm espalhados — subestima o extremo pontual por construcao"
+      - "NetCDF-4: scipy.io.netcdf_file NAO le. O GDAL do rasterio le, via
+         subdataset netcdf:<arquivo>:precip"
+      - "eixo de tempo em HORAS desde 1900-01-01, nao dias. Assumir dias devolve
+         datas no ano 4912 sem erro nenhum — serie completa, ordenada e coerente,
+         tres mil anos no futuro"
+      - "o arquivo do ano corrente traz o ano inteiro com NaN nos dias ainda nao
+         processados: cortar antes de publicar, ou a fila de vazios vira seca"
+  inmet_automaticas:
+    provider: INMET
+    domain: apitempo.inmet.gov.br
+    status: tentado_indisponivel
+    note: >
+      Seria a fonte natural — 98 estacoes automaticas so no RS, horarias. A API
+      publica devolve a LISTA de estacoes normalmente e responde 204 No Content
+      para qualquer consulta de DADOS, em toda data testada (de ontem a tres
+      anos atras), com e sem token. O caminho restante e o BDMEP, que exige
+      login. Enquanto isso, o CPC cobre o estado com a celula de 55 km
+      declarada.
+  ana_telemetria:
+    provider: ANA
+    domain: telemetriaws1.ana.gov.br
+    status: mapeado_nao_ingerido
+    note: >
+      Nivel e vazao de rio em tempo quase real, por SOAP publico e sem chave
+      (ListaEstacoesTelemetricas responde). E o insumo que falta para CALIBRAR
+      o Curve Number: hoje a camada hidrologica e tabela aplicada, e nenhum
+      numero dela foi confrontado com agua medida passando. Proxima ingestao de
+      maior retorno depois da declividade real.
