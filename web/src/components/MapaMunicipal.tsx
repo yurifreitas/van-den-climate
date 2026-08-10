@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { MalhaResponse, MunicipioRisco } from '../api/types';
 import { ABISSAL, BRUMA_FRACA, GIZ, GRID, LINHA, NIVEL, alpha, sequencial } from '../theme/palette';
 import './MapaMunicipal.css';
@@ -200,10 +200,44 @@ export function MapaMunicipal({
       }
     : null;
 
+  /**
+   * Retangulo do SVG, em cache.
+   *
+   * ESTA e a causa real do travamento, e o teto de pontos so tinha adiado o
+   * sintoma. `getBoundingClientRect()` num elemento SVG forca o navegador a
+   * recalcular o layout da arvore inteira — e estava sendo chamado a CADA
+   * `mousemove`, sessenta vezes por segundo, sobre um SVG de milhares de nos.
+   * Nao e custo de React: e thrash de layout, e por isso escala com o numero
+   * de nos desenhados e nao com o trabalho de reconciliacao.
+   *
+   * O retangulo so muda quando a janela ou o container mudam de tamanho, entao
+   * e medido uma vez por entrada do ponteiro e no `resize`.
+   */
+  const rectRef = useRef<DOMRect | null>(null);
+  const medir = useCallback(() => {
+    rectRef.current = svgRef.current?.getBoundingClientRect() ?? null;
+  }, []);
+
+  useEffect(() => {
+    medir();
+    window.addEventListener('resize', medir);
+    return () => window.removeEventListener('resize', medir);
+  }, [medir]);
+
+  // O tooltip acompanha o ponteiro, mas nao precisa de um estado por evento:
+  // um quadro por frame basta para o olho e corta as atualizacoes redundantes
+  // que o navegador emite entre dois frames.
+  const pendente = useRef<number | null>(null);
   const mover = useCallback((e: React.MouseEvent, m: MunicipioRisco) => {
-    const rect = svgRef.current?.getBoundingClientRect();
+    const rect = rectRef.current;
     if (!rect) return;
-    setHover({ m, x: e.clientX - rect.left, y: e.clientY - rect.top });
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    if (pendente.current !== null) return;
+    pendente.current = requestAnimationFrame(() => {
+      pendente.current = null;
+      setHover({ m, x, y });
+    });
   }, []);
 
   /**
@@ -230,6 +264,45 @@ export function MapaMunicipal({
    *      densidade de qualquer jeito — o que se perde ao amostrar e menos que
    *      o que se perde travando.
    */
+  /**
+   * Camada de municipios, tambem fora do caminho do `hover`.
+   *
+   * Sao 497 `<path>`, cada um com um `<title>` — mil nos que o React
+   * reconciliava a cada movimento do ponteiro sem que nenhum deles pudesse ter
+   * mudado, porque `hover` so alimenta o tooltip.
+   */
+  const camadaMunicipios = useMemo(
+    () => (
+      <>
+        {paths.map(({ cod, d }) => {
+          const m = porCodigo.get(cod);
+          const c = m ? cor(m, camada) : null;
+          const ativo = selecionado === cod;
+          return (
+            <path
+              key={cod}
+              d={d}
+              className={`mapa-mun__mun${ativo ? ' mapa-mun__mun--ativo' : ''}`}
+              fill={c === null ? 'url(#sem-dado)' : c === 'none' ? 'transparent' : alpha(c, 0.88)}
+              stroke={ativo ? '#FFFFFF' : LINHA}
+              strokeWidth={ativo ? 2 : 0.5}
+              // Na camada de agua a malha municipal e referencia, nao dado:
+              // 497 bordas em opacidade cheia formam uma trama que compete com
+              // os rios e vence, porque e mais regular.
+              strokeOpacity={camada === 'aguas' && !ativo ? 0.35 : 1}
+              onMouseMove={(e) => m && mover(e, m)}
+              onClick={() => onSelecionar(ativo ? null : cod)}
+              tabIndex={-1}
+            >
+              <title>{m ? m.municipio : cod}</title>
+            </path>
+          );
+        })}
+      </>
+    ),
+    [paths, porCodigo, camada, selecionado, mover, onSelecionar],
+  );
+
   const camadaPontos = useMemo(() => {
     if (!recursos?.length) return null;
     // Amostragem deterministica (passo fixo, nao aleatoria): o mesmo conjunto
@@ -285,34 +358,8 @@ export function MapaMunicipal({
           />
         )}
 
-        {paths.map(({ cod, d }) => {
-          const m = porCodigo.get(cod);
-          const c = m ? cor(m, camada) : null;
-          const ativo = selecionado === cod;
-          return (
-            <path
-              key={cod}
-              d={d}
-              className={`mapa-mun__mun${ativo ? ' mapa-mun__mun--ativo' : ''}`}
-              fill={c === null ? 'url(#sem-dado)' : c === 'none' ? 'transparent' : alpha(c, 0.88)}
-              stroke={ativo ? '#FFFFFF' : LINHA}
-              strokeWidth={ativo ? 2 : 0.5}
-              // Na camada de agua a malha municipal e referencia, nao dado:
-              // 497 bordas em opacidade cheia formam uma trama que compete com
-              // os rios e vence, porque e mais regular.
-              strokeOpacity={camada === 'aguas' && !ativo ? 0.35 : 1}
-              onMouseMove={(e) => m && mover(e, m)}
-              onClick={() => onSelecionar(ativo ? null : cod)}
-              tabIndex={-1}
-            >
-              <title>{m ? m.municipio : cod}</title>
-            </path>
-          );
-        })}
+        {camadaMunicipios}
 
-        {/* Pontos de recurso POR CIMA dos poligonos: sao o objeto da leitura
-            nesta camada, e um ponto de 3px sob o preenchimento desapareceria.
-            `pointer-events: none` para nao roubar o clique do municipio. */}
         {camadaPontos}
       </svg>
 
