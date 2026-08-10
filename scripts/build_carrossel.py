@@ -1,16 +1,22 @@
 # -*- coding: utf-8 -*-
-"""Monta os slides do carrossel de LinkedIn a partir das capturas da demo.
+"""Monta os slides do carrossel de divulgacao a partir de capturas da demo.
+
+    CAPTURAS_DIR=<pasta com screenshot-*.jpg> python scripts/build_carrossel.py
 
 Formato 1080x1350 (4:5) — o retrato que o feed do LinkedIn menos corta.
 Paleta identica a do projeto (web/src/theme/palette.ts): fundo abissal, giz
 para texto, bruma para nota, menta como unico acento de interface.
+
+As CAPTURAS nao sao versionadas, so os slides e este gerador: elas dependem de
+janela, tema e da data do snapshot, e o proprio slide ja declara a data.
 """
+import os
 from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
 
-CAPTURAS = Path(r"C:\Users\yuri\AppData\Local\Temp\claude-chrome-screenshots-i2t2qn")
-SAIDA = Path(r"F:\CODE\climate\docs\carrossel")
+CAPTURAS = Path(os.environ.get("CAPTURAS_DIR", "capturas"))
+SAIDA = Path(__file__).resolve().parents[1] / "docs" / "carrossel"
 SAIDA.mkdir(parents=True, exist_ok=True)
 
 W, H = 1080, 1350
