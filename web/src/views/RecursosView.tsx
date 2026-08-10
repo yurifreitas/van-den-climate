@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useMalhaMunicipal, useMunicipalRisk, usePessoal, useRecursos } from '../api/hooks';
-import { MapaMunicipal } from '../components/MapaMunicipal';
+import { MapaMunicipal, pontosDesenhados } from '../components/MapaMunicipal';
 import { ProvenanceBadge } from '../components/ProvenanceBadge';
 import { QueryState } from '../components/QueryState';
 import { DataTable, Empty, Grid, Panel, Row, Section, Stack, View } from '../components/ui';
@@ -261,6 +261,14 @@ export function RecursosView() {
                     </div>
                   </div>
                 ))}
+                {pontosFiltrados.length > pontosDesenhados(pontosFiltrados.length) && (
+                  <p className="footnote">
+                    O mapa desenha {pontosDesenhados(pontosFiltrados.length).toLocaleString('pt-BR')}{' '}
+                    dos {pontosFiltrados.length.toLocaleString('pt-BR')} pontos ligados — amostra
+                    regular, para nao travar o navegador. As contagens na legenda e nas tabelas sao
+                    sempre do total; so o desenho e amostrado.
+                  </p>
+                )}
                 <MapaMunicipal
                   malha={malha.data}
                   municipios={risco.data?.municipios ?? []}

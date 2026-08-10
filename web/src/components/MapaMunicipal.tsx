@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import type { MalhaResponse, MunicipioRisco } from '../api/types';
 import { ABISSAL, BRUMA_FRACA, GIZ, GRID, LINHA, NIVEL, alpha, sequencial } from '../theme/palette';
 import './MapaMunicipal.css';
@@ -30,6 +30,23 @@ const PAD = 12;
  * sem borda cheia, 1.600 pontos flutuam sobre o nada.
  */
 type Camada = 'risco' | 'impacto' | 'deficit' | 'exposicao' | 'aguas' | 'recursos';
+
+/**
+ * Teto de pontos desenhados no mapa.
+ *
+ * 6.000 circulos ficam em torno de 6 mil nos de SVG, que o navegador reconcilia
+ * sem engasgo mesmo em maquina modesta. Acima disso o mapa do estado inteiro ja
+ * virou mancha continua — nao ha densidade a mais para ler, so custo a mais
+ * para pagar. Quem chama recebe quantos pontos foram desenhados e DIZ isso na
+ * tela: descarte silencioso lê-se como cobertura completa.
+ */
+export const TETO_PONTOS = 6000;
+
+/** Quantos pontos o mapa desenharia para um conjunto — para a legenda declarar. */
+export function pontosDesenhados(total: number): number {
+  const passo = Math.ceil(total / TETO_PONTOS);
+  return passo > 1 ? Math.ceil(total / passo) : total;
+}
 
 export const CAMADAS: { id: Camada; label: string; hint: string }[] = [
   { id: 'risco', label: 'Risco integrado', hint: 'I+D+E modulados pelo estado sazonal' },
@@ -183,11 +200,59 @@ export function MapaMunicipal({
       }
     : null;
 
-  const mover = (e: React.MouseEvent, m: MunicipioRisco) => {
+  const mover = useCallback((e: React.MouseEvent, m: MunicipioRisco) => {
     const rect = svgRef.current?.getBoundingClientRect();
     if (!rect) return;
     setHover({ m, x: e.clientX - rect.left, y: e.clientY - rect.top });
-  };
+  }, []);
+
+  /**
+   * Camada de pontos, MEMOIZADA e com teto declarado.
+   *
+   * Isto aqui matou a tela de recursos em producao, e o mecanismo merece ficar
+   * escrito porque ele nao aparece em teste de unidade nenhum.
+   *
+   * Cada ponto rendia dois nos de DOM (um `<circle>` e um `<title>` filho). Com
+   * a familia de socorro sozinha eram ~3,2 mil nos e ninguem notava. Ligando
+   * abrigo, suprimento e infraestrutura, os 18,7 mil pontos viravam ~37 mil nos
+   * — e como `hover` e estado DESTE componente, cada movimento do mouse sobre
+   * um municipio re-renderizava a arvore inteira. Passar o mouse pelo mapa
+   * algumas vezes derrubava o renderizador: a aba ficava em branco.
+   *
+   * Tres correcoes, nesta ordem de importancia:
+   *
+   *   1. a camada de pontos sai do caminho do `hover` (este `useMemo`), entao
+   *      mover o mouse reconcilia so o tooltip;
+   *   2. o `<title>` por ponto sai — era metade dos nos, e o tooltip nativo em
+   *      cima de um circulo de 3 px nunca foi a forma de ler este mapa;
+   *   3. teto de pontos desenhados, com o descarte DECLARADO em vez de
+   *      silencioso. Acima do teto o mapa vira mancha e para de informar
+   *      densidade de qualquer jeito — o que se perde ao amostrar e menos que
+   *      o que se perde travando.
+   */
+  const camadaPontos = useMemo(() => {
+    if (!recursos?.length) return null;
+    // Amostragem deterministica (passo fixo, nao aleatoria): o mesmo conjunto
+    // de filtros desenha sempre os mesmos pontos, e o mapa nao "pisca" entre
+    // renders.
+    const passo = Math.ceil(recursos.length / TETO_PONTOS);
+    const visiveis = passo > 1 ? recursos.filter((_, i) => i % passo === 0) : recursos;
+    return (
+      <g style={{ pointerEvents: 'none' }}>
+        {visiveis.map((p, i) => (
+          <circle
+            key={`${p.papel}-${i}`}
+            cx={px(p.lon)}
+            cy={py(p.lat)}
+            r={3}
+            fill={coresRecurso?.[p.papel] ?? GIZ}
+            stroke={ABISSAL}
+            strokeWidth={0.8}
+          />
+        ))}
+      </g>
+    );
+  }, [recursos, coresRecurso, px, py]);
 
   return (
     <div className="mapa-mun">
@@ -248,20 +313,7 @@ export function MapaMunicipal({
         {/* Pontos de recurso POR CIMA dos poligonos: sao o objeto da leitura
             nesta camada, e um ponto de 3px sob o preenchimento desapareceria.
             `pointer-events: none` para nao roubar o clique do municipio. */}
-        {recursos?.map((p, i) => (
-          <circle
-            key={`${p.papel}-${i}`}
-            cx={px(p.lon)}
-            cy={py(p.lat)}
-            r={3}
-            fill={coresRecurso?.[p.papel] ?? GIZ}
-            stroke={ABISSAL}
-            strokeWidth={0.8}
-            style={{ pointerEvents: 'none' }}
-          >
-            <title>{p.nome ? `${p.nome} · ${p.papel}` : p.papel}</title>
-          </circle>
-        ))}
+        {camadaPontos}
       </svg>
 
       {hover && (
